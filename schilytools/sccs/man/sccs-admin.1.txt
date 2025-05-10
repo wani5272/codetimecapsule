@@ -1,0 +1,730 @@
+sccs-admin(1)			 User Commands			 sccs-admin(1)
+
+NAME
+       sccs-admin, admin - create and administer SCCS history files
+
+SYNOPSIS
+       /usr/ccs/bin/admin [-bhknoz] [-a username | groupid]...
+	   [-d flag] ... [-e username | groupid]...
+	   [-f flag[value]] ... [-i[filename]] [-m mr-list]
+	   [-q[nsedelim]] [-w%W%-string]
+	   [-rrelease] [-t[description-file]] [-y[comment]]
+	   [-Xextended-options] [-Nbulk-spec] s.filename...
+
+
+DESCRIPTION
+       The admin command creates or modifies the flags and other parameters of
+       SCCS history files. Filenames of SCCS history files begin with the `s.'
+       prefix, and are referred to as s.files, or ``history'' files.
+
+
+       The named s.file is created if it does not exist already. Its
+       parameters are initialized or modified according to the options you
+       specify.	 Parameters not specified are given default values when the
+       file is initialized, otherwise they remain unchanged.
+
+
+       If a directory name is used in place of the s.filename argument, the
+       admin command applies to all s.files in that directory.	Unreadable
+       s.files produce an error.  The use of `-' as the s.filename argument
+       indicates that the names of files are to be read from the standard
+       input, one s.file per line.
+
+OPTIONS
+       The following options are supported:
+
+
+       -a username | groupid
+	      Adds a user name, or a numerical group ID, to the list of users
+	      who may check deltas in or out. If the list is empty, any user
+	      is allowed to do so.
+
+
+       -b     Forces encoding of binary data. Files that contain ASCII NUL,
+	      that contain lines that start with the the SCCS control
+	      character SOH(ASCII 001) or that do not end with a NEWLINE, are
+	      recognized as binary data files when using the SCCSv4 history
+	      file format. The contents of such files are stored in the
+	      history file in encoded form. See uuencode(1C) for details about
+	      the encoding. This option is normally used in conjunction with
+	      -i to force admin to encode initial versions not recognized as
+	      containing binary data.
+
+	      The new SCCSv6 history file format permits to have lines that
+	      start with the SCCS control character SOH(ASCII 001) and files
+	      that do not end with a NEWLINE, enforcing the binary file format
+	      only if a file contains ASCII NUL characters.
+
+
+       -d flag
+	      Deletes the indicated flag from the SCCS file. The -d option may
+	      be specified only for existing s.files.  See -f for the list of
+	      recognized flags.
+
+
+       -e username | groupid
+	      Erases a user name or group ID from the list of users allowed to
+	      make deltas.
+
+
+       -f flag [value]
+	      Sets the indicated flag to the (optional) value specified. The
+	      following flags are recognized:
+
+	      b	     Enables branch deltas. When b is set, branches can be
+		     created using the -b option of the SCCS get command (see
+		     sccs-get(1)).
+
+
+	      cceil  Sets a ceiling on the releases that can be checked out.
+		     ceil is a number less than or equal to 9999. If c is not
+		     set, the ceiling is 9999.
+
+
+	      dsid   Specifies the default delta number, or SID, to be used by
+		     an SCCS get command.
+
+
+	      ffloor Sets a floor on the releases that can be checked out. The
+		     floor is a number greater than 0 but less than 9999. If f
+		     is not set, the floor is 1.
+
+
+	      i[value]
+		     Treats the `No id keywords (cm7)' message issued by an
+		     SCCS get or delta command as an error rather than a
+		     warning.
+
+		     If the parameter value to the `i' flag is not empty, then
+		     it holds a line fragment with keywords starting with a
+		     `%', e.g.
+			     `%Z%%M%	 %I% %E%'
+		     This line fragment needs to exactly match a part of a
+		     line in the file and to result in expanded keywords.  The
+		     string must begin with a keyword, and may not have
+		     embedded newline characters.  If no match was found, an
+		     attempt to check in a new delta will fail.	 The parameter
+		     to the `i' flag is a SUN extension that was adopted by
+		     the POSIX standard.
+
+
+	      j	     Allow concurrent get -e calls for editing on the same
+		     base SID of an SCCS file.	This allows multiple
+		     concurrent updates to take place on the same version of
+		     the SCCS file.
+
+
+	      la
+
+	      l release[, release...]
+		     Locks the indicated list of releases against deltas.  An
+		     SCCS `get -e' command fails when applied against a locked
+		     release.  The following syntax is accepted to specify a
+		     list:
+
+		     <list> ::= a | <range-list>
+		     <range-list> ::= <range> | <range-list>, <range>
+		     <range> ::= <SID>
+
+		     The character a in the list is the equivalent to
+		     specifying all releases for the named SCCS file.  The
+		     non-terminal <SID> in range is the delta number of an
+		     existing delta associated with the SCCS file.
+
+	      mmodule
+		     Supplies a value for the module name to which the %M%
+		     keyword is to expand. If the m flag is not specified, the
+		     value assigned is the name of the SCCS file with the
+		     leading s.	 removed.
+
+
+	      n	     Creates empty releases when releases are skipped. These
+		     null (empty) deltas serve as anchor points for branch
+		     deltas.
+
+
+	      qvalue Supplies a value to which the %Q% keyword is to expand
+		     when a read-only version is retrieved with the SCCS get
+		     command.
+
+
+	      snumber
+		     Specifies how many lines of code are scanned for the SCCS
+		     keyword.
+
+		     This flag is a SUN extension that does not exist in
+		     historic sccs implementations.
+
+
+	      ttype  Supplies a value for the module type to which the %Y%
+		     keyword is to expand.
+
+
+	      v[program]
+		     Specifies a validation program for the MR numbers
+		     associated with a new delta. The optional program
+		     specifies the name of an MR number validity checking
+		     program.  If this flag is set when creating an SCCS file,
+		     the -m option must also be used, in which case the list
+		     of MRs may be empty.
+
+		     The v flag and the z flag are mutually exclusive.
+
+
+	      x	     Enable sccs extensions that are not implemented in
+		     classical sccs variants. If the `x' flag is enabled, the
+		     keywords %d%, %e%, %g% and %h% are expanded even though
+		     the `y' flag was not set.
+
+		     This flag is a SCHILY extension that does not exist in
+		     historic sccs implementations.
+
+		     This version of SCCS implements compatibility support for
+		     a SCO SCCS extension that sets the executable bit in the
+		     file permissions of a gotten file if the x-flag was set
+		     in the history file with no parameter. This version of
+		     SCCS does not allow to set this variant of the x-flag in
+		     the history file.	If you like to get executable files
+		     from SCCS, set the executable bit in the file permissions
+		     of the history file.
+
+
+	      y[value,[value]]
+		     Specifies the SCCS keywords to be expanded. If no value
+		     is specified, no keywords will be expanded.
+
+		     The value `*' controls the expansion of the
+		     %sccs.include.filename% keyword.  If the letters d, e, g
+		     or h are present, the related extended keywords are
+		     expanded even though the `x' flag was not set, see `x'
+		     flag above.
+
+		     If value is set to an empty string, no keywords will be
+		     expanded and the `No id keywords (cm7)' message will not
+		     be created even though no keyword was expanded.
+
+		     admin(1) automatically disables keyword expansion when
+		     creating a SCCSv6 history file and a nul byte is seen in
+		     the input data.
+
+		     This flag is a SUN/SCHILY extension that does not exist
+		     in historic sccs implementations.
+
+		     The suppressed `No id keywords (cm7)' message is a SCHILY
+		     extension.
+
+	      zapplication
+		     The name of an application for the CMF enhancements.  CMF
+		     enhancements are currently undocumented and it is not
+		     known how they are expected to work.
+
+		     The v flag and the z flag are mutually exclusive.
+
+		     This flag is a SUN extension that does not exist in
+		     historic sccs implementations.
+
+
+
+
+       -h     Checks the structure of an existing s.file (see sccsfile(4)),
+	      and compares a newly computed check-sum with one stored in the
+	      first line of that file.	-h inhibits writing on the file and so
+	      nullifies the effect of any other options.
+
+
+       -i[filename]
+	      Initializes the history file with text from the indicated file.
+	      This text constitutes the initial delta, or set of checked-in
+	      changes.	If filename is omitted, the initial text is obtained
+	      from the standard input.	Omitting the -i option altogether
+	      creates an empty s.file.	You can only initialize one s.file
+	      with text using -i unless you use the bulk option -N.  The -i
+	      option implies the -n option.
+
+	      If you like to initialize more than one s.file in one call, use
+	      the -N option and specify -i.  (-i followed by a dot).
+
+
+       -k     Suppresses expansion of ID keywords when admin(1) is doing an
+	      implicit get(1) operation because -N+...	was specified.
+
+	      This option is a SCHILY extension that does not exist in
+	      historic sccs implementations.
+
+
+       -m mr-list
+	      Inserts the indicated Modification Request (MR) numbers into the
+	      commentary for the initial version. When specifying more than
+	      one MR number on the command line, mr-list takes the form of a
+	      quoted, space-separated list. A warning results if the v flag is
+	      not set or the MR validation fails.
+
+
+       -Nbulk-spec
+	      Creates a bulk of new SCCS history files.	 This option allows to
+	      do an efficient mass creation of SCCS history files and to
+	      initialize the SCCS history files from named files that are the
+	      respective counterpart to the actual SCCS history file.
+
+	      The bulk-spec parameter is composed from an optional list of
+	      flag parameters followed by an optional path specifier.
+
+	      The following flag types are supported:
+
+	      -		If bulk-spec is preceded by a `-', admin(1) removes
+			the original g-files after the initial history files
+			have been created. This flag cannot be used together
+			with the `,' flag.
+
+	      +		If bulk-spec is preceded by a `+', admin(1) removes
+			the original g-files and replaces them by file content
+			that is retrieved by a get(1) operation on the related
+			s.file.	 This flag can be used together with the `,'
+			flag.
+
+	      ,		If bulk-spec is preceded by a `,', admin(1) renames
+			the g-file from where the SCCS history file was
+			initialized from to ,name similar to what happens with
+			sccs create.  It is recommended to let admin(1) rename
+			the original file as this file usually contains
+			unexpanded keywords and as this file usually is
+			writable.
+
+	      space	This is a placeholder dummy flag that allows to use a
+			prepared string for the -N option and to replace the
+			space character by one of the supported flags on
+			demand.
+
+	      If sccs is used in forced delta mode where no sccs edit is
+	      needed, it is recommended to use no flag character in the
+	      bulk-spec in order to retain a writable g-file.
+
+
+	      The following path specifier types are supported:
+
+	      -N	The file name parameters to the admin command are not
+			s.filename files but the names of the g-files.	The
+			s.filename names are automatically derived from the g-
+			file names by prepending s.  to the last path name
+			component.  Both, s.filename and the g-file are in the
+			same directory.
+
+	      -Ns.	The file name parameters to the admin command are
+			s.filename files.  The the g-files names are
+			automatically derived by removing s.  from the
+			beginning of last path name component of the
+			s.filename.  Both, s.filename and the g-file are in
+			the same directory.
+
+	      -Ndir	The file name parameters to the admin command are not
+			s.filename files but the names of the g-files.	The
+			s.filename names are put into directory dir, the names
+			are automatically derived from the g-file names by
+			prepending dir/s.  to the last path name component.
+
+	      -Ndir/s.	The file name parameters to the admin command are
+			s.filename files in directory dir.  The the g-files
+			names are automatically derived by removing dir/s.
+			from the beginning of last path name component of the
+			s.filename.
+
+	      A typical value for dir is SCCS.
+
+	      In order to overcome the limited number of exec(2) arguments, it
+	      is recommended to use `-' as the file name parameter for
+	      admin(1) and to send a list of path names to stdin.  If admin(1)
+	      is called via sccs(1), it is recommended to leave out the `-' to
+	      prevent sccs(1) from trying to expand the file names from stdin
+	      into an arg vector.
+
+	      This option is a SCHILY extension that does not exist in
+	      historic sccs implementations.
+
+
+       -n     Creates a new SCCS history file.
+
+
+       -o     Use the original time of the existing file for the delta time
+	      when creating a new s.file.  In NSE mode, this is the default
+	      behavior.	 If admin(1) is doing an implicit get(1) operation
+	      because -N+...  was specified, the new g-file is also set to the
+	      original file date.
+
+	      This option is a SCHILY extension that does not exist in
+	      historic sccs implementations.
+
+
+       -q[nsedelim]
+	      Enable NSE mode.	If NSE mode is enabled, several NSE related
+	      extensions may be used.  In this release, the value of nsedelim
+	      is ignored.
+
+	      In NSE mode, admin behaves as if the -o option was specified and
+	      never issues a warning about missing id keywords.
+
+	      This option is an undocumented SUN extension that does not exist
+	      in historic sccs implementations.
+
+
+       -rrelease
+	      Specifies the release for the initial delta.  -r may be used
+	      only in conjunction with -i.  The initial delta is inserted into
+	      release 1 if this option is omitted. The level of the initial
+	      delta is always 1.  Initial deltas are named 1.1 by default.
+
+
+       -t[description-file]
+	      Inserts descriptive text from the file description-file.	When
+	      -t is used in conjunction with -n, or -i to initialize a new
+	      s.file, the description-file must be supplied. When modifying
+	      the description for an existing file: a -t option without a
+	      description-file removes the descriptive text, if any; a -t
+	      option with a description-file replaces the existing text.
+
+
+       -w%W%-string
+	      The %W%-string is used as a replacement for the %W% keyword when
+	      admin(1) is doing an implicit get(1) operation because -N+...
+	      was specified.  If -w was not specified, %W% is expanded to
+	      %Z%%M%  %I%, otherwise the argument from -w is used.
+
+	      This option is an undocumented SUN extension that does not exist
+	      in historic sccs implementations.
+
+
+       -Xextended-options
+	      Specify extended options. The argument extended-options may be a
+	      comma separated list of extended option names.
+
+	      The following extended options are supported, they may be
+	      abbreviated as long ad the abbreviation is still unique. Options
+	      with parameter may not be abbreviated.
+
+
+	      Gp=initial_path
+		     Set the initial path meta data in the history file.  If
+		     specified with an empty argument, no initial path meta
+		     data will appear in the history file.  This option exists
+		     in order to permit comb(1) to reatain the initial path
+		     from the original file.  If this option was specified,
+		     only one file type argument is permitted.
+
+	      Gr=urand
+		     Set the unified random meta data in the history file.  If
+		     specified with an empty argument, no unified random meta
+		     data will appear in the history file.  This option exists
+		     in order to permit comb(1) to reatain the unified random
+		     from the original file.  If this option was specified,
+		     only one file type argument is permitted.
+
+	      date=datetime
+		     Allows to overwrite the usual methods to determine the
+		     time stamp used for a new delta. This is needed to e.g.
+		     convert a historic SCCS history into a new project
+		     oriented bundle history.  The format of the datetime
+		     argument is the same as for cutoff times but nanoseconds
+		     and a time zone offset are permitted in addition.
+
+	      gpath=g-path
+		     Specify a different path to the g-file instead of
+		     deriving the path from the s-file using an algorithm that
+		     may not apply in a specific case.	This option is needed
+		     to manage the changeset file.
+
+	      nobulk Disables the -N (bulkmode) filename translations.	This
+		     is needed to disable a -N option that is automatically
+		     added by sccs(1) in NewMode and would otherwise make it
+		     impossible to deal with the changeset file
+		     ``.sccs/SCCS/s.changeset''.
+
+	      mail=address
+		     Set address as e-mail address in the delta table for the
+		     SID in case the history file has just been created with
+		     admin.
+
+	      unlink If used together with the option -n, this makes the
+		     initial release a special release that unlinks (removes)
+		     the g-file by using the get(1) command in case the file
+		     exists as non-writable file.  The default SID used in
+		     this case is 1.0, in order to permit a 1.1 release with
+		     file content later in the same history file.
+
+	      user=name
+		     Use a different user name for the programmer field in the
+		     delta table.  By the default, the logname is used for
+		     this field.  Using a different name may however later
+		     deny the permission to modify a delta by programs like
+		     cdc(1).
+
+	      0	     When reading filenames from stdin, triggered by a file
+		     name argument `-', the filename separator is a null byte
+		     instead of a newline.  This allows to use long lists with
+		     arbitrary filenames.
+
+	      help   Print a short online help for available options.
+
+	      The -X option is a SCHILY extension that does not exist in
+	      historic sccs implementations.
+
+
+       -V
+       -version
+       --version
+	      Prints the admin version number string and exists.
+
+	      This option is a SCHILY extension that does not exist in
+	      historic sccs implementations.
+
+
+       -V4    When used together with -i or -n, admin(1) will create a SCCS v4
+	      history file instead of the default, that may be SCCS v6.
+
+
+       -V6    When used together with -i or -n, admin(1) will create a SCCS v6
+	      history file instead of a SCCS v4 history file.
+
+	      SCCS v6 history files are the default in case that a directory
+	      projecthome/.sccs/ has been created before and correcly
+	      populated and admin(1) has been called with the -N option to
+	      select the new mode.
+
+	      SCCS v6 history files are not understood by historic SCCS
+	      implementations.	See sccsfile(4) for more information on the
+	      new features.
+
+	      This option is a SCHILY extension that does not exist in
+	      historic sccs implementations.
+
+
+       -y[comment]
+	      Inserts the indicated comment in the ``Comments:'' field for the
+	      initial delta. Valid only in conjunction with -i or -n.  If -y
+	      option is omitted, a default comment line is inserted that notes
+	      the date and time the history file was created.
+
+
+       -z     Recomputes the file check-sum and stores it in the first line of
+	      the s.file.  Caution: It is important to verify the contents of
+	      the history file (see sccs-val(1), and the print subcommand in
+	      sccs(1)), since using -z on a truly corrupted file may prevent
+	      detection of the error.
+
+
+EXAMPLES
+       Example 1 Preventing SCCS keyword expansion
+
+
+       In the following example, 10 lines of file will be scanned and only the
+       W,Y,X keywords will be interpreted:
+
+
+	 example% sccs admin -fs10 file
+	 example% sccs admin -fyW,Y,X file
+	 example% get file
+
+
+
+       Example 2 Preventing SCCS keyword expansion and suppressing the `No id
+       keywords (cm7)' warning
+
+
+       In the following example, no keywords will be interpreted and no
+       warning will be generated:
+
+
+	 example% sccs admin -fy file
+	 example% get file
+
+
+
+       Example 3 Mass entering files with auto-initialization
+
+
+       In the following example, all files in the usr/src tree will be put
+       under SCCS and the SCCS history files will be put into SCCS sub
+       directories:
+
+
+	 example% find usr/src -type f | sccs admin -NSCCS -i.
+
+       The original g-files will be left untouched.
+
+
+       Example 4 Mass entering files with auto-initialization
+
+
+       In the following example, all files in the usr/src tree will be put
+       under SCCS and the SCCS history files will be put into SCCS sub
+       directories. Each original file will be renamed to ,file after the file
+       has been successfully put under SCCS control:
+
+
+	 example% find usr/src -type f | sccs admin -N,SCCS -i.
+
+
+
+       Example 5 Entering all files in a directory with auto-initialization
+
+
+       In the following example, all files in the current directory will be
+       put under SCCS and the SCCS history files will be put into the SCCS sub
+       directory:
+
+
+	 example% sccs admin -NSCCS -i. .
+
+       The original g-files will be left untouched.
+
+
+ENVIRONMENT VARIABLES
+       See environ(5) for descriptions of the following environment variables
+       that affect the execution of admin(1): LANG, LC_ALL, LC_COLLATE,
+       LC_CTYPE, LC_MESSAGES, and NLSPATH.
+
+
+       SCCS_NO_HELP
+	      If set, admin(1) will not automatically call help(1) with the
+	      SCCS error code in order to print a more helpful error message.
+	      Scripts that depend on the exact error messages of SCCS commands
+	      should set the environment variable SCCS_NO_HELP and set
+	      LC_ALL=C.
+
+       SCCS_V6
+	      If set, admin(1) by default creates new history files with SCCS
+	      v6 encoding.
+
+
+EXIT STATUS
+       The following exit values are returned:
+
+
+       0    Successful completion.
+
+
+       1    An error occurred.
+
+
+FILES
+       e.file	      temporary file to hold an uuencoded version of the
+		      g-file in case of an encoded history file
+
+
+
+       s.file	      SCCS history file, see sccsfile(4).
+
+
+
+       SCCS/s.file    history file in SCCS subdirectory
+
+
+
+       x.file	      temporary copy of the s.file; renamed to the s.file
+		      after completion.
+
+
+
+       z.file	      temporary lock file contains the binary process id in
+		      host byte order followed by the host name
+
+
+       dump.core      If the file dump.core exists in the current directory
+		      and a fatal signal is received, a coredump is initiated
+		      via abort(3).
+
+
+ATTRIBUTES
+       See attributes(5) for descriptions of the following attributes:
+
+
+
+
+       +----------------------------+-----------------------------+
+       |      ATTRIBUTE TYPE	    |	    ATTRIBUTE VALUE	  |
+       +----------------------------+-----------------------------+
+       |Availability		    | SUNWsprot			  |
+       +----------------------------+-----------------------------+
+       |Interface Stability	    | Standard			  |
+       +----------------------------+-----------------------------+
+
+SEE ALSO
+       sccs(1), sccs-add(1), sccs-branch(1), sccs-cdc(1), sccs-check(1),
+       sccs-clean(1), sccs-comb(1), sccs-commit(1), sccs-create(1),
+       sccs-cvt(1), sccs-deledit(1), sccs-delget(1), sccs-delta(1),
+       sccs-diffs(1), sccs-edit(1), sccs-editor(1), sccs-enter(1),
+       sccs-fix(1), sccs-get(1), sccs-help(1), sccs-histfile(1), sccs-info(1),
+       sccs-init(1), sccs-istext(1), sccs-ldiffs(1), sccs-log(1),
+       sccs-print(1), sccs-prs(1), sccs-prt(1), sccs-rcs2sccs(1),
+       sccs-remove(1), sccs-rename(1), sccs-rmdel(1), sccs-root(1),
+       sccs-sact(1), sccs-sccsdiff(1), sccs-status(1), sccs-tell(1),
+       sccs-unedit(1), sccs-unget(1), sccs-val(1), bdiff(1), diff(1), what(1),
+       sccschangeset(4), sccsfile(4), attributes(5), environ(5), standards(5).
+
+
+DIAGNOSTICS
+       Use the SCCS help command for explanations (see sccs-help(1)).
+
+WARNINGS
+       The last component of all SCCS filenames must have the `s.' prefix. New
+       SCCS files are given mode 444 (see chmod(1)).  All writing done by
+       admin is to a temporary file with an x.	prefix, created with mode 444
+       for a new SCCS file, or with the same mode as an existing SCCS file.
+       After successful execution of admin, the existing s.file is removed and
+       replaced with the x.file.  This ensures that changes are made to the
+       SCCS file only when no errors have occurred.
+
+
+       It is recommended that directories containing SCCS files have
+       permission mode 755, and that the s.files themselves have mode 444.
+       The  mode for directories allows only the owner to modify the SCCS
+       files contained in the directories, while the mode of the s.files
+       prevents all modifications except those performed using SCCS commands.
+
+
+       If it should be necessary to patch an SCCS file for any reason, the
+       mode may be changed to 644 by the owner to allow use of a text editor.
+       However, extreme care must be taken when doing this. The edited file
+       should always be processed by an `admin -h' command to check for
+       corruption, followed by an `admin -z' command to generate a proper
+       check-sum. Another `admin -h' command is recommended to ensure that the
+       resulting s.file is valid.
+
+
+       admin uses a temporary lock file, starting with the `z.' prefix, to
+       prevent simultaneous updates to the s.file.  See sccs-get(1) for
+       further information about the `z.file'.
+
+
+AUTHORS
+       The SCCS suite was originally written by Marc J. Rochkind at Bell Labs
+       in 1972.	 Release 4.0 of SCCS, introducing new versions of the programs
+       admin(1), get(1), prt(1), and delta(1) was published on February 18,
+       1977; it introduced the new text based SCCS v4 history file format
+       (previous SCCS releases used a binary history file format).  The SCCS
+       suite was later maintained by various people at AT&T and Sun
+       Microsystems.  Since 2006, the SCCS suite is maintained by Joerg
+       Schilling.
+
+
+SOURCE DOWNLOAD
+       A frequently updated source code for the SCCS suite is included in the
+       schilytools project and may be retrieved from the schilytools project
+       at Sourceforge at:
+
+	   http://sourceforge.net/projects/schilytools/
+
+       The download directory is:
+
+	   http://sourceforge.net/projects/schilytools/files/
+
+       Check for the schily-*.tar.bz2 archives.
+
+       Less frequently updated source code for the SCCS suite is at:
+
+	   http://sourceforge.net/projects/sccs/files/
+
+       Separate project informations for the SCCS project may be retrieved
+       from:
+
+	   http://sccs.sf.net
+
+SunOS 5.11			  2020/09/17			 sccs-admin(1)

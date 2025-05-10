@@ -1,0 +1,76 @@
+GETARGINIT(3)		  Schily's LIBRARY FUNCTIONS		 GETARGINIT(3)
+
+NAME
+       getarginit() - initialize properties for getargs() type functions
+
+SYNOPSIS
+       #include <schily/getargs.h>
+
+       int getarginit(propg, flags)
+	  struct ga_props *props; /* control properties */
+	  int flags;		  /* to control option parsing behavior */
+
+DESCRIPTION
+       getarginit() initializes struct ga_props as needed by the functions
+       getlargs(), getlallargs(), getlfiles(), getvargs(), getvallargs(),
+       getvfiles().
+
+
+       The flags argument controls the behavior of the named functions.	 If
+       the value is 0, the default behavior as documented in the man pages is
+       used.  The following flags are possible and may be combined:
+
+       GAF_DEFAULT	   Use the default behavior.
+
+       GAF_NO_PLUS	   Options may not start with a ``+'' even if they are
+			   marked with a + in the format string.
+
+       GAF_NO_EQUAL	   Disallow ``='' between option name and value.
+
+       GAF_NEED_DASH	   A dash is needed before an option that takes an
+			   argument.  Options in the form name=value are not
+			   allowed.
+
+       GAF_DELIM_DASHDASH  The special argument ``--'' stops option parsing
+			   even when using getallargs(), getlallargs(),
+			   getvallargs().
+
+       GAF_SINGLEARG	   In a string with combined single character options,
+			   the last option character may be an option that has
+			   an argument.
+
+       GAF_POSIX	   This macro enforces POSIX behavior and expands to
+			   GAF_NO_PLUS | GAF_NO_EQUAL | GAF_SINGLEARG.	This
+			   value may not be combined with other flags.
+
+
+RETURNS
+       0      No error occurred.
+
+       -1     The version of the library was too old for the calling program.
+
+
+EXAMPLES
+SEE ALSO
+       getlargs(3), getlallargs(3), getlfiles(3), getvargs(3), getvallargs(3),
+       getvfiles(3).
+
+
+NOTES
+       none
+
+
+BUGS
+       none
+
+
+AUTHOR
+       Joerg Schilling
+       D-13353 Berlin
+       Germany
+
+       Mail bugs and suggestions to:
+
+       joerg@schily.net
+
+Joerg Schilling			  2020/09/04			 GETARGINIT(3)

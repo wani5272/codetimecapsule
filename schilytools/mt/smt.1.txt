@@ -1,0 +1,208 @@
+SMT(1)			    Schily's USER COMMANDS			SMT(1)
+
+NAME
+       smt - magnetic tape control
+
+SYNOPSIS
+       smt [ -f tapename ] command [ count ]
+
+DESCRIPTION
+       The smt program sends commands to a local or a remote magnetic tape
+       drive.
+
+       The count operand specifies the number of times the requested command
+       is to be performed. If count is omitted, the value of count defaults to
+       one.
+
+OPTIONS
+       -help  Prints a summary of the options for smt(1) and exits.
+
+       -version
+	      Prints the smt version number string and exists.
+
+       -debug print additional debug messages.
+
+       -f tapename
+
+       -t tapename
+	      Set the raw tape device to use, otherwise smt uses a system
+	      specific default for the rtape device.  If smt is installed suid
+	      root or if it has been called by root, tapename may be in remote
+	      syntax: user@host:filename as in rcp(1) even if invoked by non
+	      root users.  See SUID NOTES for more information.
+
+	      To make a file local although it includes a colon (:), the
+	      filename must start with: '/', './' or '../'
+
+	      Note that if smt talks to an old rmt remote tape server that
+	      does not support symbolic open modes, it does not open a remote
+	      tape with the O_CREAT open flag because this would be extremely
+	      dangerous.  If the rmt server on the other side is the rmt
+	      server that comes with star or the GNU rmt server, smt may use
+	      the symbolic mode for the open flags.  Only the symbolic open
+	      modes allow to send all possible open modes in a portable way to
+	      remote tape servers.
+
+	      It is recommended to use the rmt server that comes with star.
+	      It is the only rmt server that gives platform independent
+	      compatibility with BSD, Sun and GNU rmt clients and it includes
+	      security features that may be set up in /etc/default/rmt.
+
+	      See ENVIRONMENT section for information on how to use ssh(1) to
+	      create a remote tape server connection.
+
+       -wready
+	      Wait for the tape drive to become ready before executing the
+	      command.
+
+COMMANDS
+       The following commands are supported:
+
+       eof
+
+       weof	   Write count EOF (FILE) marks at the current position on the
+		   tape.
+
+		   This command may be run remotely with any BSD compliant old
+		   rmt server.
+
+       fsf	   Forward skip over count FILE marks.	The tape is positioned
+		   on the first block of the file.
+
+		   This command may be run remotely with any BSD compliant old
+		   rmt server.
+
+       bsf	   Backward skip count FILE marks.  The tape is positioned on
+		   side of the FILE mark that is closer to the beginning of
+		   the tape.
+
+		   This command may be run remotely with any BSD compliant old
+		   rmt server.
+
+       asf	   Absolute FILE mark positioning to file number count.	 This
+		   is equivalent to a rewind followed by a fsf count.
+
+		   A RMT version 1 server is needed to run this command on a
+		   remote tape drive.
+
+       fsr	   Forward skip count tape records.
+
+		   This command may be run remotely with any BSD compliant old
+		   rmt server.
+
+       bsr	   Backward skip count tape records.
+
+		   This command may be run remotely with any BSD compliant old
+		   rmt server.
+
+       rewind	   Rewind the tape.
+
+		   This command may be run remotely with any BSD compliant old
+		   rmt server.
+
+       offline
+
+       rewoffl	   Rewind the tape.  If the specified tape drive allows to
+		   take the drive off-line or to unload the tape, a off-line
+		   or unload operation is performed in addition.
+
+		   This command may be run remotely with any BSD compliant old
+		   rmt server.
+
+       status	   Retrieve and print status information for the tape drive.
+
+		   A RMT version 1 server is needed to get correct status
+		   information on a remote tape drive.
+
+       nop	   No operation.  If you only like to wait for the tape drive
+		   to become ready, call smt -wready nop.
+
+		   This command may be run remotely with any BSD compliant old
+		   rmt server.
+
+       retension   Retension the tape. This only makes sende with cartridge
+		   tape drives.
+
+		   A RMT version 1 server is needed to run this command on a
+		   remote tape drive.
+
+       erase	   Erase the entire tape. This may take a long time (up to
+		   several hours) depending on the tape drive and the medium.
+
+		   A RMT version 1 server is needed to run this command on a
+		   remote tape drive.
+
+       eom	   Position the tape to the end of the recorded media.	This
+		   allows to append data to previously written tapes.
+
+		   A RMT version 1 server is needed to run this command on a
+		   remote tape drive.
+
+       nbsf	   Backward skip count FILE marks.  The tape is positioned on
+		   side of the FILE mark that is closer to the end of the
+		   tape. This is before the first block of the file.  The nbsf
+		   command is equivalent to count+1 bsf's followed by one fsf.
+
+		   A RMT version 1 server is needed to run this command on a
+		   remote tape drive.
+
+       load	   If the specified tape drive allows to take the drive on-
+		   line or to load the tape, a on-line or load operation is
+		   performed.  in addition.  For remote tape drives, this
+		   command only works if the remote tape server supports
+		   symbolic open modes as the command needs the O_NDELAY flag
+		   to succeed.
+
+		   A RMT version 1 server is needed to run this command on a
+		   remote tape drive.
+
+EXAMPLES
+ENVIRONMENT
+       RSH    If the RSH environment is present, the remote connection will
+	      not be created via rcmd(3) but by calling the program pointed to
+	      by RSH.  Use e.g.	 RSH=/usr/bin/ssh to create a secure shell
+	      connection.
+
+	      Note that this forces smt to create a pipe to the rsh(1) program
+	      and disallows smt to directly access the network socket to the
+	      remote server.  This makes it impossible to set up performance
+	      parameters and slows down the connection compared to a root
+	      initiated rcmd(3) connection.
+
+       RMT    If the RMT environment is present, the remote tape server will
+	      not be the program /etc/rmt but the program pointed to by RMT.
+	      Note that the remote tape server program name will be ignored if
+	      you log in using an account that has been created with a remote
+	      tape server program as login shell.
+
+       TAPE   In case no -f option pas been specified, the default tape name
+	      is taken from the TAPE environment.
+
+
+FILES
+SEE ALSO
+       spax(1), suntar(1), scpio(1), tar(1), cpio(1), pax(1), rcp(1), mt(1),
+       rmt(1), match(1), dd(1), sdd(1), rsh(1), ssh(1), star(1), star(4/5),
+       rcmd(3),
+
+DIAGNOSTICS
+NOTES
+       If the remote tape server is running Linux and the remote tape server
+       on such a system is not the rmt server that comes with star(1), then
+       completely unexpected results (including unexpectedly erased tapes) may
+       occur. This is because Linux ignores the numbering values for the
+       magnetic tape op codes and only the rmt server from star(1) maps to
+       standard values.	 The standard rmt server on Linux for this reason may
+       not be called BSD compliant.
+
+BUGS
+AUTHOR
+       Joerg Schilling
+       D-13353 Berlin
+       Germany
+
+       Mail bugs and suggestions to:
+
+       joerg@schily.net
+
+Joerg Schilling			  2020/09/04				SMT(1)

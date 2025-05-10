@@ -1,0 +1,30 @@
+ERRMSGNO(3)		  Schily's LIBRARY FUNCTIONS		   ERRMSGNO(3)
+
+NAME
+       errmsgno() - prints error message, given error code
+
+SYNOPSIS
+       errmsgno (errcode, format, arg1...argn)
+       int errcode;
+       char *format;
+
+DESCRIPTION
+       errmsgno() prints an error output message corresponding to errcode,
+       which is a standard system error.  errmsgno() begins its output with
+       the current program name (as passed to it by exec ). The message can be
+       expanded with additional arguments in the same form printf() would.
+
+RETURNS
+       none
+
+SEE ALSO
+       comerr(3), comerrno(3), error(3), errmsg(3), error(3) geterrno(3),
+       printf(3), format(3)
+
+NOTES
+       errmsgno() is identical to comerrno() except instead of exiting, it
+       prints the error message and returns to the caller.  If the errcode
+       argument is positive, errmsgno() ignores it and just prints the program
+       name and the result of expanding format().
+
+Joerg Schilling			 15. Juli 1988			   ERRMSGNO(3)

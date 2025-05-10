@@ -1,0 +1,25 @@
+SPRINTF(3)		  Schily's LIBRARY FUNCTIONS		    SPRINTF(3)
+
+NAME
+       sprintf() - formats and places output in buffer
+
+SYNOPSIS
+       sprintf(buf,form,arg1...argn)
+       char *buf;
+       char *form;
+
+DESCRIPTION
+       sprintf() is similar to fprintf() except the formatted output is placed
+       into buf.
+
+RETURNS
+       none
+
+SEE ALSO
+       format(3), printf(3)
+
+NOTES
+       A NULL ('\0') is appended to the end of the formatted output.  There is
+       no check for overflowing the buffer.
+
+Joerg Schilling			 15. Juli 1988			    SPRINTF(3)

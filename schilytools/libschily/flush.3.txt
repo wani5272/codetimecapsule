@@ -1,0 +1,20 @@
+FLUSH(3)		  Schily's LIBRARY FUNCTIONS		      FLUSH(3)
+
+NAME
+       flush() - flushes the buffer for standard output
+
+SYNOPSIS
+       flush()
+
+DESCRIPTION
+       flush() prompts to standard output. It is used because the output is
+       not visible to the user until a flush(), close() or exit() is done.
+
+RETURNS
+       none
+
+NOTES
+       flush() is defined in the standard header file, stdio.h, as
+       fflush(stdout).
+
+Joerg Schilling			 15. Juli 1988			      FLUSH(3)

@@ -1,0 +1,25 @@
+FEXECV(3)		  Schily's LIBRARY FUNCTIONS		     FEXECV(3)
+
+NAME
+       fexecv() - executes a program
+
+SYNOPSIS
+       fexecv(name, in, out, err, ac, av)
+       char *name;
+       FILE *in, *out, *err;
+       int ac;
+       char **av;
+
+DESCRIPTION
+       fexecv() functions identically to fexecve() except that fexecv() passes
+       the current environment list ( environ ) to the new program, where
+       fexecve() passes the environment list specified as one of its
+       arguments.
+
+RETURNS
+       Returns a system error code; fexecv() does not normally return.
+
+NOTES
+       none
+
+Joerg Schilling			 15. Juli 1988			     FEXECV(3)

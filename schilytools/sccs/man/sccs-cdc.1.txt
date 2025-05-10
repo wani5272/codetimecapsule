@@ -1,0 +1,309 @@
+sccs-cdc(1)			 User Commands			   sccs-cdc(1)
+
+NAME
+       sccs-cdc, cdc - change the delta commentary of an SCCS delta
+
+SYNOPSIS
+       /usr/ccs/bin/cdc -rsid [-mmr-list] [-q[nsedelim]]
+	   [-y[comment]] [-z]
+	   [-Xextended-options] [-Nbulk-spec] s.filename...
+
+
+DESCRIPTION
+       cdc annotates the delta commentary for the SCCS delta ID (SID)
+       specified by the -r option in each named s.file.
+
+
+       If the v flag is set in the s.file, you can also use cdc to update the
+       Modification Request (MR) list.
+
+
+       If you checked in the delta, or, if you own the file and directory and
+       have write permission, you can use cdc to annotate the commentary.
+
+
+       Rather than replacing the existing commentary, cdc inserts the new
+       comment you supply, followed by a line of the form:
+
+
+       *** CHANGED *** yy/mm/dd hh/mm/ss username
+
+
+       above the existing commentary.
+
+
+       If a directory is named as the s.filename argument, the cdc command
+       applies to all s.files in that directory. Unreadable s.files produce an
+       error; processing continues with the next file (if any). If `-' is
+       given as the s.filename argument, each line of the standard input is
+       taken as the name of an SCCS history file to be processed, and the -m
+       and -y options must be used.
+
+
+OPTIONS
+       -rsid	    Specify the SID of the delta to change.
+
+
+       -mmr-list    Specify one or more MR numbers to add or delete. When
+		    specifying more than one MR on the command line, mr-list
+		    takes the form of a quoted, space-separated list. To
+		    delete an MR number, precede it with a !  character (an
+		    empty MR list has no effect). A list of deleted MRs is
+		    placed in the comment section of the delta commentary.  If
+		    -m is not used and the standard input is a terminal, cdc
+		    prompts with MRs?  for the list (before issuing the
+		    comments?  prompt).	 -m is only useful when the v flag is
+		    set in the s.file.	If that flag has a value, it is taken
+		    to be the name of a program to validate the MR numbers.
+		    If that validation program returns a non-zero exit status,
+		    cdc terminates and the delta commentary remains unchanged.
+
+
+
+       -Nbulk-spec  Processes a bulk of SCCS history files.  This option
+		    allows to do an efficient mass processing of SCCS history
+		    files.
+
+		    The bulk-spec parameter is composed from an optional list
+		    of flag parameters followed by an optional path specifier.
+
+		    The following flag types are supported:
+
+		    ++	      If bulk-spec is preceded by a `++', cdc(1)
+			      expects to process filenames that are prepended
+			      by a plus sign, the related SID and another plus
+			      sign following the form:
+
+				  +sid+filename
+
+			      This permits each file to be retrieved with an
+			      individual SID.
+
+		    space     This is a placeholder dummy flag that allows to
+			      use a prepared string for the -N option and to
+			      replace the space character by one of the
+			      supported flags on demand.
+
+		    The following path specifier types are supported:
+
+		    -N	      The file name parameters to the cdc command are
+			      not s.filename files but the names of the g-
+			      files.  The s.filename names are automatically
+			      derived from the g-file names by prepending s.
+			      to the last path name component.	Both,
+			      s.filename and the g-file are in the same
+			      directory.
+
+		    -Ns.      The file name parameters to the cdc command are
+			      s.filename files.	 The the g-files names are
+			      automatically derived by removing s.  from the
+			      beginning of last path name component of the
+			      s.filename.  Both, s.filename and the g-file are
+			      in the same directory.
+
+		    -Ndir     The file name parameters to the cdc command are
+			      not s.filename files but the names of the g-
+			      files.  The s.filename names are put into
+			      directory dir, the names are automatically
+			      derived from the g-file names by prepending
+			      dir/s.  to the last path name component.
+
+		    -Ndir/s.  The file name parameters to the cdc command are
+			      s.filename files in directory dir.  The the g-
+			      files names are automatically derived by
+			      removing dir/s.  from the beginning of last path
+			      name component of the s.filename.
+
+		    A typical value for dir is SCCS.
+
+		    In order to overcome the limited number of exec(2)
+		    arguments, it is recommended to use `-' as the file name
+		    parameter for cdc(1) and to send a list of path names to
+		    stdin.
+
+		    This option is a SCHILY extension that does not exist in
+		    historic sccs implementations.
+
+
+       -Xextended-options
+		    Specify extended options. The argument extended-options
+		    may be a comma separated list of extended option names.
+
+		    The following extended options are supported, they may be
+		    abbreviated as long ad the abbreviation is still unique.
+		    Options with parameter may not be abbreviated.
+
+
+		    0	   When reading filenames from stdin, triggered by a
+			   file name argument `-', the filename separator is a
+			   null byte instead of a newline.  This allows to use
+			   long lists with arbitrary filenames.
+
+		    help   Print a short online help for available options.
+
+		    The -X option is a SCHILY extension that does not exist in
+		    historic sccs implementations.
+
+
+       -V
+       -version
+       --version    Prints the cdc version number string and exists.
+
+		    This option is a SCHILY extension that does not exist in
+		    historic sccs implementations.
+
+
+       -y[comment]  Use comment as the annotation in the delta commentary. The
+		    previous comments are retained; the comment is added along
+		    with a notation that the commentary was changed. A null
+		    comment leaves the commentary unaffected. If -y is not
+		    specified and the standard input is a terminal, cdc
+		    prompts with comments?  for the text of the notation to be
+		    added.  An unescaped NEWLINE character terminates the
+		    annotation text.
+
+
+       -q[nsedelim] Enable NSE mode.  If NSE mode is enabled, several NSE
+		    related extensions may be used.  In this release, the
+		    value of nsedelim is ignored.
+
+		    This option is an undocumented SUN extension that does not
+		    exist in historic sccs implementations.
+
+
+       -z	    Enable CMF extensions for MR number handling.
+
+		    This option is an undocumented SUN extension that does not
+		    exist in historic sccs implementations.
+
+
+EXAMPLES
+       Example 1 Changing the annotated commentary
+
+
+       The following command:
+
+
+	 example% cdc -r1.6 -y"corrected commentary" s.program.c
+
+
+       produces the following annotated commentary for delta 1.6 in
+       s.program.c:
+
+
+	 D 1.6 88/07/05 23:21:07 username 9 0 00001/00000/00000
+	 MRs:
+	 COMMENTS:
+	 corrected commentary
+	 *** CHANGED *** 88/07/07 14:09:41 username
+	 performance enhancements in main()
+
+
+ENVIRONMENT VARIABLES
+       See environ(5) for descriptions of the following environment variables
+       that affect the execution of cdc(1): LANG, LC_ALL, LC_COLLATE,
+       LC_CTYPE, LC_MESSAGES, and NLSPATH.
+
+
+       SCCS_NO_HELP
+	      If set, cdc(1) will not automatically call help(1) with the SCCS
+	      error code in order to print a more helpful error message.
+	      Scripts that depend on the exact error messages of SCCS commands
+	      should set the environment variable SCCS_NO_HELP and set
+	      LC_ALL=C.
+
+
+EXIT STATUS
+       The following exit values are returned:
+
+
+       0    Successful completion.
+
+
+       1    An error occurred.
+
+
+FILES
+       s.file	   SCCS history file, see sccsfile(4).
+
+
+
+       x.file	   temporary copy of the s.file; renamed to the s.file after
+		   completion
+
+
+
+       z.file	   temporary lock file contains the binary process id in host
+		   byte order followed by the host name
+
+
+       dump.core   If the file dump.core exists in the current directory and a
+		   fatal signal is received, a coredump is initiated via
+		   abort(3).
+
+
+ATTRIBUTES
+       See attributes(5) for descriptions of the following attributes:
+
+
+
+
+
+       +----------------------------+-----------------------------+
+       |      ATTRIBUTE TYPE	    |	    ATTRIBUTE VALUE	  |
+       +----------------------------+-----------------------------+
+       |Availability		    | SUNWsprot			  |
+       +----------------------------+-----------------------------+
+
+SEE ALSO
+       sccs(1), sccs-add(1), sccs-admin(1), sccs-branch(1), sccs-check(1),
+       sccs-clean(1), sccs-comb(1), sccs-commit(1), sccs-create(1),
+       sccs-cvt(1), sccs-deledit(1), sccs-delget(1), sccs-delta(1),
+       sccs-diffs(1), sccs-edit(1), sccs-editor(1), sccs-enter(1),
+       sccs-fix(1), sccs-get(1), sccs-help(1), sccs-histfile(1), sccs-info(1),
+       sccs-init(1), sccs-istext(1), sccs-ldiffs(1), sccs-log(1),
+       sccs-print(1), sccs-prs(1), sccs-prt(1), sccs-rcs2sccs(1),
+       sccs-remove(1), sccs-rename(1), sccs-rmdel(1), sccs-root(1),
+       sccs-sact(1), sccs-sccsdiff(1), sccs-status(1), sccs-tell(1),
+       sccs-unedit(1), sccs-unget(1), sccs-val(1), bdiff(1), diff(1), what(1),
+       sccschangeset(4), sccsfile(4), attributes(5), environ(5), standards(5).
+
+
+DIAGNOSTICS
+       Use the SCCS help command for explanations (see sccs-help(1)).
+
+
+AUTHORS
+       The SCCS suite was originally written by Marc J. Rochkind at Bell Labs
+       in 1972.	 Release 4.0 of SCCS, introducing new versions of the programs
+       admin(1), get(1), prt(1), and delta(1) was published on February 18,
+       1977; it introduced the new text based SCCS v4 history file format
+       (previous SCCS releases used a binary history file format).  The SCCS
+       suite was later maintained by various people at AT&T and Sun
+       Microsystems.  Since 2006, the SCCS suite is maintained by Joerg
+       Schilling.
+
+
+SOURCE DOWNLOAD
+       A frequently updated source code for the SCCS suite is included in the
+       schilytools project and may be retrieved from the schilytools project
+       at Sourceforge at:
+
+	   http://sourceforge.net/projects/schilytools/
+
+       The download directory is:
+
+	   http://sourceforge.net/projects/schilytools/files/
+
+       Check for the schily-*.tar.bz2 archives.
+
+       Less frequently updated source code for the SCCS suite is at:
+
+	   http://sourceforge.net/projects/sccs/files/
+
+       Separate project informations for the SCCS project may be retrieved
+       from:
+
+	   http://sccs.sf.net
+
+SunOS 5.11			  2020/08/05			   sccs-cdc(1)

@@ -1,0 +1,36 @@
+COMERRNO(3)		  Schily's LIBRARY FUNCTIONS		   COMERRNO(3)
+
+NAME
+       comerrno() - prints error message, given error code, and exits
+
+SYNOPSIS
+       comerrno(error,format,args);
+       int error;
+       char *format;
+
+DESCRIPTION
+       comerrno() is like comerr(), except that the caller supplies the error
+       number. Positive numbers are turned into system error messages.
+       Negative numbers cause the system error portion of the output to be
+       omitted.	 comerrno() is a convenient way to print the name of the
+       program, and an error message, and exit the process in a single call.
+
+RETURNS
+       none
+       Rather than return, comerrno() exits the current process with a value
+       equal to the error number supplied by the user.
+
+EXAMPLES
+       if (argc < 2)
+	    comerrno(-1, "Usage: name arg.\n");
+
+SEE ALSO
+       comerr(3), error(3), errmsg(3), error(3) geterrno(3), printf(3),
+       format(3)
+
+NOTES
+       comerrno() attempts to find a line in the message file that corresponds
+       to the system error number. If none can be found, or if it has trouble
+       finding or reading the file, it simply says: error #.
+
+Joerg Schilling			 15. Juli 1988			   COMERRNO(3)

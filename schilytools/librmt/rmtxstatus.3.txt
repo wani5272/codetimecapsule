@@ -1,0 +1,7 @@
+()									    ()
+
+
+See the file man3/rmtstatus.3.
+
+
+									    ()

@@ -1,0 +1,403 @@
+RSCSI(1)		    Schily's USER COMMANDS		      RSCSI(1)
+
+NAME
+       rscsi - remote generic SCSI transport protocol server
+
+SYNOPSIS
+       /opt/schily/sbin/rscsi
+
+
+DESCRIPTION
+       The rscsi command is a remote generic SCSI transport server program.
+       rscsi is a program that is run locally on the machine with SCSI
+       devices, it is used by remote programs like cdrecord(1), cdda2wav(1),
+       readcd(1), and sformat(1) that like to access SCSI devices through an
+       interprocess communication connection via libscg.  rscsi is normally
+       started up with an rexec(3) or rcmd(3) call but it may also be
+       connected via an internal pipe to an ssh(1) session that was set up by
+       the remote user.
+
+       The rscsi program accepts scg_open, scg_close, scg_cmd and similar
+       requests that are all related to the interface of libscg.  rscsi
+       performs the commands and then responds with a status indication.
+
+       The rscsi program is prepared to be installed as a user shell in the
+       passwd file to create remote SCSI specific logins and security
+       checking.
+
+       All requests are send to the rscsi program in ASCII and thus are byte
+       order and machine independent.
+
+       All responses are send back in ASCII and in one of the following two
+       forms.
+
+       All successful commands (except for the "S" command that sends SCSI
+       commands) have responses of
+
+	      Anumber\n
+
+       where number is the ASCII representation of a decimal number that
+       usually is the return code of the corresponding system call or
+       function.
+
+       All unsuccessful commands are responded to with
+
+	      Eerror-number\nerror-message\nxerror-len\nxerror-txt
+
+       where error-number is one of the possible error numbers described in
+       intro(2), and error-message is the corresponding error string as
+       retrieved by strerror(3), xerror-len is the length of the additional
+       error text xerror-txt and may be 0. In case xerror-len is 0, no
+       xerror-txt is send.  Note that a failed SCSI command that returned SCSI
+       sense data counts as a successful command and does not use the default
+       error format.
+
+       The rscsi protocol implements the following commands:
+
+	      Vwhat\n	  Return the version for several instances of the
+			  software in the rscsi server.	 The parameter what
+			  may have the following values:
+
+			  0	 Return SCG_VERSION from libscg on the rscsi
+				 server.  This returns the version string for
+				 the low level SCSI transport adaptation
+				 layer.
+
+			  1	 Return SCG_AUTHOR from libscg on the rscsi
+				 server.  This returns the author name for the
+				 low level SCSI transport adaptation layer.
+
+			  2	 Return SCG_SCCS_ID from libscg on the rscsi
+				 server.  This returns the SCCS version string
+				 for the low level SCSI transport adaptation
+				 layer.
+
+			  20	 Return SCG_KVERSION from libscg on the rscsi
+				 server.  This returns the version of kernel
+				 instance of the driver that is underneath the
+				 low level SCSI transport adaptation layer.
+
+				 This call may not be supported for all
+				 operating systems.
+
+			  This command corresponds to the scg_version(3)
+			  function from libscg.
+
+	      Odevice\n	  Open the specified SCSI device.
+
+			  See the description of the dev= option in
+			  cdrecord(1) for more information on possible values
+			  of the device parameter.
+
+			  If a device is already open, it is closed before a
+			  new open is performed.
+
+			  This command corresponds to the scg_open(3) function
+			  from libscg.
+
+			  The return value in case of success is 0.
+
+	      Cdevice\n	  Close the currently open device or file.  The
+			  argument device is ignored.
+
+			  This command corresponds to the scg_close(3)
+			  function from libscg.
+
+			  The return value is the return value from the
+			  scg_close(3) function.
+
+	      Dsize\n	  Set up the maximum DMA size for the currently open
+			  SCSI device.	The size parameter is the desired DMA
+			  size in bytes.
+
+			  This command corresponds to the scg_bufsize(3)
+			  function from libscg.
+
+			  The returned value is the actual DMA size that could
+			  be set up.  This value may be lower than the size
+			  parameter.
+
+	      Msize\n	  Allocate a buffer suitable for SCSI DMA transfers.
+
+			  This command corresponds to the scg_getbuf(3)
+			  function from libscg.
+
+			  The returned value is the actual DMA size that could
+			  be set up.  This value may be lower than the size
+			  parameter.
+
+	      F\n	  Free a previously allocated buffer.
+
+			  This command corresponds to the scg_freebuf(3)
+			  function from libscg.
+
+			  The return value in case of success is 0.
+
+	      N\n	  Retrieve the maximum permitted value for the SCSI
+			  bus number.
+
+			  This command corresponds to the scg_numbus(3)
+			  function from libscg.
+
+			  The return value is the return value from the
+			  scg_numbus(3) function.
+
+	      Bbusno\nchan\n
+			  Checks whether there is a SCSI bus with a busnumber
+			  that is equal to busno.  The chan parameter is
+			  currently ignored.
+
+			  This command corresponds to the scg_havebus(3)
+			  function from libscg.
+
+			  The return value is the return value from the
+			  scg_havebus(3) function.
+
+	      Tbusno\nchan\ntarget\nlun\n
+			  Set the SCSI target address to busno, target, lun.
+			  The parameter chan is currently ignored.
+
+			  This command corresponds to the scg_settarget(3)
+			  function from libscg.
+
+			  The return value is the return value from the
+			  scg_havebus(3) function.
+
+	      I\n	  Retrieve the SCSI initiator ID for the current SCSI
+			  bus.
+
+			  This command corresponds to the scg_initiator_id(3)
+			  function from libscg.
+
+			  The return value is the return value from the
+			  scg_initiator_id(3) function.
+
+	      A\n	  Check whether the current target is or may be an
+			  ATAPI device.
+
+			  This command corresponds to the scg_isatapi(3)
+			  function from libscg.
+
+			  The return value is the return value from the
+			  scg_isatapi(3) function.
+
+	      Rwhat\n	  Perform a SCSI reset. The parameter what may have
+			  the following values:
+
+			  0	 Test whether a SCSI reset is supported as
+				 with the SCG_RESET_NOP parameter.
+
+			  1	 Perform a SCSI target reset as with the
+				 SCG_RESET_TGT parameter.
+
+			  2	 Perform a SCSI bus reset as with the
+				 SCG_RESET_BUS parameter.
+
+			  This command corresponds to the scg_reset(3)
+			  function from libscg.
+
+			  The return value is the return value from the
+			  scg_reset(3) function.
+
+	      Scount\nflags\ncdb_len\nsense_len\ntimeout\n
+			  Send a SCSI command to the currently selected
+			  target.  This command takes the following
+			  parameters:
+
+			  count	 The DMA count for this command. If the
+				 command is a command that transfers data to
+				 the target, the related data is send directly
+				 after the SCSI command descriptor block.
+				 that is described above.
+
+			  flags	 The flags that apply to this SCSI command:
+
+				 1	Tell the kernel that the SCSI command
+					will transfer data from the target to
+					the host.  This corresponds to the
+					flag value SCG_RECV_DATA.
+
+				 2	Tell the kernel to send the SCSI
+					command with disconnect/reconnect
+					enabled.  This corresponds to the flag
+					value SCG_DISRE_ENA.  This flag is not
+					supported on all platforms.
+
+				 4	Make the kernel silent on SCSI errors.
+					This corresponds to the flag value
+					SCG_SILENT.  This flag is not
+					supported on all platforms.
+
+				 8	Tell the kernel to retry the SCSI
+					command in case of a retryable SCSI
+					transport error.  This corresponds to
+					the flag value SCG_CMD_RETRY.  This
+					flag is not supported on all
+					platforms.
+
+				 16	Tell the kernel to send the SCSI
+					command with parity disabled.  This
+					corresponds to the flag value
+					SCG_NOPARITY.  This flag is not
+					supported on all platforms.
+
+			  cdb_len
+				 The SCSI command descriptor length for this
+				 command.  The SCSI command descriptor has to
+				 be send with the correct length directly
+				 after the new line past the timeout value.
+
+			  sense_len
+				 The amount of sense data that is expected in
+				 return of a failed SCSI command that produces
+				 SCSI sense data.
+
+			  timeout
+				 The timeout for the SCSI command in seconds.
+				 Fractions of a second may be specified by
+				 sending a floating point number.
+
+			  The reply for a SCSI command that could be send to
+			  the target is:
+
+			  Acount\nerror\nerrno\nscb\nsense_count\n
+
+			  count	 The DMA count of any data returned from the
+				 target.  If this count is nonzero, the data
+				 is send back directly after the reply block
+				 mentioned above.
+
+			  error	 A SCSI error classification from one of the
+				 following values:
+
+
+				 0	No error occurred.  This value
+					corresponds to the value SCG_NO_ERROR
+					.
+
+
+				 1	A retryable error occurred while
+					trying to transport the SCSI command
+					to the target.	This value corresponds
+					to the value SCG_RETRYABLE .
+
+
+				 2	A fatal error occurred while trying to
+					transport the SCSI command to the
+					target.	 This value corresponds to the
+					value SCG_FATAL .
+
+
+				 3	A SCSI timeout occurred.  This value
+					corresponds to the value SCG_TIMEOUT .
+
+
+			  errno	 Any possible UNIX errno value for the SCSI
+				 command.
+
+
+			  scb	 The SCSI status byte
+
+
+			  sense_count
+				 The sense count returned for the SCSI
+				 command.  The SCSI sense data is send back
+				 directly after any possible SCSI DMA data
+				 received from the target.
+
+				 This command corresponds to the scg_cmd(3)
+				 function from libscg.
+
+				 The return value is the return value from the
+				 scg_cmd(3) function.
+
+       Any other command causes rscsi to exit.
+
+FILES
+       /etc/default/rscsi
+	      Default values can be set for the following options in
+	      /etc/default/rscsi.  For example:
+
+	      DEBUG=/tmp/rscsi.debug
+	      USER=rscsi
+	      ACCESS=rscsi   myhost.mydomain.org 1    -1   3	0
+
+	      All keywords must be on the beginning of a line.
+
+	      DEBUG  If you like to get debug information, set this to a file
+		     name where rscsi should put debug information.
+
+	      USER   The name of a user (local to the RSCSI server) that may
+		     use the services of the rscsi server.  More than one
+		     USER=name line is possible.  A line USER=* grants access
+		     to all users.
+
+	      ACCESS This keyword is followed by six parameters separated by a
+		     TAB.  The name of a user (local to the RSCSI server host)
+		     that may use the services of the rscsi server followed by
+		     the name of a host from where operation is granted
+		     followed by a SCSI device specification that is made of
+		     bus-number channel (ignored for now) target-id and lun
+		     that specify a SCSI device that may be accessed if this
+		     ACCESS line matches.  If one or more entries of the
+		     bus-number channel target-id lun specification is set to
+		     -1, this matches any possible value for the related part
+		     of the SCSI device specification.	More than one
+		     ACCESS=name host SCSI-device line is possible.
+
+		     If standard input of rscsi is not a socket from a remote
+		     host, rscsi will compare the host entry  from
+		     /etc/default/rscsi with the following strings:
+
+		     PIPE      If stdin is a UNIX pipe.
+
+			       If you like to allow remote connections that
+			       use the ssh protocol, you need to use the word
+			       PIPE instead of the real hostname in the
+			       matching ACCESS= line.
+
+		     ILLEGAL_SOCKET
+			       If getpeername() does not work for stdin.
+
+		     NOT_IP    If getpeername() works for stdin but is not
+			       connected to an internet socket.
+
+SEE ALSO
+       cdrecord(1), cdda2wav(1), readcd(1), sformat(1), ssh(1), intro(2),
+       open(2), close(2), read(2), write(2), ioctl(2), getpeername(3) rcmd(3),
+       rexec(3), strerror(3)
+
+
+DIAGNOSTICS
+       All responses are send to the network connection.  They use the form
+       described above.
+
+NOTES
+       The possibility to create a debug file by calling rscsi file has been
+       disabled for security reasons.  If you like to debug rscsi edit
+       /etc/default/rscsi and insert a DEBUG entry.
+
+BUGS
+       None known.
+
+HISTORY
+       The rscsi command has been developed by Joerg Schilling in June 2000.
+
+
+AUTHOR
+       Joerg Schilling
+       D-13353 Berlin
+       Germany
+
+       Mail bugs and suggestions to:
+
+       joerg@schily.net
+
+INTERFACE STABILITY
+       The interfaces provided by rscsi are designed for long term stability.
+       As rscsi depends on interfaces provided by the underlying operating
+       system, the stability of the interfaces offered by rscsi depends on the
+       interface stability of the OS interfaces.  Modified interfaces in the
+       OS may enforce modified interfaces in rscsi.
+
+Joerg Schilling			  2020/09/04			      RSCSI(1)

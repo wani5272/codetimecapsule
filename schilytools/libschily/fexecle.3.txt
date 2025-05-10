@@ -1,0 +1,27 @@
+FEXECLE(3)		  Schily's LIBRARY FUNCTIONS		    FEXECLE(3)
+
+NAME
+       fexecle() - executes a program
+
+SYNOPSIS
+       fexecle(name, in, out, err, a0, a1, a2, ... NULL, envptr)
+       char *name;
+       FILE *in, *out, *err;
+       char *a0, *a1, *a2...;
+       char **envptr;
+
+DESCRIPTION
+       fexecle() is a variation of fexecve().  The description for fexecve()
+       also applies to fexecle() except for the argument list. fexecle()
+       permits the argument list, which is a vector of pointers with a NULL at
+       the end, to be constructed as part of the call to fexecle(), rather
+       than as a C vector. Thus, in the new program, av[0] will be the same as
+       a0 in this program, etc.
+
+RETURNS
+       Returns a system error code; fexecle() does not return if it succeeds.
+
+NOTES
+       none
+
+Joerg Schilling			 15. Juli 1988			    FEXECLE(3)

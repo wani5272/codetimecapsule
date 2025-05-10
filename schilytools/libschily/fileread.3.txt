@@ -1,0 +1,30 @@
+FILEREAD(3)		  Schily's LIBRARY FUNCTIONS		   FILEREAD(3)
+
+NAME
+       fileread() - reads file into buffer
+
+SYNOPSIS
+       int fileread(f,buf,size)
+       FILE *f;
+       char *buf;
+       int size;
+
+DESCRIPTION
+       fileread() reads up to size bytes from the file into buf. The number
+       actually read may be smaller if end-of-file is reached.	The file
+       pointer (implied) is left pointing to one past the last character read.
+
+RETURNS
+       > 0    the number of bytes actually read.
+
+       = 0    file was at end-of-file.
+
+       < 0    error code.
+
+       It returns the number of bytes actually read or an error code.
+
+NOTES
+       The buffer must be at least size long. If reading from a "raw" device,
+       size must be a multiple of 512.
+
+Joerg Schilling			 15. Juli 1988			   FILEREAD(3)

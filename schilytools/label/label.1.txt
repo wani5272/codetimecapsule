@@ -1,0 +1,64 @@
+LABEL(1L)		    Schily's USER COMMANDS		     LABEL(1L)
+
+NAME
+       label - manipulate Sun disk labels
+
+SYNOPSIS
+       label [ options ]
+
+DESCRIPTION
+       The label command manipulates Sun disk labels. It shares the menu
+       subroutines with the sformat(1) command and thus presents the same
+       label and partition menu as sformat(1).	The label however does not
+       operate by sending SCSI commands to the drive but rather reads and
+       writes files.
+
+
+OPTIONS
+       All boolean options can be abbreviated by their first letter.
+
+       -print Print the disk label and the partition table and exit.
+
+       -set   Read the disk label and partition table, set the disk driver
+	      geometry and partition tables according to the data read from
+	      file and disk and exit.
+
+       lproto= label-name
+
+       if= label-name
+	      Set the name of the input file. This may be a plain file or a
+	      raw disk device name.
+
+       lname= label-name
+
+       of= label-name
+	      Set the name of the output file. This may be a plain file or a
+	      raw disk device name.
+
+       f= label-name
+	      Set the name for both, the input and the output file. This may
+	      be a plain file or a raw disk device name.
+
+       -help  Prints a short summary of the label(1) options and exists.
+
+       -version
+	      Prints the label(1) version number string and exists.
+
+
+FILES
+       Label.prototype
+	      A file containing a Sun disk label that is read in case that no
+	      lproto= if= or f= option was specified.
+
+       Label  A file containing a Sun disk label that is written in case that
+	      no lname= of= or f= option was specified.
+
+
+SEE ALSO
+       sformat(1)
+
+
+NOTES
+BUGS
+
+Joerg Schilling			 15. May 2010			     LABEL(1L)

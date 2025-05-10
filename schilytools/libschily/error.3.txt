@@ -1,0 +1,25 @@
+ERROR(3)		  Schily's LIBRARY FUNCTIONS		      ERROR(3)
+
+NAME
+       error() - formats and prints on the standard error stream
+
+SYNOPSIS
+       error(format,arg1...argn);
+       char *format
+
+DESCRIPTION
+       error is the equivalent of: fprintf(stderr, format, arg1...argn).
+
+RETURNS
+       none
+
+SEE ALSO
+       comerr(3), comerrno(3), error(3), errmsg(3), error(3) geterrno(3),
+       printf(3), format(3)
+
+NOTES
+       Normally stderr is unbuffered. Using error() allows a simple message to
+       be immediately written to the user via the standard error stream
+       (stderr).
+
+Joerg Schilling			 15. Juli 1988			      ERROR(3)

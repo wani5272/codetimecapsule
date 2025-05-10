@@ -1,0 +1,318 @@
+TERMCAP(1L)		    Schily's USER COMMANDS		   TERMCAP(1L)
+
+NAME
+       termcap - a termcap compiler
+
+SYNOPSIS
+       termcap [ options ]
+
+DESCRIPTION
+       termcap reads termcap entries and outputs them in unified order and
+       with unified escape sequences. This allows to convert termcap files
+       into a comparable format.
+
+       Since the termcap database is an ASCII representation of the data,
+       people may believe that there is no need for a compiler.	 Syntax checks
+       and unification however are a property of compilers.  The termcap
+       program checks for correct data types, outputs all entries in a unified
+       order and recodes all strings with the same escape notation.  This is
+       needed in to compare two entries and it makes life easier.
+
+       When termcap compiles entries, it checks the entries for
+       noncompliances. If any problems were found, it inserts comments in the
+       form:
+
+       # NOTICE(name) some reason
+
+       or
+
+       # BAD(name) some reason
+
+       before the related termcap entry.  These comments should be carefully
+       checked.	 Frequent problems are illegally escaped colons \: instead of
+       \072 that in most cases have been created by defective terminfo
+       software.
+
+
+OPTIONS
+       -help  Prints a short summary of the termcap(1) options and exists.
+
+       -version
+	      Prints the termcap(1) version number string and exists.
+
+       -dooctal
+	      When printing terminal capabilities, prefer octal output like
+	      \003 before escape sequences like ^C.
+
+       -dumplist
+	      Dump the complete internal list of terminal capabilities.
+
+       -e     Import the termcap description from the TERMCAP environment if
+	      present.	By default, termcap(1) ignores the TERMCAP environment
+	      in case that it does not hold a pathname, but a preparsed
+	      termcap entry.
+
+       if=filename
+	      Read the file filename with many termcap entries and produce
+	      compiled output in standard order on stdout.  This option is
+	      used in order to recompile a whole set of termcap entries.
+
+	      To make the recompiling as smooth as possible, -inorder is
+	      assumed by default. Use -noinorder if you like to add further
+	      processing by hand.
+
+       -inorder
+	      Output all capabilities in the standard order. First the boolean
+	      capabilities, then the numeric capabilities and at last the
+	      string capabilities. Without -inorder, the obsolete capabilities
+	      are printed last.
+
+	      The option -inorder is assumed by default if the if=name option
+	      has been specified.
+
+       -gnugoto
+	      Allow the GNU tgoto() format extensions %C and %m.
+
+       -nodisabled
+	      Do not output disabled termcap entries. A comment with a warning
+	      for this entry is still printed in the output.
+
+       -noinorder
+	      Output all capabilities in the standard order, but print
+	      obsoleted capabilities, unknown capabilities and disabled
+	      capabilities in a separate block before any tc= entry.
+
+       -nounknown
+	      Do not output unknown termcap entries. A comment with a warning
+	      for this entry is still printed in the output.
+
+       -nowarn
+	      Do not warn about incorrect entries that could be fixed by
+	      assuming that the problem is a result from not correctly
+	      converting escape sequences in terminfo syntax to termcap
+	      syntax. For this purpose, currently null characters (\0) are
+	      converted to \200.  In addition, the escape sequences \a, \e,
+	      \:, \,, \s and \l are mapped to BEL, ESCAPE, ':', ',', ' ' and
+	      LINEFEED.
+
+       -oneline
+	      Output all termcap entries in a single line per entry.  This
+	      helps to scan the whole termcap data base for terminals with
+	      specific properties.
+
+       -s     Output commands to set and export TERM and TERMCAP.  This can be
+	      done with
+
+		eval `tset -s ...`
+
+	      to bring the terminal information into the environment of shells
+	      that do not support termcap internally as e.g.  sh (recent
+	      Bourne Shell versions) and bsh already do.  Doing so makes
+	      termcap based programs start up faster.  If the SHELL
+	      environment variable ends with csh, C shell commands are
+	      created, otherwise Bourne shell commands are created.
+
+       -tc    Follow tc= entries and generate cumulative output.  Amongst
+	      others, this allows to retrieve the cumulative size of the
+	      related termcap entry.  Termcap normally does not interpret tc=
+	      entries in order to allow the entries to be reused the same way
+	      they are in the termcap file.
+
+	      When the -tc option is used together with if=filename and
+	      termcap(1) is in compile mode, the output will increase
+	      noticeably in size as all termcap entries for all terminals will
+	      be fully expanded. This also removes all hints to similar
+	      terminals in the output.
+
+       -v     Increment verbose level.	By default, termcap only prints a
+	      recoded termcap entry. With increasing verbose level, more
+	      information on the termcap entry is printed.  With a higher
+	      verbose level, termcap prints the size of the termcap entry.
+
+
+ENVIRONMENT
+       HOME   To find the private files like ~/.termcap
+
+       TERM   The type of terminal for which the output should be formatted.
+
+       TERMCAP
+	      This environment variable holds either a precompiled termcap
+	      entry or the pathname to be used to find a termcap database
+	      file.  If it holds a precompiled entry that does not match the
+	      TERM environment, the termcap database is parsed as if the
+	      TERMCAP environment is not set.
+
+       TERMPATH
+	      If TERMCAP is empty, then the TERMPATH environment is scanned
+	      for pathnames of files that contain a termcap database.  It
+	      holds a list of filenames separated by colons or spaces (i.e.,
+	      ":" or " ").  If the TERMPATH symbol is not set, the files
+	      $HOME/.termcap and /etc/termcap are scanned in that order.
+
+
+FILES
+       /etc/termcap
+	      The system's terminal capabilities database.
+
+       ~/.termcap
+	      The private terminal capabilities database.  This file is
+	      checked first, in case that the TERMPATH environment is not
+	      defined.
+
+SEE ALSO
+       sh(1), bsh(1), tset(1B), termcap(4).
+
+
+MESSAGES
+       The following messages are created by termcap(1):
+
+       # BAD(name). Skipping blank entry: 'ent'
+	      A colon (":") is followed by white space. White space is only
+	      permitted in a termcap entry if it appears at the beginning of a
+	      line.
+
+	      This error type is usually caused by a bad manual edit.
+	      Carefully check every such problem in the source and manually
+	      correct it.
+
+       # BAD(name). Illegal entry (3rd char 'c' for ':ccc'): 'ent'
+	      A valid termcap entry is made of two characters followed by a
+	      colon (":") in case of a boolean entry, a hash mark ("#") in
+	      case of an integer entry, an equal sign ("=") for a string
+	      entry, or the at sign ("@") for disabled entries.
+
+	      This error type is usually caused by a bad conversion from a
+	      terminfo entry that is caused by illegal quoting. A bad quoting
+	      may cause the termcap parser to be out of sync. A quoted colon
+	      ("\:") is permitted in terminfo but not in termcap (termcap only
+	      permits "\072" to include a colon in a string).
+
+	      This error may also be caused by a bad manual edit, e.g. a
+	      backslash ("\") at the end of a termcap entry that causes the
+	      next terminal name to be interpreted as capability, a colon
+	      (":") instead of a bar ("|") in the list of alternative terminal
+	      names or superfluous colon (":") in the list of capabilities.
+
+	      Carefully check every such problem in the source and manually
+	      correct it.
+
+       # BAD(name). Type mismatch 'ent' in 'full-ent' ...
+	      The type for the current entry does not match the type from the
+	      termcap documentation.
+
+	      This error type is usually caused by a bad manual edit, e.g.
+	      from typing ":", "=" or "#" instead of the correct character "="
+	      or "#" that is expected as the third character for the entry.
+	      Carefully check every such problem in the source and manually
+	      correct it.
+
+       # BAD(name). Bad format '%c' in 'ent=value'
+	      An invalid format character was found in a parameterized string
+	      (a string that is passed to tgoto()).
+
+	      This error type is usually caused by badly converted terminfo
+	      entry.  Carefully check every such problem in the source and
+	      manually correct it.
+
+       # BAD(name). Buffer overflow in 'ent=value'
+	      A string that is passed to tgoto() is longer than 80 characters.
+	      tgoto() is not granted to work correctly in case that the
+	      parameterized string is longer than 80 characters.
+
+	      This error type is usually caused by badly converted terminfo
+	      entry.  Carefully check every such problem in the source and
+	      manually correct it.
+
+
+       # NOTICE(name). Short entry (':c:') removed
+	      All termcap capability names must have two characters. A single
+	      char entry was found and removed.
+
+       # NOTICE(name). Disabled entry: '.ent'
+	      An entry that starts with a dot (".") was found.
+
+	      This is usually caused by an intentional manual edit.
+
+       # NOTICE(name). Unknown entry ('ent'): 'full-ent'
+	      An entry was found that is not part of the official termcap
+	      documentation.
+
+	      It is unlikely that such an entry is supported by any program,
+	      so these entries may be removed from the the termcap database.
+	      This may be done automatically by specifying the -nounknown
+	      option.
+
+       # NOTICE(name). Canceled entry 'ent@' followed by 'full-ent'...
+	      A cancelled entry in the form "xx@" was followed by "xx=string"
+	      or "xx#number" in the same termcap entry.	 The cancel feature in
+	      termcap entries is intended to cancel entries from capabilities
+	      imported via the tc=name feature.
+
+	      Carefully check every such problem in the source whether it was
+	      introduced intentionally (e.g. in order to temporarily disable a
+	      feature) or whether it was introduced by accident.
+
+       # NOTICE(name). NULL char (fixed) in entry ('ent') at...
+	      A "\0" string was found in a termcap entry.  This is not
+	      permitted by the termcap documentation.
+
+	      This error type is usually caused by a bad conversion from a
+	      terminfo entry.  This typically happens if bad software
+	      converted a "\E" string to "\" or in case that the string "\0"
+	      that is valid in a terminfo entry was not converted to the
+	      correct termcap equivalent: "\200".  termcap(1) assumes the
+	      latter and automatically converts "\0" to "\200".	 A NULL
+	      character may be used as a delay in an output sequence, but it
+	      is not expected in function key input sequence.  Carefully check
+	      every such problem in the source and manually correct it.
+
+       # NOTICE(name). Nonoctal char 'c' in entry ('ent') at position...
+	      A character outside the range '0'..'7' was found in a '\nnn'
+	      octal sequence.
+
+	      Carefully check every such problem in the source and manually
+	      correct it.
+
+       # NOTICE(name). Badly quoted char '\c' (fixed) in ('ent') at ...
+	      A character quoted with "\" was found but the character is not
+	      in the list of quotes documented by termcap.  As the character
+	      was from the list "\a", "\e", "\:", "\,", "\s", "\l" it is
+	      assumed that the problem was caused by a bad conversion from a
+	      terminfo entry.
+
+	      Carefully check every such problem in the source and manually
+	      correct it if needed.
+
+       # NOTICE(name). Badly quoted char '\c' in ('ent') at ...
+	      A character quoted with "\" was found but the character is not
+	      in the list of quotes documented by termcap.  As the character
+	      was neither from the list "\a", "\e", "\:", "\,", "\s", "\l" it
+	      is assumed that the problem was caused by a bad manual edit.
+
+	      Carefully check every such problem in the source and manually
+	      correct it.
+
+
+NOTES
+       Termcap databases that have been created from a terminfo database often
+       are full of noncompliances that prevent successful parsing by termcap-
+       compliant software.  The fact that terminfo permits "\:" is the cause
+       for the majority of all problems but fortunately can be automatically
+       resolved.
+
+       There is a non-compliance between older and newer termcap entries. The
+       capability named "ma" in former times (around 1980) was an arrow key
+       map for the rogue(1) Dungeons of Doom game.  In newer times, the "ma"
+       entry is used for the maximum number of attributes a terminal can
+       handle and thus is of type integer.
+
+       As the functions tgetstr() and tgetnum() both skip entries with
+       unappropriate type, this is not a problem.  For this reason, we do not
+       warn of a possible string/number type conflict with the "ma"
+       capability. It is even possible to have a ma=maplist and ma#num-attr
+       entry at the same time for the same terminal entry.
+
+
+BUGS
+
+Joerg Schilling			  2021/03/23			   TERMCAP(1L)

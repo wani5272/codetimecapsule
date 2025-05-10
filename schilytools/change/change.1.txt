@@ -1,0 +1,68 @@
+CHANGE(1)		    Schily's USER COMMANDS		     CHANGE(1)
+
+NAME
+       change - non interactive editor to change patterns in files
+
+SYNOPSIS
+       change [ options ] from to [ file1 ... filen ]
+
+DESCRIPTION
+       Change substitutes the from string or pattern by the to string or
+       pattern.
+
+       Change uses the same pattern matcher as match.  If a pattern contains
+       special characters from the pattern matcher, these characters must be
+       preceded by a backslash '\'.  It is a good idea to put strings in
+       single quotes if they contain special characters from the pattern
+       matcher.	 This prevents the shell from treating such a string and
+       eating up the quote characters before they are seen by change.
+
+       If the character '&' appears in the to_string, it replaces what has
+       matched in the from_string.  Multiple occurrences of '&' are possible.
+
+       Change by default creates backup files similar to ved.  The old file is
+       renamed to xxx.bak and a new file with the old name and old permissions
+       is created.  If the -nobak option is present, the old file is removed
+       and a new file is created.
+
+       The file is treated line by line. If a pattern occurs more than once on
+       a single line, all occurrences of that pattern are changed unless the
+       -# option is present.
+
+       If no file names are present, change operates as filter from stdin to
+       stdout.
+
+OPTIONS
+       -v     Be verbose: Displays lines before they are changed.
+
+       -c     Displays lines after they are changed.
+
+       -i     Interactive prompting for each change
+
+       -#     Maximum number of changes per line
+
+       -nobak Do not create a xxx.bak file with the old content.
+
+       -help  Prints a short summary of the change options and exists.
+
+       -version
+	      Prints the change version number string and exists.
+
+SEE ALSO
+       match(1)
+
+NOTES
+       If no match for the from_pattern occurs in a file, it is not changed
+       and the time stamp of that file is not affected. If change is used on
+       several source files, this help the make program to know that only the
+       changed files need to be recompiled.
+
+       If a file with more than name is changed, a new file is created.	 The
+       new file is no more linked to the other files and the content of the
+       other files is not changed.
+
+       See match(1) for a detailed description of allowed patterns.
+
+BUGS
+
+Joerg Schilling			   01/04/22			     CHANGE(1)

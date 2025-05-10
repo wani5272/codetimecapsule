@@ -1,0 +1,25 @@
+FDUP(3)			  Schily's LIBRARY FUNCTIONS		       FDUP(3)
+
+NAME
+       fdup() - returns new file identical to the given file
+
+SYNOPSIS
+       FILE fdup(f)
+       FILE *f;
+
+DESCRIPTION
+       fdup() creates a new file stream which accesses the same file as f. The
+       new file will have the same read/write/buffered attributes as the old
+       file.  fdup() can be used to simultaneously read from two different
+       positions in a file.
+
+RETURNS
+       Returns the duplicate file, if successful.  Returns NULL, if it could
+       not create the new stream.
+
+NOTES
+       This call should be used carefully on buffered files open for writing.
+       Changes made on one stream might be superseded by changes made on the
+       other.
+
+Joerg Schilling			 15. Juli 1988			       FDUP(3)

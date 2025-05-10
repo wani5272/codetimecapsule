@@ -1,0 +1,258 @@
+SDD(1)			    Schily's USER COMMANDS			SDD(1)
+
+NAME
+       sdd - disk dump and restore to and from tape or file; copy and/or
+       reblock
+
+SYNOPSIS
+       sdd [ option=value ] [ -flag ]
+
+BESCHREIBUNG
+       Sdd kopiert den angegebenen Input auf den angegebenen Output und fuehrt
+       dabei gegebenenfalls spezifizierte Konversionen aus.  Stdin und stdout
+       werden als Default Files benutzt.  Die Ein- und Ausgabeblockgroeszen
+       koennen dabei zur Erhoehung des Durchsatzes bei physikalischem I/O
+       angegeben werden.
+
+       Durch einen intelligenten Algorithmus ist sdd bei unterschiedlichen
+       Werten von ibs und obs wesentlich schneller als dd.
+
+OPTIONEN
+       if=name
+	      Der Input wird von dem File name statt von stdin gelesen.
+
+	      Wenn sdd suid root installiert ist, dann kann name in der remote
+	      syntax: user@host:filename wie bei rcp(1) sein auch wenn es
+	      durch einen nicht root Benutzer aufgerufen wurde.	 Siehe auch
+	      SUID BEMERKUNGEN fuer mehr Information.
+
+	      Um eine Datei lokal zu machen obwohl sie einen Doppelpunkt (:)
+	      enthaelt, musz sie mit '/', './' oder '../' anfangen.
+
+       of=name
+	      Der Output wird auf das File name statt auf stdout geschrieben.
+	      Man beachte, dasz sdd normalerweise die Ausgabedatei erzeugt und
+	      auf die Laenge 0 bringt, so dasz die oseek=# Option ohne die
+	      -notrunc Option sinnlos ist, es sei den, man benutzt Band- oder
+	      Plattenlaufwerke.
+
+	      Wenn sdd suid root installiert ist, dann kann name in der remote
+	      syntax: user@host:filename wie bei rcp(1) sein auch wenn es
+	      durch einen nicht root Benutzer aufgerufen wurde.
+
+	      Beachten Sie bitte dasz falls sdd mit einem alten rmt Remote
+	      Tape Server verbunden ist es nicht moeglich ist Dateien mit dem
+	      O_CREAT open Flag zu oeffnen da dies extrem gefaehrlich waere.
+	      Wenn der rmt Server auf der anderen Seite der rmt Server ist,
+	      der mit dem star Paket kommt oder der GNU rmt Server ist, dann
+	      kann sdd den symbolischen Mode fuer die Open Flags verwenden.
+	      Nur der symbolische Open Mode erlaubt alle moeglichen Open Modi
+	      in einer portablen Weise an Remote Tape Server zu versenden.
+
+	      Es wird daher empfolen den rmt Server zu verwenden der mit dem
+	      star Paket kommt.	 Dies ist der einzige rmt Server der eine
+	      platformunabhaengige Kompatibilitaet mit BSD, Sun und GNU rmt
+	      Klienten herstellt und Sicherheitsfeatures enthaelt, die in
+	      /etc/default/rmt eingestellt werden koennen.
+
+
+       -inull Es wird nicht von einer Datei gelesen.  Diese Option wirkt
+	      ahnlich wie if=/dev/zero ist aber schneller, weil Sdd einen
+	      vorbereiteten, geloschten Puffer verwendet.
+
+       -onull Es erfolgt ueberhaupt keine Ausgabe. (Diese Wirkung dieser
+	      Option ist aehnlich der Option of=/dev/null )
+
+       ibs=#, obs=#, bs=#
+	      Setzt die Inputbuffergroesze, die Outputbuffergroesze, oder
+	      beide auf # (default ist 512 Bytes).
+
+       cbs=#  Setzt die Konversionsbuffergroesze auf #.
+
+       ivsize=#, ovsize=#
+	      Setzt die Inputmediumgroesze bzw. die Outputmediumgroesze auf #.
+	      Damit lassen sich z.B. physikalische Kopien von oder nach
+	      Geraeten unterschiedlicher Groesze herstellen. Wird damit eine
+	      Kopie auf ein Band hergestellt, dann benutzt man z.B. die Option
+	      ovsize=60M, wenn man auf ein Band mit 60 Mbytes Groesze
+	      schreiben will. Wenn dieses Band voll ist, dann wird von sdd ein
+	      neues Band angefordert. Wird bei der Anfordeung eines neuen
+	      Mediums fuer die Eingabe mit N<cr> geantwortet, dann werden alle
+	      im Buffer befindlichen Daten geschrieben und so getan, als ob
+	      EOF erreicht ist. Wird bei der Anfordeung eines neuen Mediums
+	      fuer die Ausgabe mit N<cr> geantwortet, dann endet sdd sofort,
+	      und an der Statistik erkennt man , dasz mehr Daten gelesenen als
+	      geschrieben wurden.
+
+       count=#
+	      Es werden maximal # Datensaetze gelesen.
+
+       iseek=#, iskip=#
+	      Seekt bzw. ueberliest # Bytes vom Input, bevor der eigentliche
+	      Transfer startet.
+
+       oseek=#, oskip=#
+	      Seekt bzw. ueberliest # Bytes vom Output, bevor der eigentliche
+	      Transfer startet.
+
+       seek=#, skip=#
+	      Seekt bzw. ueberliest # Bytes vom Input und Output bevor der
+	      eigentliche Transfer startet.
+
+       ivseek=#, ovseek=#
+	      Seekt # Bytes vom Input bzw. Output bei jedem Volume, bevor der
+	      eigentliche Transfer startet. (Damit lassen sich z.B. Labels von
+	      Floppy's ueberlesen.)  Achtung: bei dem ersten Medium werden
+	      iseek und ivseek bzw.  oseek und ovseek addiert.	Iseek und
+	      oseek beziehen sich nur auf das erste Medium.
+
+       -notrunc
+	      Ein existierendes Outputfile wird nicht auf die Laenge 0
+	      gekuerzt, bevor der Transfer startet. Damit ist es moeglich, in
+	      eine bestehende Datei zu schreiben.
+
+       -pg    Bei jedem write wird ein Punkt auf stderr geschrieben um dem
+	      Fortschritt des Transfers anzuzeigen.
+
+       secsize=#
+	      Setzt die zugrundegelegte Puppfergroesze fuer Fehlerbehebung
+	      mittels -noerror auf #.  Der Default ist 512 und passt zu der
+	      ueblichen physischen Sektorgroesze.  Da die Fehlerbehebung auf
+	      der Ebene der Basis-Puffer-Groesze erfolgt, wird diese Option
+	      benoetigt, wenn im Fehlerbehebungsmodus ein Laufwerk mit einer
+	      anderen physischen Sektorgroesze als 512 Bytes verwendet wird.
+
+       -time, -t
+	      Es wird die gesammte Transferzeit, sowie die
+	      Datenuebertragungsgeschindigkeit angezeigt.
+
+       -noerror
+	      Bei einem I/O Fehler wird der Transfer nicht unterbrochen.
+	      Fehlermeldungen werden auf dem Schirm angezeigt.	Wird diese
+	      Option verwendet ohne auch -noseek zu verwenden, dann muessen
+	      ibs und obs Vielfache der Fehlerbehebungs-Sektorgroesze aus
+	      secsize=# sein.
+
+       -noerrwrite
+	      Blocke, die nicht korrekt gelesen wurden werden nicht
+	      geschrieben.  Der Output wird geseekt um den fehlerhaften Block
+	      zu uberspringen.	Die Outputdatei muss seekbar sein damit
+	      -noerrwrite korrekt arbeiten kann.
+
+       -noseek
+	      Bei Retries nach I/O Fehlern wird nicht geseekt, das impliziert
+	      try=1.
+
+       try=#  Setzt den Retryzaehler auf #, wenn die Option -noerror angegeben
+	      wurde. (default 2)
+
+       -debug Gibt debugging Hinweise aus. Damit kann man z.B. die
+	      Datensatzgroesze bei Baendern mit variabler Datensatzgroesze
+	      erfahren.
+
+       -fill  Jeder Datensatz	  wird bis zur obs mit Nullen aufgefuellt.
+	      Wenn ibs gleich obs ist, z.B. nur bs wurde angegeben, dann wird
+	      bei jedem gelesenen Datensatz die Differenz zwischen gelesener
+	      Menge und bs mit Nullen gefuellt, sonst wird nur der Lezte
+	      Datensatz aufgefuellt.
+
+       -swab  Vertauscht gerade und ungerade Bytes auszer dem lezten Byte bei
+	      ungeraden Groeszen und ungeraden Tranfers (z.B. EOF)
+
+       -block, -unblock
+	      Der Datenstrom wird von variabler Datensatzgroesze auf feste
+	      Datensatzgroesze ungebaut oder umgekehrt.
+
+       -lcase, -ucase
+	      Alle Buchstaben werden in Klein- oder Groszbuchstaben
+	      umgewandelt.
+
+       -ascii, -ebcdic, -ibm
+	      Es erfolgt eine Zeichensatzkonvertierung von EBCDIC nach ASCII
+	      bzw. von ASCII nach EBCDIC bzw. von ASCII zu der IBM Variante
+	      von EBCDIC
+
+       -help  Gibt eine kurze Zusammenfassung der sdd optionen aus und endet.
+
+       -md5   Berechnet die md5 Sunne fuer die Daten.  Wenn die Option -onull
+	      verwendet wurde berechnet, sdd md5 Summe aus den Eingangsdaten,
+	      sonst werden die Ausgangsdaten verwendet.
+
+       -version
+	      Gibt die sdd Versions-Nummer aus und endet.
+
+BEISPIELE
+       sdd if=/dev/rsd0a of=/dev/nrst8 bs=2x7x17b
+
+       Kopiert von der Platte /dev/rsd0a nach dem Band /dev/nrst8 und benutzt
+       dabei eine Blockgroesze von 2*7*17 Bloecken.  (das sind z.B. 2
+       Zylinder.)
+
+       sdd if=/dev/rsd0c of=/dev/rsd1c seek=1b bs=63k
+
+       Kopiert die ganze Platte sd0 auf die Platte sd1 und erhaelt dabei das
+       alte Label auf sd1.
+
+FILES
+       Keine.
+
+SEE ALSO
+       dd(1), star(1), rmt(1), tr(1), cp(1), copy(1)
+
+DIAGNOSTICS
+       sdd: Read  f records + p bytes (total of x bytes = d.nnk).
+       sdd: Wrote f records + p bytes (total of x bytes = d.nnk).
+
+       Die Anzahl der Vollstaendigen Datensaetze, die Anzahl von Bytes in
+       unvollstaendigen Datensaetze, sowie die Gesammtanzahl von Bytes und
+       Kilobytes.
+
+       Mit dem QUIT Signal ( ueblicherweise ^\ ) kann der aktuelle
+       Zwischenzustand zur Anzeige gebracht werden.
+
+BEMERKUNGEN
+       Im Gegensatz zu dd kann sdd -iseek -oseek -seek sowie -iskip -oskip
+       -skip unabhaengig von der Buffergroesze. Damit ist es moeglich, mit nur
+       einem sdd Kommando eine physikalische Kopie einer Platte herzustellen,
+       ohne das Label mitzukopieren.
+
+       Wenn Zahlen nicht spezifiziert werden, dann wird angenommen, dasz es
+       sich um Bytes handelt.
+
+       Durch das Nachstellen eines `w' oder `W' werden daraus `Worte' (2
+       Bytes).
+
+       Durch das Nachstellen eines `b' oder `B' werden daraus Bloecke (512
+       Bytes).
+
+       Durch das Nachstellen eines `k' oder `K' werden daraus Kilobytes (1024
+       Bytes).
+
+       Durch das Nachstellen eines `m' oder `M' werden daraus Megabytes
+       (1024*1024 Bytes).
+
+       Durch das Nachstellen eines `g' oder `G' werden daraus Gigabytes
+       (1024*1024*1024 Bytes).
+
+       Werden zwei Zahlen durch ein `*' oder ein `x' getrennt, dann werden die
+       beiden Zahlen miteinander multipliziert.
+
+SUID BEMERKUNGEN
+       Wenn sdd suid root installiert ist, dann kann sdd Verbindungen zu
+       remote files auch fuer nicht non root Benutzer herstellen.  Dies
+       erfolgt durch Verwendung des rcmd(3) Interfaces um eine Verbindung zum
+       rmt(1) Server herzustellen.
+
+       Sdd stellt die effektive uid zurueck auf die reale user id direkt nach
+       dem die Verbindung zum remove Server hergestellt wurde d.h. bevor
+       andere Dateien geoeffnet werden.
+
+BUGS
+       Die Option iskip=# und oskip=# und skip=# , sowie -block und -unblock
+       sind nicht implementiert.
+
+       Es ist verwirrend, dasz bei der Angabe des Datensatzzaehlers mit der
+       -count Option auch saemtliche Zusaetze, wie bei z.B.  obs=# moeglich
+       sind.
+
+Joerg Schilling			  2020/05/30				SDD(1)

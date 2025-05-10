@@ -1,0 +1,25 @@
+GETLINE(3)		  Schily's LIBRARY FUNCTIONS		    GETLINE(3)
+
+NAME
+       getline() - reads a line from standard input
+
+SYNOPSIS
+       int getline(buffer,length)
+       char *buffer;
+       int length;
+
+DESCRIPTION
+       getline() reads up to length characters from the standard input using
+       getc() (q.v.). The transfer is also terminated by a newline, end of
+       file, or read error. The buffer is NULL ('\0') terminated with the new
+       line removed.
+
+RETURNS
+       Returns either the number of bytes in the buffer or a standard system
+       error code (including EOF).
+
+NOTES
+       getline() always reads to the end of the input line, even if the line
+       is longer than the buffer.
+
+Joerg Schilling			 15. Juli 1988			    GETLINE(3)

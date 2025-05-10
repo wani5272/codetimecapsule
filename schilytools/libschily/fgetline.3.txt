@@ -1,0 +1,26 @@
+FGETLINE(3)		  Schily's LIBRARY FUNCTIONS		   FGETLINE(3)
+
+NAME
+       fgetline() - gets a line from a file
+
+SYNOPSIS
+       int fgetline(f,buf,length)
+       FILE *f;
+       char *buf;
+       int length;
+
+DESCRIPTION
+       fgetline() reads up to length characters from the input file using
+       getc() (q.v.). The transfer is also terminated by a newline, end of
+       file, or read error. The newline character is stripped and the string
+       is NULL ('\0') terminated.
+
+RETURNS
+       >=0    the number of bytes read.
+
+       < 0    if an error occurred.
+
+NOTES
+       none
+
+Joerg Schilling			 15. Juli 1988			   FGETLINE(3)

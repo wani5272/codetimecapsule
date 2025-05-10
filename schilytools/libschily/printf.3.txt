@@ -1,0 +1,24 @@
+PRINTF(3)		  Schily's LIBRARY FUNCTIONS		     PRINTF(3)
+
+NAME
+       printf() - formats and prints to standard output
+
+SYNOPSIS
+       printf(format, arg1, ..., argn)
+       char *format;
+
+DESCRIPTION
+       printf() formats its arguments using the routine format().  See
+       format() for information about the options for formatting.
+
+RETURNS
+       none
+
+SEE ALSO
+       format(3), fprintf(3)
+
+NOTES
+       printf() buffers its output internally until it is finished then the
+       buffer is flushed.
+
+Joerg Schilling			 15. Juli 1988			     PRINTF(3)

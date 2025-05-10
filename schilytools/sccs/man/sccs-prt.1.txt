@@ -1,0 +1,357 @@
+sccs-prt(1)			 User Commands			   sccs-prt(1)
+
+NAME
+       sccs-prt, prt - display delta table information from an SCCS file
+
+SYNOPSIS
+       /usr/ccs/bin/prt [-abdefistu] [-cdate-time] [-rdate-time]
+	   [-ysid] [-Xextended-options] [-Nbulk-spec] s.filename...
+
+
+DESCRIPTION
+       prt prints selected portions of an SCCS file.  By default, it prints
+       the delta table (version log).
+
+       The output is directly based on text data from the s.files without
+       conversion.
+
+
+       If a directory name is used in place of the s.filename argument, the
+       prt command applies to all s.files in that directory. Unreadable
+       s.files produce an error; processing continues with the next file (if
+       any). The use of `-' as the s.filename argument indicates that the
+       names of files are to be read from the standard input, one s.file per
+       line.
+
+
+OPTIONS
+       If any option other than -y, -c, or -r is supplied, the name of each
+       file being processed (preceded by one NEWLINE and followed by two
+       NEWLINE characters) appears above its contents.
+
+
+       If none of the -u, -f, -t, or -b options are used, -d is assumed.  -s,
+       -i are mutually exclusive, as are -c and -r.
+
+
+       -a	    Display log entries for all deltas, including those marked
+		    as removed.
+
+
+       -b	    Print the body of the s.file.
+
+
+       -d	    Print delta table entries.	This is the default.
+
+
+       -e	    Everything.	 This option implies -d, -i, -u, -f, and -t.
+
+
+       -f	    Print the flags of each named s.file.
+
+
+       -i	    Print the serial numbers of included, excluded, and
+		    ignored deltas.
+
+
+       -s	    Print only the first line of the delta table entries; that
+		    is, only up to the statistics.
+
+
+       -t	    Print the descriptive text contained in the s.file.
+
+
+       -u	    Print the user-names and/or numerical group IDs of users
+		    allowed to make deltas.
+
+
+       -cdate-time  Exclude delta table entries that are specified cutoff date
+		    and time. Each entry is printed as a single line, preceded
+		    by the name of the SCCS file.  This format (also produced
+		    by -r, and -y) makes it easy to sort multiple delta tables
+		    in chronological order. When both -y and -c, or -y and -r
+		    are supplied, prt stops printing when the first of the two
+		    conditions is met.
+
+
+       -rdate-time  Exclude delta table entries that are newer than the
+		    specified cutoff date and time.
+
+
+       -ysid	    Exclude delta table entries made prior to the SID
+		    specified.	If no delta in the table has the specified
+		    SID, the entire table is printed.  If no SID is specified,
+		    the most recent delta is printed.
+
+
+
+       -Nbulk-spec  Processes a bulk of SCCS history files.  This option
+		    allows to do an efficient mass processing of SCCS history
+		    files.
+
+		    The bulk-spec parameter is composed from an optional list
+		    of flag parameters followed by an optional path specifier.
+
+		    The following flag types are supported:
+
+		    none
+
+		    The following path specifier types are supported:
+
+		    -N	      The file name parameters to the prt command are
+			      not s.filename files but the names of the g-
+			      files.  The s.filename names are automatically
+			      derived from the g-file names by prepending s.
+			      to the last path name component.	Both,
+			      s.filename and the g-file are in the same
+			      directory.
+
+		    -Ns.      The file name parameters to the prt command are
+			      s.filename files.	 The the g-files names are
+			      automatically derived by removing s.  from the
+			      beginning of last path name component of the
+			      s.filename.  Both, s.filename and the g-file are
+			      in the same directory.
+
+		    -Ndir     The file name parameters to the prt command are
+			      not s.filename files but the names of the g-
+			      files.  The s.filename names are put into
+			      directory dir, the names are automatically
+			      derived from the g-file names by prepending
+			      dir/s.  to the last path name component.
+
+		    -Ndir/s.  The file name parameters to the prt command are
+			      s.filename files in directory dir.  The the g-
+			      files names are automatically derived by
+			      removing dir/s.  from the beginning of last path
+			      name component of the s.filename.
+
+		    A typical value for dir is SCCS.
+
+		    In order to overcome the limited number of exec(2)
+		    arguments, it is recommended to use `-' as the file name
+		    parameter for prt(1) and to send a list of path names to
+		    stdin.
+
+		    This option is a SCHILY extension that does not exist in
+		    historic sccs implementations.
+
+
+       -Xextended-options
+		    Specify extended options. The argument extended-options
+		    may be a comma separated list of extended option names.
+
+		    The following extended options are supported, they may be
+		    abbreviated as long ad the abbreviation is still unique.
+		    Options with parameter may not be abbreviated.
+
+
+		    0	   When reading filenames from stdin, triggered by a
+			   file name argument `-', the filename separator is a
+			   null byte instead of a newline.  This allows to use
+			   long lists with arbitrary filenames.
+
+		    help   Print a short online help for available options.
+
+		    The -X option is a SCHILY extension that does not exist in
+		    historic sccs implementations.
+
+
+       -V
+       -version
+       --version    Prints the prt version number string and exists.
+
+		    This option is a SCHILY extension that does not exist in
+		    historic sccs implementations.
+
+
+USAGE
+   Output Format
+       The following format is used to print those portions of the s.file that
+       are specified by the various options.
+
+
+	   o	  NEWLINE
+
+
+	   o	  Type of delta (D or R)
+
+
+	   o	  SPACE
+
+
+	   o	  SCCS delta ID (SID)
+
+
+	   o	  TAB
+
+
+	   o	  Date and time of creation in the form: yy/mm/dd hh/mm/ss
+
+
+	   o	  SPACE
+
+
+	   o	  Username the delta's creator
+
+
+	   o	  TAB
+
+
+	   o	  Serial number of the delta
+
+
+	   o	  SPACE
+
+
+	   o	  Predecessor delta's serial number
+
+
+	   o	  TAB
+
+
+	   o	  Line-by-line change statistics in the form:
+		  inserted/deleted/unchanged
+
+
+	   o	  NEWLINE
+
+
+	   o	  List of included deltas, followed by a NEWLINE (only if
+		  there were any such deltas and the -i options was used)
+
+
+	   o	  List of excluded deltas, followed by a NEWLINE (only if
+		  there were any such deltas and the -i options was used)
+
+
+	   o	  List of ignored deltas, followed by a NEWLINE (only if there
+		  were any such deltas and the -i options was used)
+
+
+	   o	  List of modification requests (MRs), followed by a NEWLINE
+		  (only if any MR numbers were supplied).
+
+
+	   o	  Lines of the delta commentary (if any), followed by a
+		  NEWLINE.
+
+
+EXAMPLES
+       Example 1 Examples of prt.
+
+
+       The following command:
+
+
+       example% /usr/ccs/bin/prt -y program.c
+
+
+       produces a one-line display of the delta table entry for the most
+       recent version:
+
+
+       s.program.c:
+
+       D 1.6   88/07/06 21:39:39 username 5 4	00159/00080/00636
+       ...
+
+
+ENVIRONMENT VARIABLES
+       See environ(5) for descriptions of the following environment variables
+       that affect the execution of prt(1): LANG, LC_ALL, LC_CTYPE,
+       LC_MESSAGES, and NLSPATH.
+
+
+       SCCS_NO_HELP
+	      If set, prt(1) will not automatically call help(1) with the SCCS
+	      error code in order to print a more helpful error message.
+	      Scripts that depend on the exact error messages of SCCS commands
+	      should set the environment variable SCCS_NO_HELP and set
+	      LC_ALL=C.
+
+
+EXIT STATUS
+       The following exit values are returned:
+
+
+       0    Successful completion.
+
+
+       1    An error occurred.
+
+
+FILES
+       s.file	      SCCS history file, see sccsfile(4).
+
+
+       dump.core      If the file dump.core exists in the current directory
+		      and a fatal signal is received, a coredump is initiated
+		      via abort(3).
+
+
+ATTRIBUTES
+       See attributes(5) for descriptions of the following attributes:
+
+
+
+
+       +----------------------------+-----------------------------+
+       |      ATTRIBUTE TYPE	    |	    ATTRIBUTE VALUE	  |
+       +----------------------------+-----------------------------+
+       |Availability		    | SUNWsprot			  |
+       +----------------------------+-----------------------------+
+
+SEE ALSO
+       sccs(1), sccs-add(1), sccs-admin(1), sccs-branch(1), sccs-cdc(1),
+       sccs-check(1), sccs-clean(1), sccs-comb(1), sccs-commit(1),
+       sccs-create(1), sccs-cvt(1), sccs-deledit(1), sccs-delget(1),
+       sccs-delta(1), sccs-diffs(1), sccs-edit(1), sccs-editor(1),
+       sccs-enter(1), sccs-fix(1), sccs-get(1), sccs-help(1),
+       sccs-histfile(1), sccs-info(1), sccs-init(1), sccs-istext(1),
+       sccs-ldiffs(1), sccs-log(1), sccs-print(1), sccs-prs(1),
+       sccs-rcs2sccs(1), sccs-remove(1), sccs-rename(1), sccs-rmdel(1),
+       sccs-root(1), sccs-sact(1), sccs-sccsdiff(1), sccs-status(1),
+       sccs-tell(1), sccs-unedit(1), sccs-unget(1), sccs-val(1), bdiff(1),
+       diff(1), what(1), sccschangeset(4), sccsfile(4), attributes(5),
+       environ(5), standards(5).
+
+
+DIAGNOSTICS
+       Use the SCCS help command for explanations (see sccs-help(1)).
+
+
+AUTHORS
+       The SCCS suite was originally written by Marc J. Rochkind at Bell Labs
+       in 1972.	 Release 4.0 of SCCS, introducing new versions of the programs
+       admin(1), get(1), prt(1), and delta(1) was published on February 18,
+       1977; it introduced the new text based SCCS v4 history file format
+       (previous SCCS releases used a binary history file format).  The SCCS
+       suite was later maintained by various people at AT&T and Sun
+       Microsystems.  Since 2006, the SCCS suite is maintained by Joerg
+       Schilling.
+
+
+SOURCE DOWNLOAD
+       A frequently updated source code for the SCCS suite is included in the
+       schilytools project and may be retrieved from the schilytools project
+       at Sourceforge at:
+
+	   http://sourceforge.net/projects/schilytools/
+
+       The download directory is:
+
+	   http://sourceforge.net/projects/schilytools/files/
+
+       Check for the schily-*.tar.bz2 archives.
+
+       Less frequently updated source code for the SCCS suite is at:
+
+	   http://sourceforge.net/projects/sccs/files/
+
+       Separate project informations for the SCCS project may be retrieved
+       from:
+
+	   http://sccs.sf.net
+
+SunOS 5.11			  2020/08/05			   sccs-prt(1)

@@ -1,0 +1,24 @@
+FILESTAT(3)		  Schily's LIBRARY FUNCTIONS		   FILESTAT(3)
+
+NAME
+       filestat() - copies file descriptor information to buffer
+
+SYNOPSIS
+       #include <schily/stat.h>
+
+       int filestat(f,buf)
+       FILE *f;
+       struct stat *buf;
+
+DESCRIPTION
+       filestat() places system dependent information about the file f into
+       the buffer buf.
+
+RETURNS
+       Returns a value equal to or greater than zero when successful.
+       Otherwise, returns -1 and sets the standard error code.
+
+NOTES
+       The size and the interpretation of the buffer is system dependent.
+
+Joerg Schilling			  2020/02/09			   FILESTAT(3)

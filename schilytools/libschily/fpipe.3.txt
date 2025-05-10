@@ -1,0 +1,23 @@
+FPIPE(3)		  Schily's LIBRARY FUNCTIONS		      FPIPE(3)
+
+NAME
+       fpipe() - sets up a two ended pipe
+
+SYNOPSIS
+       int fpipe(pp)
+       FILE *pp[2];
+
+DESCRIPTION
+       fpipe() sets up a two ended pipe:
+
+       pp[0]  is set to a FILE open for reading.
+
+       pp[1]  is open for writing.
+
+RETURNS
+       NULL a pipe could not be created.  other completed successfully.
+
+NOTES
+       none
+
+Joerg Schilling			 15. Juli 1988			      FPIPE(3)

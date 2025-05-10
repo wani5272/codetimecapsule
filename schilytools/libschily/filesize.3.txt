@@ -1,0 +1,23 @@
+FILESIZE(3)		  Schily's LIBRARY FUNCTIONS		   FILESIZE(3)
+
+NAME
+       filesize() - returns size of file
+
+SYNOPSIS
+       long filesize(f)
+       FILE *f;
+
+DESCRIPTION
+       filesize() returns the file size in bytes.
+
+RETURNS
+       >= 0   filesize.
+
+       < 0    an error code.
+
+NOTES
+       If the file was written in the current process and was buffered, do a
+       fflush() before using filesize() NOTE: The call does not work on
+       terminals or other devices.
+
+Joerg Schilling			 15. Juli 1988			   FILESIZE(3)

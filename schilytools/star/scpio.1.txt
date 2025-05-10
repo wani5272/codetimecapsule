@@ -1,0 +1,440 @@
+SCPIO(1L)		    Schily's USER COMMANDS		     SCPIO(1L)
+
+NAME
+       scpio - copy file archives in and out (LEGACY)
+
+SYNOPSIS
+       scpio [ other options ] -o[aBcv]
+       scpio [ other options ] -i[Bcdmruvf] [ pattern ...  ]
+       scpio [ other options ] -it[Bcvf] [ pattern ...	]
+       scpio [ other options ] -p[adlmuv] directory
+
+DESCRIPTION
+       The scpio utility, depending on the options used:
+
+       o      copies files to an archive file
+
+       o      extracts files from an archive file
+
+       o      lists files from an archive file
+
+       o      copies files from one directory tree to another.
+
+OPTIONS
+       The scpio utility supports the XBD specification Utility Syntax
+       Guidelines. The cpio standard does not allow the option modifiers to be
+       presented as separate arguments from the option letters.	 The scpio
+       implementation allows option modifiers to be presented as separate
+       arguments from the option letters. When writing portable shell scripts
+       do never make use of this feature.
+
+       The following options are supported:
+
+       -o     (Copy Out.) Read the standard input to obtain a list of
+	      pathnames and copy those files onto the standard output together
+	      with pathname and status information. Output is padded to a
+	      512-byte boundary.
+
+       -i     (Copy In.) Extract files from the standard input, which is
+	      assumed to be the product of a previous scpio -o.	 Only files
+	      with names that match patterns are selected. The extracted files
+	      are conditionally created and copied into the current directory
+	      tree based upon the options described below. The permissions of
+	      the files will be those of the previous scpio -o.	 The owner and
+	      group of the files will be that of the current user unless the
+	      user has appropriate privileges, which causes scpio to retain
+	      the owner and group of the files of the previous scpio -o.  If
+	      the archive being read does not match the modifier specified,
+	      scpio may consider this to be an error and exit or may recognise
+	      the archive and continue processing. Only a user with
+	      appropriate privileges can extract block special or character
+	      special files from an archive.
+
+       -it    (List.) List files from the archive. This is a sub mode of the
+	      copy in mode, no files are created in list mode.
+
+       -p     (Pass.) Read the standard input to obtain a list of pathnames of
+	      files that are conditionally created and copied into the
+	      destination directory tree based upon the option modifiers
+	      described below.
+
+       The following option modifiers can be appended in any sequence to the
+       -o, -i or -p options:
+
+       a      Reset access times of input files after they have been copied.
+	      (When option l (see below) is also specified, the access times
+	      of the linked files are not reset.)
+
+       B      Block input/output 5120 bytes to the record (does not apply to
+	      the -p option; meaningful only with data directed to or from
+	      character special files).
+
+       d      Create directories as needed.
+
+       c      Write or read header information in character form for
+	      portability.  Note that the Open Group standard does not specify
+	      the archive format that should be used with the c option.	 For
+	      this reason it is questionable wether the c option increases
+	      portability in general.
+
+	      The archive format used by scpio with the c option is the format
+	      from the -H asc option.  It gives best cpio compatibility when
+	      transferring files to SVR4-based systems (except that the file
+	      size is limited to 2 gigabytes).	When transferring files in
+	      cpio archives to unknown operating systems, it is unwise to use
+	      the c option.
+
+       r      Interactively rename files. For each archive member matching
+	      pattern operand, a prompt will be written to the file /dev/tty.
+	      The prompt will contain the name of the archive member, but the
+	      format is otherwise unspecified. A line will then be read from
+	      /dev/tty.	 If this line is blank, the archive member will be
+	      skipped. If this line consists of a single period, the archive
+	      member will be processed with no modification to its name.
+	      Otherwise, its name will be replaced with the contents of the
+	      line. The scpio utility will immediately exit with a non-zero
+	      exit status if end-of-file is encountered when reading a
+	      response, or if /dev/tty cannot be opened for reading and
+	      writing.
+
+       t      Write a table of contents of the input. No files are created.
+
+       u      Copy unconditionally (normally, an older file will not replace a
+	      newer file with the same name).
+
+       v      Verbose: print the names of the affected files. With the t
+	      option, provides a detailed listing.
+
+       l      Whenever possible, link files rather than copying them.  Usable
+	      only with the -p option.	The l option modifier is not yet
+	      supported by scpio.
+
+
+       m      Retain previous file modification time. This option is
+	      ineffective on directories that are being copied.
+
+       f      Copy in all files except those in patterns.
+
+
+       The following other options are implemented as SVr4 compliant extension
+       to the Open Group standard:
+
+       -6     Extract UNIX System Sixth Edition cpio archives. This option is
+	      not valid in archive create mode, it is mutually exclusive with
+	      -c, -H, and artype=.  As is is unclear how UNIX System Sixth
+	      Edition cpio archives look like, this option is currently
+	      unsupported.
+
+       -@     Include extended file attributes in the archive.	This option is
+	      currently unsupported.
+
+       -A     Append files to an existing archive.  The -A option only works
+	      together with the -O option.  See star -r for more information.
+
+       -b     Reverses the order of the bytes within each word.	 It is unclear
+	      what a word is supposed to be.  This option is unsupported but
+	      not needed as scpio includes automatic byte order recognition.
+
+       -C #   Sets (input/output) archive block size to # bytes.
+
+       -E name
+	      Read filenames for store/create/list command from name.  The
+	      file name must contain a list of filenames, each on a separate
+	      line.
+
+       -H header
+	      Set the archive type to header.  See star(1) for more
+	      information.
+
+       -I nm  Use nm as archive file name instead of stdin.
+
+       -k     Try to skip corrupt archive headers.
+
+       -L     Follow symbolic links as if they were files.
+
+       -M message
+	      Define a message that is uses when switching media.  This option
+	      is currently unsupported.
+
+       -O nm  Use nm as archive file name instead of stdout.
+
+       -P     Handle Access Control List (ACL) information in create and
+	      extract mode.  See star -acl for more information.
+
+       -R nm  Reassign ownership and group for all files based on nm.  This
+	      option is currently unsupported.
+
+       -s     Reverses the order of the bytes within each word.	 It is unclear
+	      what a word is supposed to be.  This option is unsupported but
+	      not needed as scpio includes automatic byte order recognition.
+
+       -S     Reverses the order of the halfwords within each word.  It is
+	      unclear what a word is supposed to be.  This option is
+	      unsupported but not needed as scpio includes automatic byte
+	      order recognition.
+
+       -V     Special verbose. Print a dot for each file that is read or
+	      written.	This option is currently unsupported.
+
+       The following other options are implemented as star extension to the
+       Open Group standard:
+
+       -help  Prints a summary of the most important options for scpio(1) and
+	      exits.
+
+       -xhelp Prints a summary of the less important options for scpio(1) and
+	      exits.
+
+       -version
+	      Prints the scpio version number string and exists.
+
+       -/     Don't strip leading slashes from file names when extracting an
+	      archive.	See star(1) for more information.
+
+       ..     Don't skip files that contain /../ in the name.  See star(1) for
+	      more information.
+
+       -7z    run the input or output through a p7zip pipe - see option -z
+	      below.
+
+	      Note that the p7zip program currently does not operate on a pipe
+	      but on a /tmp file copy and thus limits the maximum archive
+	      size.
+
+
+       -acl   Handle Access Control List (ACL) information in create and
+	      extract mode.  See star(1) for more information.
+
+       artype=header
+	      Set the archive type to header.  See star(1) for more
+	      information.
+
+       -lzo   Run the input or output through a lzop pipe - see option -z
+	      below.
+
+       -bz    Run the input or output through a bzip2 pipe - see option -z
+	      below. As the -bz the -z options are non standard, it makes
+	      sense to omit -bz options the inside shell scripts.  If you are
+	      going to extract a compressed archive that is located inside a
+	      plain file, scpio will auto detect compression and choose the
+	      right decompression option to extract.
+
+       bs=#   Set block size to #. You may use the same method as in dd(1) and
+	      sdd(1).  See star(1) for more information.
+
+       -fifostats
+	      Print fifo statistics at the end of a scpio run when the fifo
+	      has been in effect.
+
+       fs=#   Set fifo size to #.  See star(1) for more information.
+
+       -no-fifo
+	      Do not use a fifo to optimize data flow from/to tape.  See
+	      star(1) for more information.
+
+       -no-fsync
+	      Do not call fsync(2) for each file that has been extracted from
+	      the archive.  See star(1) for more information.
+
+       -do-fsync
+	      Call fsync(2) for each file that has been extracted from the
+	      archive.	See star(1) for more information.
+
+       -no-statistics
+	      Do not print statistic messages at the end of a scpio run.
+
+       -secure-links
+	      Do not extract hard links or symbolic links if the link name
+	      (the target of the link) starts with a slash (/) or if /../ is
+	      contained in the link name.  See star(1) for more information.
+
+       -numeric
+	      Use the numeric user/group fields in the listing rather than the
+	      default.	See star(1) for more information.
+
+       -time  Print timing info.  See star(1) for more information.
+
+       -xfflags
+	      Store and extract extended file flags as found on BSD and Linux
+	      systems.	See star -acl for more information.
+
+       -z     Run the input or output through a gzip pipe - see option -bz
+	      above. As the -bz the -z options are non standard, it makes
+	      sense to omit -bz options the inside shell scripts.  If you are
+	      going to extract a compressed archive that is located inside a
+	      plain file, scpio will auto detect compression and choose the
+	      right decompression option to extract.
+
+       -zstd  run the input or output through a zstd pipe - see option -z
+	      above.
+
+
+OPERANDS
+       The following operands are supported:
+
+       directory
+	      A pathname of an existing directory to be used as the target of
+	      scpio -p.
+
+       pattern
+	      Expressions making use of a pattern-matching notation similar to
+	      that used by the shell for filename pattern matching, and
+	      similar to regular expressions. The following metacharacters are
+	      defined:
+
+	      *	     Matches any string, including the empty string.
+
+	      ?	     Matches any single character.
+
+	      [...]  Matches any one of the enclosed characters. A pair of
+		     characters separated by `-' matches any symbol between
+		     the pair (inclusive), as defined by the system default
+		     collating sequence. If the first character following the
+		     opening `[' is a `!', the results are unspecified.
+
+	      In pattern, the special characters "?", "*" and "[" also match
+	      the "/" character. Multiple cases of pattern can be specified
+	      and if no pattern is specified, the default for pattern is "*"
+	      (that is, select all files).
+
+	      Note that scpio does not use fnmatch(3) based pattern matching
+	      as documented above, it rather uses the pattern matcher
+	      documented in match(1).
+
+STDIN
+       When the -o or -p options are used, the standard input is a text file
+       containing a list of pathnames, one per line, to be copied.
+
+       When the -i option is used, the standard input is an archive file
+       formatted in any way that is understood by the archive handling engine
+       (see -H help option for a complete list).
+
+INPUT FILES
+       The files identified by the pathnames in the standard input are of any
+       type.
+
+       When the -r option is used, the file /dev/tty is used to write prompts
+       and read responses.
+
+ASYNCHRONOUS EVENTS
+       Default.
+
+STDOUT
+       When the -o option is used, the standard output is an archive file
+       formatted as specified by pax with the -x cpio option. For better
+       compatibility with SVR4-based systems that do not implement the cpio
+       format correctly, scpio by default limits the length of file names to
+       256 bytes.  Use scpio -H cpio to explicitly switch to the full POSIX
+       1003.1-1988 cpio archive format.
+
+       Otherwise, the standard output contains commentary in an unspecified
+       format concerning the progress of the execution.
+
+STDERR
+       When the -o option is not used, the standard error contains commentary
+       in an unspecified format concerning the progress of the execution.
+       Otherwise, the standard error is used only for diagnostic messages.
+
+OUTPUT FILES
+       Output files are created, as specified by the archive, when the -i or
+       -p options are used.
+
+EXTENDED DESCRIPTION
+       None.
+
+
+EXIT STATUS
+       The following exit values are returned:
+
+       0      Successful completion.
+
+       >0     An error occurred.
+
+CONSEQUENCES OF ERRORS
+       If a file or directory cannot be created or overwritten, scpio
+       continues with the next file in the archive or file to be added to the
+       archive.
+
+
+APPLICATION USAGE
+       Archives created by scpio are portable between XSI-conformant systems
+       provided the same procedures are used.
+
+       The shell metacharacter notation is not fully compatible with that used
+       by the shell and the pax utility. Not all systems support the use of
+       the negation character [! ...] in cpio patterns. Portable applications
+       must avoid the use of this notation.
+
+       For portable communication of data between XSI-conformant systems, it
+       is recommended that only characters defined in the ISO/IEC 646:1991
+       standard International Reference Version (equivalent to ASCII) 7-bit
+       range of characters be used and that only characters defined in the
+       Portable Filename Character Set be used for naming files. This
+       recommendation is given because XSI-conformant systems support diverse
+       codesets and run in various geographical areas and there is no single,
+       well-established codeset that incorporates all of the characters of the
+       languages of the various geographical areas.
+
+       The cpio archive format only supports file sizes up to 8 gigabytes.
+
+       Applications should migrate to the pax archive format which is the
+       POSIX 1003.1-2001 standard archive format and based on an extended tar
+       format.
+
+
+FUTURE DIRECTIONS
+       None.
+
+
+EXAMPLES
+       1. Copy the contents of a directory onto an archive:
+
+       ls | scpio -o >../cpio.out
+
+       2. Duplicate a directory hierarchy:
+
+       cd olddir
+       find . -depth -print | scpio -pd ../newdir
+
+
+ENVIRONMENT
+       The following environment variables may affect the execution of scpio:
+
+       TZ     Determine the timezone used with date and time strings.
+
+SEE ALSO
+       ar(1), find(1), sfind(1), ls(1), match(1), pax(1), spax(1), tar(1),
+       star(1).
+
+DIAGNOSTICS
+NOTES
+       The default block size for cpio is 512 bytes, this slows down write
+       speed.  Use -B, -C, or bs= to set a different block size.
+
+       Scpio -iu is equivalent to star -xU -install -force-remove
+       -remove-recursive and for this reason may remove nonempty directory
+       trees in extrace mode without printing a warning.
+
+       The Open Group, have given us permission to reprint portions of their
+       documentation. In the following statement, the phrase ``this text''
+       refers to portions of the system documentation.
+
+       Portions of this text are reprinted and reproduced in electronic form
+       in the scpio manual, from The Open Group Base Specifications Issue 5,
+       Copyright (C) 1997 by The Open Group. In the event of any discrepancy
+       between these versions and the original specification, the original The
+       Open Group Standard is the referee document. The original Standard can
+       be obtained online at
+       http://www.opengroup.org/unix/single_unix_specification_v2.
+
+BUGS
+AUTHOR
+       Joerg Schilling
+       D-13353 Berlin
+       Germany
+
+       Mail bugs and suggestions to:
+
+       joerg@schily.net
+
+Joerg Schilling			  2020/09/04			     SCPIO(1L)

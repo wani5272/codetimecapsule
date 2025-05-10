@@ -1,0 +1,20 @@
+STRLEN(3)		  Schily's LIBRARY FUNCTIONS		     STRLEN(3)
+
+NAME
+       strlen() - returns string length
+
+SYNOPSIS
+       int strlen(string)
+       char *string;
+
+DESCRIPTION
+       strlen() returns the length of string in characters. The trailing '\0'
+       byte is NOT counted.
+
+RETURNS
+       Returns length of string.
+
+NOTES
+       For allocating space, remember to add one for the NULL.
+
+Joerg Schilling			 15. Juli 1988			     STRLEN(3)

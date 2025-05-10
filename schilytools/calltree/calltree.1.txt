@@ -1,0 +1,214 @@
+CALLTREE(1)		    Schily's USER COMMANDS		   CALLTREE(1)
+
+NAME
+       calltree - static call tree generator for C programs
+
+SYNOPSIS
+       calltree [ calltree_options ] [ cpp_options ] file1...filen
+
+DESCRIPTION
+       The calltree command parses a collection of input files (assuming C
+       syntax) and builds a graph that represents the static call structure of
+       these files.
+
+       Calltree is similar to cflow(1) but unlike cflow(1), calltree is not
+       based on lint(1).  Calltree implements some more functions than
+       cflow(1), but does not list the return types of the functions. This is
+       because calltree includes an own C parser and thus may be used even on
+       systems that don't have lint(1).	 The disadvantage is that the C parser
+       that is used by calltree is not completely correct and may not find all
+       calls of a function.  This is mainly true for calls that are done via
+       function pointers.
+
+       Calltree is able to detect recursive function calls (e.g. functions
+       that call themselves).  Recursive function calls are marked with an
+       ellipsis in the output.
+
+OPTIONS
+       -b     Prints a vertical bar at the beginning of each indentation level
+	      to make the output easier to read.  See the -s options for using
+	      different indentation.
+
+       -r     Reverse the caller:callee relation resulting in an invert
+	      structure of the tree.  Each function is followed by a list of
+	      functions that directly call that function.
+
+       -f     Create a flattened call graph.  The listing for a specific
+	      function includes all functions that either get called directly
+	      or indirectly from within this function.	The output differs
+	      from the output that is created if the nesting depth has been
+	      limited to one; the latter case only lists functions that are
+	      called directly from the function.
+
+       -g     Each function name is followed by the file-name, where the
+	      function is implemented.	The file-name followed by the line
+	      number of the definition and is printed in square brackets.
+
+       ignorefile=file, i=file
+	      Causes all function names found in file to be ignored for the
+	      creation of the call graph.  The file must contain each function
+	      name on a separate line.	This option may be used to remove
+	      calls to standard libraries from the output. There may be more
+	      than one ignorefile=file option. The call graph in this case
+	      ignores the sum of all names found in all files.
+
+       depth=#, d=#
+	      Limit the nesting depth of the shown call graph. By default this
+	      number is very large, resulting in a complete call graph.	 If
+	      the number set to a smaller value, the call graph is cut off at
+	      the appropriate nesting depth.  Attempts to set this number to a
+	      non positive value are ignored.
+
+       s=#    Sets the indentation value to # (a number). The default is four.
+	      If the nesting depth of a project is very high, it may be a good
+	      idea to make the indentation smaller to prevent line overflows.
+	      If this number is set to zero, the resulting call graph will be
+	      completely flat.
+
+       -m     Produces the call graph only for main.  The default is to print
+	      separate call graphs for each function.
+
+       -p     If the -p option is present, the C preprocessor will be invoked
+	      for each source file. The output of the C preprocessor is then
+	      feed into the parser of the calltree program.  Calling the C
+	      preprocessor the default.
+
+       -np    Don't invoke the C preprocessor. This is more easy to use as you
+	      don't need to supply the appropriate C preprocessor flags, but
+	      may cause incorrect output.
+
+       list=function, lf=function
+	      Produce a call graph only for the named function.	 By default, a
+	      call graph for all functions is printed.	Using the -m option is
+	      the same as using list=main.  If you specify list= and -m at the
+	      same time, -m is ignored.
+
+       listfile=file, l=file
+	      Produces a call graph for every function found in file.  The
+	      file must contain one function name on each line.	 This option
+	      can be used to examine the interface of a module of an unknown
+	      source. In this case file may be the result of a previous run of
+	      calltree using the -e or -x option.  This option is implemented
+	      as the general case of the list=function option, only one of
+	      both options makes sense.
+
+       -xvcg  Produce output suitable for xvcg.	 Xvcg may be found at
+	      http://www.cs.uni-sb.de/RW/users/sander/html/gsvcg1.html and is
+	      a graph visualization tool. It allows you create graphical
+	      output from calltree.  Thanks to Scott Anderson
+	      <scott_anderson@mvista.com> for the hint.
+
+       -dot   Produce output suitable for graphviz.  Graphviz may be found at
+	      http://www.research.att.com/sw/tools/graphviz/ and is a graph
+	      visualization tool. It allows you create graphical output from
+	      calltree.	 Thanks to Pietro Abate <abate@students.cs.unibo.it>
+	      for the hint.
+
+       -u     Lists all functions that are not called via main.	 If the list
+	      of source files is complete for a project, this should list all
+	      functions that are apparently unused.  The -u option includes
+	      the -f option by default.
+
+       -e     Lists all functions not called at all.  This output produced
+	      with this option is usually smaller than the output produced
+	      with -u.	This is caused by the fact that the source may still
+	      contain functions that are called by other functions but not via
+	      main.  The -e option includes the -f option by default.
+
+       -x     Lists all functions that seem to be external.  A function is
+	      detected to be external if it is not defined in the list of
+	      specified source files.  The -x option includes the -e option
+	      and the -r option by default.
+
+       -help  Prints a short summary of the calltree options and exists.
+
+       -version
+	      Prints the calltree version number string and exists.
+
+SUPPORTED CPP OPTIONS
+       -Iinclude-dir
+	      Adds include-dir to the search list of the C preprocessor.
+
+       -Ddefinition
+	      Adds definition to the list of known predefined C preprocessor
+	      macros.
+
+       -Udefinition
+	      Removes definition from the list of known predefined C
+	      preprocessor macros.
+
+
+EXAMPLES
+       calltree -x *.c > externals
+
+       Lists all functions being external to the project.
+
+       calltree -rg listfile=externals *.c
+
+       Lists all functions that call external routines.
+
+       calltree -e *.c > exports
+
+       Lists all functions being not called by functions of the project.
+
+       calltree -g listfile=exports *.c
+
+       Lists the calltree for all functions that are listed in file exports.
+
+
+       The C source file file.c:
+       int  i;
+       main()
+       {
+	    f();
+	    g();
+	    f();
+	    r();
+       }
+       f()
+       {
+	    i = h();
+       }
+       r()
+       {
+	    r();
+       }
+
+       The command calltree -gb file.c will produce the following output:
+       f [file.c:10]:
+       |   h
+       g:
+       |   EXTERNAL ROUTINE
+       h:
+       |   EXTERNAL ROUTINE
+       main [file.c:3]:
+       |   f [file.c:10]
+       |   |   h
+       |   g
+       |   r [file.c:14]
+       |   |   r [file.c:14] ....
+       r [file.c:14]:
+       |   r [file.c:14] ....
+
+
+NOTES
+       As calltree by default creates a separate call graph for each function,
+       the output volume may be higher than expected if the -m option has not
+       been used.
+
+       Function names that appear only inside a structure (and presumably
+       called only through that structure) will not be detected as callable.
+
+
+BUGS
+       The C parser used by calltree is not implementing the complete C
+       syntax. For this reason, constructions such as:
+
+	      typedef mytype (*xfunc) ();
+
+       may fool calltree.  It appears that mytype is detected as a function
+       that gets called from somewhere depending on the place where the
+       typedef was found.
+
+
+Joerg Schilling			   04/01/26			   CALLTREE(1)

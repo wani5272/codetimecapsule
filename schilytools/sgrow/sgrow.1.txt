@@ -1,0 +1,22 @@
+SGROW(1L)		    Schily's USER COMMANDS		     SGROW(1L)
+
+NAME
+       sgrow - run a stack grow test
+
+SYNOPSIS
+       sgrow [ options ] pages
+
+DESCRIPTION
+       Sgrow runs a stack grow test by allocating pages * 4kByte elements on
+       the stack.
+
+OPTIONS
+       -help  Prints a short summary of the sgrow options and exists.
+
+       -version
+	      Prints the sgrow version number string and exists.
+
+NOTES
+BUGS
+
+Joerg Schilling			   07/12/16			     SGROW(1L)

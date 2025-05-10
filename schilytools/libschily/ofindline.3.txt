@@ -1,0 +1,41 @@
+OFINDLINE(3)		  Schily's LIBRARY FUNCTIONS		  OFINDLINE(3)
+
+NAME
+       ofindline() - finds a line with a matching field
+
+SYNOPSIS
+       int ofindline(f,delim,string,field,array,arraysize)
+       FILE *f;
+       char delim;
+       char *string;
+       int field;
+       char *array[];
+       int arraysize;
+
+DESCRIPTION
+       ofindline() retrieves a line from an open file that has a matching
+       character string in the given field.
+
+       ofindline() fills in array with pointers to strings that make up each
+       field on the line. The strings are allocated new storage.  The field
+       delimiter, delim, is used to break up each line of the file into
+       fields. string is the string to match. fieldno is the field number to
+       match. Fields are numbered 0..n. array is an array of pointers to fill
+       in. arraysize is the size of array.
+
+RETURNS
+       +1     match.
+
+       -1     no match.
+
+       -2     arg error. Returned only if the condition findline_arg_err is
+	      handled and the handler returns.
+
+       -4     not enough memory to allocate space for files.  Returned only if
+	      the condition findline_storage is handled and the handler
+	      returns.
+
+NOTES
+       none
+
+Joerg Schilling			 15. Juli 1988			  OFINDLINE(3)

@@ -1,0 +1,29 @@
+GETERRNO(3)		  Schily's LIBRARY FUNCTIONS		   GETERRNO(3)
+
+NAME
+       geterrno() - gets system error number
+
+SYNOPSIS
+       int geterrno()
+
+DESCRIPTION
+       geterrno() enables the programmer to find out exactly what the last
+       failure was. This is often necessary since some subroutines just
+       indicate success or failure, rather than directly return definitive
+       error codes.
+
+       For example, comerr() uses geterrno() to retrieve the last error so
+       that an appropriate message can be printed.
+
+RETURNS
+       Returns the error code for the last system error that occurred in the
+       current process, e.g., after a call to fileopen() failed.
+
+SEE ALSO
+       comerr(3), comerrno(3), error(3), errmsg(3)
+
+NOTES
+       The value returned by geterrno() is only valid after the immediately
+       preceding system call failed.
+
+Joerg Schilling			  2020/02/09			   GETERRNO(3)

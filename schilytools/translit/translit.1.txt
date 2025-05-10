@@ -1,0 +1,73 @@
+TRANSLIT(1L)		    Schily's USER COMMANDS		  TRANSLIT(1L)
+
+NAME
+       translit - translates characters
+
+SYNOPSIS
+       translit [ options ] from_string to_string [file1 ... filen]
+
+DESCRIPTION
+       Translit performs a character substitution, changing the characters
+       specified in the from_string to the corresponding characters in the
+       to_string.  Since the mapping is done one to one, the from_string must
+       be equal to or larger than the to_string.  If the from_string is
+       larger, the end of the from set is mapped to the last character of the
+       to set.
+
+       The files are not modified, all output is written to standard out.  If
+       no files are specified, translit reads from standard input.
+
+OPTIONS
+       -help  Prints a short summary of the translit options and exists.
+
+       -version
+	      Prints the translit version number string and exists.
+
+       -c     Complement the set of values specified by from_string.
+
+       -d     Delete all occurrences of input characters that are specified in
+	      from_string.
+
+       -s     Replace instances of repeated characters that are specified in
+	      from_string with a single character.  If the -d option has also
+	      been specified, the character set is taken from to_string.
+
+
+OPERANDS
+       The following notations of characters are supported:
+
+       c       Any single byte character not described below
+       \ddd    Represents octal notations of characters
+       \\      Represents the backslash
+       \a      Represents the audible bell
+       \b      Represents the backspace character
+       \f      Represents the formfeed character
+       \n      Represents the newline character
+       \r      Represents the carriage return character
+       \t      Represents the tab character
+       \v      Represents the vertical tab character
+
+NOTES
+       When the to_string is smaller than the from_string, multiple
+       occurrences of the folded characters are not generated.	Translating
+       all letters, white space and punctuation, to X's, for example, will
+       cause only a single X to appear on the output stream.
+
+       If the to_string is empty, all occurrences of input characters that are
+       specified in from_string are deleted and produce no output.
+
+       You can use reverse ranges,
+
+	      translit [a-z] [z-a]
+
+       will change every a to z and every z to a and so forth.
+
+       If an ordinary digit in the octal range is following an octal sequence,
+       the octal sequence must use three octal digits.
+
+       If from_string or to_string start with the unescaped character '^', the
+       related set is complemented.
+
+BUGS
+
+Joerg Schilling			   08/04/26			  TRANSLIT(1L)

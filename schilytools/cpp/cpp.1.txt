@@ -1,0 +1,210 @@
+CPP(1)			    Schily's USER COMMANDS			CPP(1)
+
+NAME
+       cpp - the C language preprocessor
+
+SYNOPSIS
+       /usr/lib/cpp [ -BCHMpPRT ] [ -undef ] [ -Dname ]
+	    [ -Dname=val ] [ -Idirectory ] [ -Uname ]
+	    [ -Ydirectory ] [ [input-file [output-file]] ]
+
+       /usr/bin/krcpp [ -BCHMpPRT ] [ -undef ] [ -Dname ]
+	    [ -Dname=val ] [ -Idirectory ] [ -Uname ]
+	    [ -Ydirectory ] [ [input-file [output-file]] ]
+
+DESCRIPTION
+       cpp is the C language preprocessor. This implementation does not
+       implement the ANSI C standard but K&R.
+
+       cpp accepts up to two filenames as arguments.  By default, cpp reads
+       from standard input and writes to standard output.  input-file and
+       output-file are used to specify a different input or output for the
+       preprocessor.
+
+
+
+OPTIONS
+       -B     Support the C++ comment indicator `//'.  With this indicator,
+	      everything on the line after the // is treated as a comment.
+
+       -C     Pass all comments (except those that appear on lines with cpp
+	      directives) to the output.  The default is to suppress C-style
+	      comments and (if enabled via -B) C++-style comments.
+
+       -H     Print the path names of include files on standard error.	Each
+	      name is printed on a separate line, names may appear more than
+	      once.
+
+       -M     Generates a list of dependencies and write them to the output.
+	      This list is in makefile format and indicates that the related
+	      .o file depends on the input file and the used include files.
+
+       -p     Only check for the first eight characters in macro names and
+	      issue a warning if extra tokens appear at the end of a line
+	      containing a directive.
+
+       -P     Do not include line control information in the preprocessor
+	      output.
+
+       -R     Allow recursive macros.
+
+       -T     Only check for the first eight characters in macro names.	 This
+	      option allows backwards compatibility with old systems that only
+	      check for the first eight characters.
+
+       -noinclude
+	      Remove the standard system include directory (usually
+	      /usr/include) from the search path.
+
+       -undef Remove all initially predefined macros.
+
+       -xsc   Character constants are treated as signed char regardless of the
+	      default in the compiler.
+
+       -xuc   Character constants are treated as unsigned char regardless of
+	      the default in the compiler.
+
+       -Dname Defines name as 1. This option has the same effect as if a
+	      #define name 1
+
+	      line was in the input file.
+
+       -Dname=val
+	      Defines name as val.  This option has the same effect as if a
+	      #define name val
+
+	      line was in the input file.
+
+       -Idirectory
+	      Adds directory to the search path for #include directives.
+
+       -Uname Remove an initial definition of name.
+
+       -Ydirectory
+	      Uses directory instead of the standard system include directory.
+
+
+USAGE
+   Directives
+       All cpp directives start with a hash character (#) as the first
+       character on a line.  White space (SPACE or TAB characters) can appear
+       after the initial # for indentation.
+
+       #define name value
+		 Replace subsequent instances of the text name with value.
+
+       #define name(argument [, argument] ... ) value
+		 Replaces each instance of name followed by a parenthesized
+		 list of arguments with value, where each occurrence of an
+		 argument in value is replaced by the corresponding token from
+		 the comma separated list of the actual parameters.
+
+		 A space between name and the `(' is not possible.
+
+       #undef name
+		 Remove any definition for the symbol name.
+
+       #ident text
+		 Forwards the line to the output.  This is intended to be used
+		 by the compiler that usually puts the arguments into the
+		 comment section of the ELF binary.
+
+       #line line-number "filename"
+		 Create control information for reading programs.  The
+		 line-number must be an integer constant and is interpreted as
+		 the line number of the next line.  filename is interpreted as
+		 the related filename. If "filename" is omitted, the current
+		 filename is not changed.
+
+       #include "filename"
+       #include <filename>
+		 Reads the content of filename and handles it as if it was
+		 part of the current file.  With the <filename> notation,
+		 filename is only searched in the list of standard include
+		 directories.
+
+       #if constant-expression
+		 If the constant-expression yields a non-zero expression,
+		 subsequent lines up to a matching #else, #elif or #endif
+		 appear in the output.
+
+       #ifdef name
+		 If name has been defined, subsequent lines up to a matching
+		 #else, #elif or #endif appear in the output.
+
+       #ifndef name
+		 If name has not been been defined, subsequent lines up to a
+		 matching #else, #elif or #endif appear in the output.
+
+       #elif constant-expression
+		 If the preceding #if, #ifdef, #ifndef or #elif directive did
+		 not include its block in the output and the
+		 constant-expression yields a non-zero expression, the
+		 following block of text is included in the output.
+
+       #else	 If the preceding conditional would include lines in the
+		 output, then lines between the #else and the matching #endif
+		 are ignored.  If the preceding conditional would ignore
+		 lines, then lines between the #else and the matching #endif
+		 are included in the output.  Conditional directives and
+		 corresponding #else directives can be nested.
+
+       #endif	 Marks the end of a section of lines begun by one of the
+		 conditional directives #if, #ifdef or #ifndef.	 Each such
+		 directive must have a matching #endif.
+
+       #pragma text
+		 Forwards the line to the output.  This is intended to be used
+		 by the compiler that uses the related line as a way to
+		 forward directives.
+
+       #error text
+		 Prints text on stderr and exits with a non-zero exit status.
+		 If the #error directive is not inside a conditional active
+		 block, no error message is printed and the processing is not
+		 terminated.
+
+
+EXAMPLES
+ENVIRONMENT
+       SUNPRO_DEPENDENCIES
+		 The argument of this environment is used as a filename to
+		 output a make compatible dependency list.  The output format
+		 is the same as with the -M option.
+
+EXIT STATUS
+       The following exit codes are returned:
+
+       0	 Successful completion.
+
+       1	 An error occurred.
+
+       8	 A command line syntax error occurred.
+
+FILES
+ATTRIBUTES
+       See attributes(5) for descriptions of the following attributes:
+
+
+       +----------------------------+-----------------------------+
+       |      ATTRIBUTE TYPE	    |	    ATTRIBUTE VALUE	  |
+       +----------------------------+-----------------------------+
+       |Availability		    | SUNWsprot			  |
+       +----------------------------+-----------------------------+
+
+SEE ALSO
+       m4(1), mcs(1).
+
+DIAGNOSTICS
+NOTES
+       ANSI C preprocessors replace an escaped NEWLINE (a backslash that is
+       immediately followed by a NEWLINE) with a SPACE. This implementation
+       keeps backslash NEWLINE intact.
+
+BUGS
+AUTHOR
+       cpp was written by John F. Reiser in July/August 1978.  This is a
+       version enhanced by J. Schilling and maintained by J. Schilling since
+       2010.
+
+Joerg Schilling			   21/05/29				CPP(1)

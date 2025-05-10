@@ -1,0 +1,22 @@
+FILESEEK(3)		  Schily's LIBRARY FUNCTIONS		   FILESEEK(3)
+
+NAME
+       fileseek() - sets file position
+
+SYNOPSIS
+       fileseek(f,offset)
+       FILE *f;
+       long offset;
+
+DESCRIPTION
+       fileseek() sets the logical position in the file f to offset.  The next
+       read or write operation begins with the byte at the new offset.
+
+RETURNS
+       none
+
+NOTES
+       File positions begin with 0 for the first byte. When writing, it is
+       legal to seek beyond the end of file.
+
+Joerg Schilling			 15. Juli 1988			   FILESEEK(3)

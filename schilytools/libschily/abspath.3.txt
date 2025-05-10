@@ -1,0 +1,62 @@
+ABSPATH(3)		  Schily's LIBRARY FUNCTIONS		    ABSPATH(3)
+
+NAME
+       abspath(), absnpath(), absfpath() - Expands a relative pathname to a
+       full (absolute) pathname
+
+SYNOPSIS
+       #include <schily/schily.h>
+
+       char *
+       abspath(relp, absp, asize)
+		       const   char    *relp;
+			       char    *absp;
+			       size_t  asize;
+
+       char *
+       absnpath(relp, absp, asize)
+		       const   char    *relp;
+			       char    *absp;
+			       size_t  asize;
+
+       char *
+       absfpath(relp, absp, asize, flags)
+		       const   char    *relp;
+			       char    *absp;
+			       size_t  asize;
+			       int     flags;
+
+DESCRIPTION
+       abspath() takes a relative path name and converts it into an absolute
+       path name.  relp is relative path name that is used as the input.  absp
+       is the buffer used for the result of the conversion.  asize is the size
+       of the result buffer.
+
+       absnpath() behaves like abspath() exept that the file does not need to
+       exist.
+
+       absfpath() takes an additional flags parameter from the set of flags
+       from resolvefpath() to control the behavior.
+
+
+RETURN VALUE
+       On successful completion, abspath(), absnpath() and absfpath() return a
+       pointer to the resolved name absp.  Otherwise, a null pointer is
+       returned and errno is set to indicate the error, and the contents of
+       the buffer pointed to by absp is left in an indeterminate state.
+
+ERRORS
+       ERANGE	 The path does not fit into the suplied buffer.
+
+       EFAULT	 A null pointer was suplied as pathname.
+
+       EINVAL	 An empty relative path was supplied.
+
+EXAMPLES
+SEE ALSO
+       resolvepath(3), resolvenpath(3), resolvefpath(3)
+
+NOTES
+       none
+
+Joerg Schilling			  2015/04/27			    ABSPATH(3)

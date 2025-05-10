@@ -1,0 +1,27 @@
+FILEWRITE(3)		  Schily's LIBRARY FUNCTIONS		  FILEWRITE(3)
+
+NAME
+       filewrite() - writes into file
+
+SYNOPSIS
+       int filewrite(f,buf,size)
+       FILE *f;
+       char *buf;
+       int size;
+
+DESCRIPTION
+       filewrite() writes the size bytes starting at buf into the file.	 The
+       file must be open for writing.
+
+RETURNS
+       >= 0   the number of bytes written.
+
+       < 0    error code.
+
+NOTES
+       The process suspends if any of the error conditions are not handled.
+
+       Writing anywhere in the file is allowed. When writing to "raw" devices
+       the size must be multiples of 512.
+
+Joerg Schilling			 15. Juli 1988			  FILEWRITE(3)

@@ -1,0 +1,1765 @@
+BSH(1L)			    Schily's USER COMMANDS		       BSH(1L)
+
+NAME
+       bsh - ein Kommando-Interpreter mit Bildschirmeditor und History.
+
+SYNOPSIS
+       bsh [ optionen ] [ arg1 ... argn ]
+
+       Liest Kommandos aus dem File arg1.
+       Wenn keine Argumente angegeben sind, liest er Kommandos von stdin.
+
+OPTIONS
+       -i     Erzwingt interaktiven Prompt.
+
+       -v     Startet mit eingeschaltetem Verbose mode.
+
+       -c     Fuhrt arg1 als ein Kommando mit arg2-n als args aus.
+
+       -e     Bricht ab wenn ein nichtinteraktives Kommando misslingt.
+
+       -n     Liest die Kommandos aber fuhrt sie nicht aus.
+
+       -s     Fuhrt Kommandos von stdin aus, auch wenn Argumente angegeben
+	      wurden.
+
+       -t     Liest ein Kommando und fuhrt es aus.
+
+       -2     Liest nicht das ~/.init2 File.
+	      Auch wahr, wenn -c gesetzt und name == command.
+
+       -h     Liest/Schreibt nicht das ~/.history File.
+
+       -g     Liest/Schreibt nicht das ~/.globals File.
+
+       -l     Liest/Schreibt nicht das ~/.locals File.
+
+       -f     (fast) Entspricht -2h.
+
+       -F     (extra fast) Entspricht -2hgl.
+
+       -o     Bei einem exec werden offene Files nicht geschlossen.
+
+DESCRIPTION
+       bsh ist ein Kommandointerpreter, der anstelle von sh oder csh verwendet
+       werden kann. Seine Vorteile gegenuber den beiden anderen Shells sind
+       der Bildschirmeditor fur die Kommandozeile und der in diesen Editor
+       integrierte History-Mechanismus.
+
+   Initialisierung
+       Wenn der bsh durch ein Login gestartet wird, (das erkennt er daran,
+       dass sein argv[0] mit einem '-' beginnt) dann liest er zunachst die
+       Datei /etc/initbsh und fuhrt die darin enthaltenen Kommandos aus. - Das
+       kann auf SYSTEM V dazu benutzt werden um z.B. die Environment-Variable
+       TZ zu setzen.
+
+       Wenn in av[0] ein 'r' enthalten ist (rbsh), dann folgt nach der
+       Interpretation der Anweisungen aus der Datei /etc/initbsh die
+       Ausfuhrung der Kommandos aus /etc/initrbsh.  Das kann z.B. dazu benutzt
+       werden weiter unten beschriebene mogliche Restriktionen zu aktivieren.
+       Da die Directory /etc/ normalerweise nur durch den Superuser zu
+       beschreiben ist, kann der so eingeschrankte Benutzer nicht durch
+       einfaches Loschen seiner ~/.init Datei diese Beschrankungen wieder
+       unwirksam machen.
+
+       Nach der Interpretation der obengenannten Dateien werden die Kommandos
+       aus der Datei ~/.init ausgefuhrt. In dieser Datei kann der Benutzer
+       private immer notige Anweisungen platzieren z.B. da Einstellen des
+       Prompts auf einen gegenuber dem Standardprompt bevorzugten Wert oder
+       Terminalinitialisierung.
+
+       Jeder weitere Kommandointerpreter (nicht der Loginshell aber auch das
+       in den bsh eingebaute suid Kommando), der vom Benutzer gestartet wird,
+       fuhrt wahrend seiner Initialisierung die Datei ~/.init2 (falls
+       vorhanden) aus.
+
+       Wenn der bsh gestartet wird, dann liest er kurz vor dem ersten
+       interaktiven Prompt das File /etc/termcap oder die Environmentvariable
+       TERMCAP, um ein Standardmapping fur die Cursortasten zu bekommen. Es
+       ist moglich, zusatzlich zu den Standardeintragen ku, kd, kr und kl fur
+       Key-up, Key-down, Key-right und Key-left in /etc/termcap die Eintrage
+       kB und kE einzufuhren, falls das Terminal die Cursortasten Zeilenanfang
+       bzw. Zeilenende hat.
+
+       Der Loginshell fuhrt, bevor er durch die Kommandos logout oder exit
+       beendet wird, die Datei ~/.final aus.
+
+       Ausserdem liest jeder bsh noch folgende Dateien, wenn er gestartet
+       wird:
+
+       ~/.bshmap	   Datei mit Maps fur den Editor.
+
+       ~/.globals	   Datei mit globalen Abkurzungen.
+
+       .locals		   Datei mit lokalen Abkurzungen. (Siehe auch cd -
+			   Kommando.)
+
+       Der bsh liest seine Initialisierungsdateien in folgender Reihenfolge
+       und zu folgenden Zeiten:
+
+       /etc/passwd	   falls es beim Starten des bsh keine Environment-
+			   Variable HOME gibt.
+
+       ~/.globals	   Immer falls vorhanden.
+
+       .locals		   Immer falls vorhanden.
+
+       /etc/initbsh	   Nur Loginshell.
+
+       /etc/initrbsh	   Nur Loginshell, wenn restricted.
+
+       ~/.init		   Nur Loginshell.
+
+       ~/.init2		   Jeder nicht Loginshell.
+
+       ~/.history	   Jeder interaktive bsh.
+
+       /etc/termcap	   Jeder interaktive bsh kurz nach dem ersten Prompt,
+			   wenn sich der extrahierte TERMCAP Eintrag noch
+			   nicht im Environment befindet. Wenn die Variable
+			   TERM auf einen anderen Eintrag verweist als die
+			   Variable TERMCAP, dann wird auch das File
+			   /etc/termcap gelesen.
+
+       ~/.bshmap	   Nach der Initialisierung der Cursormappings.
+
+
+   Bedienung, Kommandoeingabe
+       Eingabezeilen konnen mit folgenden Kommandos bzw.  Kommandosequenzen
+       editiert werden:
+
+       ^H	 ein Zeichen nach links
+
+       ^F	 ein Zeichen nach rechts
+
+       ^D	 das Zeichen unter dem Textzeiger loschen
+
+       DEL	 das Zeichen links vom Textzeiger loschen
+
+       ^U	 ganze Zeile loschen
+
+       ESC ^H	 ein Wort nach links
+
+       ESC ^F	 ein Wort nach rechts
+
+       ESC ^D	 das Wort rechts vom Textzeiger loschen
+
+       ESC DEL	 das Wort links vom Textzeiger loschen
+
+       Innerhalb der History kann man sich mit folgenden Kommandosequenzen
+       bewegen (naheres uber die History unter Punkt Eingebaute Kommandos ):
+
+       ^P	 vorhergehende Zeile
+
+       ^N	 nachfolgende Zeile
+
+       ESC ^P	 ruckwarts nach Zeile suchen
+
+       ESC ^N	 vorwarts nach Zeile suchen
+
+       ESC CR	 zuruck zur Zeile vor dem letzten Suchkommando
+
+       Jedes andere Zeichen wird in den vorhandenen Text eingeschoben. Die
+       Tabulator-Taste erzeugt ein ^I. Sollen in der Eingabe Zeichen
+       erscheinen, die Editierungsfunktion haben, so mussen sie gequotet
+       werden, dazu muss zuerst '^^' und dann das Zeichen, das in der
+       Eingabezeile erscheinen soll, eingegeben werden; es wird dann nicht
+       interpretiert.
+
+       Eine Zeile wird durch die Tasten CR oder LF beendet. Hierbei ist die
+       Stellung des Textzeigers innerhalb der Zeile unerheblich.
+
+
+   Editierungsmapping
+       Bei der Initialisierung des bsh wird ein File ~/.bshmap gelesen, in dem
+       sich Editierungsmaps fur den bsh befinden. Es lasst sich fast alles
+       ummappen. Wird ein Match festgestellt, so erfolgt eine textuelle
+       Ersetzung direkt in die Eingabezeile. Es ist moglich, das Mapping fur
+       den nachsten Buchstaben mit Hilfe eines Quotebuchstabens aufzuheben.
+       Dieser Quotebuchstabe ist standartmassig auf NULL (Control @) gesetzt,
+       und lasst sich andern (z.Zt. noch nicht implementiert).
+
+       Das File ~/.bshmap hat folgenden Aufbau:
+
+       mapstr:textersatz:Kommentar
+
+       mapstr ist dabei der String, der ersetzt werden soll.  textersatz ist
+       der String, der in der Eingabezeile erscheint.  Kommentar ist ein
+       optionaler Kommentar, der nicht beachtet wird.  mapstr darf maximal 16
+       Zeichen lang sein, der textersatz darf maximal 128 Zeichen lang sein.
+       Jeder Eintrag muss auf genau einer Textzeile stehen.
+
+       Kontrollzeichen konnen wie in /etc/termcap durch eine Ersatzdarstellung
+       eingetragen werden:
+
+       Ein '^' vor einem Buchstaben bedeutet, dass das entsprechende
+       Kontrollzeichen gemeint ist. Das Zeichen ESCAPE lasst sich durch '\E'
+       darstellen. Diese beiden ebengenannten Fluchtsymbole lassen sich durch
+       '\^' bzw. '\\' erzeugen. Es ist ausserdem moglich die in c bekannte
+       Oktaldarstellung zu verwenden. Nur mit der Oktaldarstellung ist es
+       moglich, einen Doppelpunkt zu erzeugen in dem man \072 eintragt.
+
+       Weiterhin stehen fur:
+
+       \t   ^I	      Horizontaltabulator
+
+       \v   ^K	      Vertikaltabulator
+
+       \b   ^H	      Backspace
+
+       \r   ^M	      Carriage Return
+
+       \n   ^J	      Line Feed
+
+       \f   ^L	      Form Feed
+
+       Das File ~/.bshmap, konnte folgendermassen aussehen.
+
+       \Ep:\E^P^U:Search up and clear buf
+       \En:\E^P^U:Search down and clear buf
+
+       Das Standardmapping wird aus /etc/termcap gewonnen.
+
+
+   Lexikalische Struktur
+       Der bsh teilt Zeilen in Worte an den Stellen, wo Leerzeichen, Tabs oder
+       die besonderen Buchstaben '&' , '|' , ';' , '<' , '>' , '(' und ')',
+       sowie die Buchstabenpaare '&&' , '||' , '<<' oder '>>' stehen. Die
+       besondere Bedeutung dieser Buchstaben lasst sich durch Voranstellen
+       eines '\' verhindern. Ein '\', das direkt von einem Newline gefolgt
+       wird, wird durch ein Blank ersetzt, falls es nicht in einem mit '''
+       gequoteten String erscheint.
+
+       Strings, die in Paare von ''' oder '"' eingeschlossen sind, formen
+       Worte. Werden die Strings in Paare von '"' eingeschlossen, dann erfolgt
+       in diesen Strings eventuell eine textuelle Ersetzung von Abkurzungen
+       oder Environment-Variablen.  Eine textuelle Ersetzung lasst sich auch
+       in diesem Falle durch Voranstellen eines '\' verhindern. In Strings,
+       die durch Einschliessen in ''' gebildet werden, wird nichts ersetzt und
+       der Buchstabe '\' hat keine besondere Wirkung, es sei denn, er steht
+       vor einem Newline oder einem '''. Damit ist es moglich, diese
+       Buchstaben in einen String einzugeben.  In beiden Fallen erfolgt jedoch
+       in diesen Strings keine Expansion von speziellen Pattern-Matching
+       Buchstaben uber das File-System.
+
+       Der Buchstabe '#' hat eine besondere Bedeutung, wenn er am Anfang einer
+       Zeile steht. (siehe '#' - Kommandos) Innerhalb von Kommando-Files
+       leitet er eine Kommentarzeile ein, wenn direkt hinter ihm ein Blank,
+       ein Tab oder ein Newline steht.
+
+       Ein einfaches Kommando ist eine Sequenz von Worten, von denen das erste
+       Wort der Kommando-Name des auszufuhrenden Kommandos ist.
+
+       Ein einfaches Kommando oder eine Sequenz von einfachen Kommandos, durch
+       ein '|' getrennt, ergeben eine Pipeline. Der Output eines jeden
+       Programms wird in den Input des folgenden geleitet. Sequenzen von
+       Pipelines konnen durch ';' oder '&' getrennt werden. Steht hinter einer
+       Pipeline ein '&', wird auf diese Pipeline nicht gewartet.
+
+       Jedes dieser oben beschriebenen Kommandos oder Kommandosequenzen kann
+       in Paare von '(' und ')' gepackt werden, um so ein einfaches Kommando
+       zu erzeugen. Es ist auch moglich, einzelne Kommandos einer Pipeline
+       durch '&&' oder '||' zu trennen. Dabei wird wie in der
+       Programmiersprache c das zweite bzw. folgende Kommando nur dann
+       ausgefuhrt, wenn das Erste bzw. Vorangehende gelang oder scheiterte.
+       Auch hier konnen durch Verwendung von '(' und ')' Gruppen gebildet
+       werden.
+	      Beispiele:
+	      Joerg> cd cmd/bsh && make bsh
+	      ...
+
+	      make bsh	wird nur ausgefuhrt, wenn das 'cd' - Kommando gegluckt
+	      ist.
+	      Joerg> make bsh || echo bullshit
+	      ...
+
+	      Das echo Kommando wird nur dann ausgefuhrt, wenn das make
+	      Kommando scheitert.
+	      Joerg> (make bsh && echo ok) || echo bullshit
+	      ...
+
+	      Wenn das make Kommando scheitert, dann wird das zweite echo
+	      Kommando ausgefuhrt. Wenn das make Kommando gelingt, dann wird
+	      ok ausgegeben. Das ersetzt allerdings keine if then else
+	      Struktur, da fur den Fall, dass das Kommando echo ok  scheitert,
+	      zusatzlich bullshit ausgegeben wird, denn der Exitcode der
+	      Kommandogruppe in Klammern ist der Exitcode des letzten
+	      Kommandos.
+
+
+   Jobs und Jobkontrolle
+       XXX
+
+
+   Textuelle Ersetzungen
+       Textuelle Ersetzungen finden auf verschiedenen Ebenen statt.
+
+       Zunachst durch das Editierungsmapping (direkt in der Kommandozeile
+       sichtbar).
+
+       Weiterhin durch Abkurzungsmakros aus den ~/.globals und .locals (siehe
+       '#' - Kommandos) sowie durch Ersetzungen uber den Inhalt von
+       Environment-Variablen. Hier ist es wichtig zu wissen, durch welche
+       Trennzeichen Worte aus der Eingabezeile erkannt werden, die dann auf
+       Expansionsmoglichkeiten untersucht werden. Trennzeichen fur diese
+       Expansionen sind:
+
+       " \t\n\\'$~/|&;()><%\"=-"
+
+       In der letzten Stufe finden textuelle Ersetzungen durch Expansion uber
+       das Filesystem statt. (siehe Pattern-Matching) Pattern-Matching
+       Metabuchstaben sind:
+
+       ! # % * { } [ ] ?
+
+       Fur die Expansion gilt folgende zeitliche Reihenfolge und Praferenz:
+
+       Zuerst wahrend des Editierens	  Editierungsmapping.
+
+       Vor dem Parsing			  Lokale und globale Abkurzungen
+					  alternativ mit Praferenz fur die
+					  lokalen Abkurzungen.
+
+       Noch vor dem Parsing		  z.Zt. !!! '$' - Variablen.
+
+       Vom Interpreter (direkt vor der Ausfuhrung des Programms)
+					  Expansionen uber das File-System.
+
+       Alle diese Ersetzungen lassen sich durch das Voranstellen eines '\' vor
+       den entsprechenden Identifier verhindern.
+
+
+   Input/Output
+       Jeder Prozess hat drei Files, mit denen er standartmassig verbunden
+       ist.
+
+       stdin		   : Die Standarteingabedatei
+
+       stdout		   : Die Standartausgabedatei
+
+       stderr		   : Die Standartdiagnostikdatei
+
+       Diese drei Dateien sind normalerweise dem Terminal zugeordnet. Sie
+       lassen sich jedoch mit folgender Syntax umleiten:
+
+       < name Die Datei name wird als Eingabedatei eroffnet.
+
+       << delimiter
+	      Der bsh liest solange von stdin, bis in einer Zeile delimiter
+	      steht. Alles, was bis dahin eingegeben wurde, wird nach
+	      Expansion uber Environment-Variablen und Abkurzungen (globals
+	      und locals) dem Programm als Eingabedatei ubergeben. Eine
+	      Anwendung sind Commandfiles, in denen eine Eingabe fur ein
+	      Programm z.B. fur einen Editor erforderlich ist; man kann dann
+	      alles in einem File halten.
+
+       > name Das File name wird als Ausgabedatei eroffnet. Falls es bereits
+	      besteht, wird der alte Inhalt zerstort.
+
+       >> name
+	      Das File name wird als Ausgabedatei eroffnet. Falls es bereits
+	      besteht, wird der kommende Output des Programmes an den bereits
+	      bestehenden Inhalt angehangt.
+
+       % name Das File name wird als Fehlerdatei eroffnet. Falls es bereits
+	      besteht, wird der alte Inhalt zerstort.
+
+       %% name
+	      Das File name wird als Fehlerdatei eroffnet. Falls es bereits
+	      besteht, wird der kommende Output des Programmes an den bereits
+	      bestehenden Inhalt angehangt.
+
+       prog1 | prog2
+	      Der Output von prog1 wird in einer Pipeline an den Input von
+	      prog2 geleitet.
+
+       prog1 |% prog2
+	      Der Fehleroutput von prog1 wird in einer Pipeline an den Input
+	      von prog2 geleitet.
+
+       Bei name wird jeweils eine Expansion uber die Abkurzungen und
+       Environment-Variablen vorgenommen.
+
+
+   Variablen, Environment-Variablen
+       Im Environment (EV) konnen Variablen gespeichert und abgerufen werden.
+       Der bsh gibt den aktuellen Inhalt seines Environments an die von ihm
+       gestarteten Prozesse weiter.
+
+       Der Abruf geschieht durch Expansion. Beginnt ein Wort mit '$', so wird
+       innerhalb des EVs nach der entsprechenden Variablen gesucht und das
+       gesamte Wort (einschliesslich '$') durch den Wert dieser Variablen
+       ersetzt.
+
+       Die Expansion der Variablen geschieht zeilenweise. Es ist nicht
+       moglich, innerhalb einer Kommandozeile den Wert einer Variablen zu
+       setzen und ihren Wert danach auszugeben. Konnte das Wort nicht
+       expandiert werden, wird es direkt ubernommen.
+
+       Beispiele:
+       Joerg> set x=hallo
+       Joerg> set
+       PATH=:/bin
+       HOME=:
+       TERM=vterm
+       PROMPT=Joerg>
+       PROMPT2=>
+       HISTORY=0
+       x=hallo
+       Joerg> echo $x $y
+       hallo $y
+       Joerg> set lalue=test;echo $lalue
+       $lalue
+       Joerg> _
+
+       $name   liefert den Wert der Variablen name.
+
+       Folgende Variablen konnen nur gelesen, jedoch nicht explizit gesetzt
+       werden.
+
+       $0      liefert den Namen des laufenden command-files.
+
+       $1..$n  liefern die aktuellen Argumente eines command-files.
+
+       $r1     liefert alle Argumente eines command-files (entsprechend argv+1
+	       in c - files).
+
+       $r3     liefert alle Argumente eines command-files beginnend bei dem
+	       dritten Argument (entsprechend argv+3 in c - files).
+
+       $#      liefert die Anzahl der Argumente des aktuellen command-files
+	       (Entsprechend argc in c - Argument $0 zahlt mit).
+
+       $$      liefert die Prozess-ID des gerade laufenden bsh.
+
+	       Beispiele:
+	       Joerg> kill $$
+	       name: _
+
+	       Beendet den laufenden bsh.
+
+       $!      liefert die Prozess-ID des letzten gestarteten
+	       Hintergrundprozesses.
+
+	       Beispiele:
+	       Joerg> ps -l $!
+
+	       Gibt den Status des letzten Hintergrundprozesses aus.
+
+       $?      liefert den Ruckgabewert der letzten Kommandos.
+
+	       Beispiele:
+	       Joerg> test 6 '*' 4
+	       Joerg> echo $?
+	       0
+
+
+   Expansion des Zeichens '~'
+       Das Zeichen '~' wird zu einem Pfadnamen expandiert. Es kann durch einen
+       Benutzernamen gefolgt werden. Ohne Benutzernamen erzeugt es den
+       Pfadnamen der eigenen HOME-Directory aus dem File /etc/passwd, mit
+       Benutzernamen erzeugt es den Pfadnamen der HOME-Directory des
+       entsprechenden Benutzers.
+
+       Beispiele:
+       Joerg> pwd
+       /user/joerg
+       Joerg> echo ~
+       /user/joerg
+       Joerg> echo ~peter
+       /user/peter
+       Joerg> ls ~peter/bin
+       /user/peter/bin:
+       bsh
+       Joerg> ls ~/..
+       /user:
+       gerd
+       joerg
+       peter
+       reiner
+       Joerg> ls ~/cmd/bsh/doc
+       bsh.doc
+       Joerg> _
+
+
+   Pattern-Matching
+       Es gibt bestimmte Buchstaben, die bei der Expansion von Filenamen, beim
+       Suchen in der History und bei der Ausgabe von '#' Abkurzungen eine
+       besondere Bedeutung haben. Es sind:
+
+       ! # % * { } [ ] ?
+
+       Ihre Bedeutung ist :
+
+       !    ALT		   Oder im Matching dies!das!jenes
+
+       *    STAR	   Jede beliebige Anzahl jedes beliebigen Buchstaben.
+
+       ?    ANY		   Genau ein beliebiges Zeichen.
+
+       %    NIL		   Genau kein !!! Zeichen. (Muss gequotet werden,
+			   damit keine Umlenkung von stderr erfolgt)
+
+       {}   GROUP	   Fur Vorrang Gruppierung. Kann geschachtelt werden.
+
+       #c   MULT	   Jede beliebige Anzahl eines bestimmten Zeichens.
+
+       []   CLASS	   Umschliesst eine Menge von Zeichen.
+
+       -    RANGE	   Bereich fur Mengen.
+
+       ^    NOT/BEG	   Anfang einer Zeile, in [] das Boolsche nicht.
+
+       \    ESC		   Fluchtsymbol fur den Pattern-Matcher.
+
+       $    END		   Ende einer Zeile.
+
+       Beispiele:
+       Joerg> echo bsh.?
+       bsh.c bsh.h
+       Joerg> echo *.bak
+       test.c.bak bsh.c.bak mem.c.bak
+       Joerg> echo test#1
+       test1 test11 test111
+       Joerg> echo dies!das
+       dies das
+       Joerg> echo b*.{lint!c}
+       bsh.c bsh.lint btab.c builtin.c
+       Joerg> echo [a-i]*.c
+       abbrev.c abbtab.c builtin.c input.c
+       Joerg> echo ab[0-9].c
+       ab1.c ab2.c ab3.c
+       Joerg> echo [^i]*.c
+       builtin.c mem.c test.c
+
+
+   Eingebaute Kommandos
+       $      Siehe fg-Kommando.
+
+       :      Dies ist ein Dummy Kommando. Es ist damit z.B. moglich Files zu
+	      erzeugen.
+
+	      Beispiele:
+	      Joerg> :>hallo
+	      Joerg> echo *
+	      hallo test.c
+	      Joerg> _
+
+       @  name = expr
+	      Der Environment-Variablen name wird der Wert des einfachen
+	      Ausdrucks expr zugewiesen.
+
+	      Statt '=' ist auch '+=' , '-=' , '/=' , '%=' oder '*=' moglich.
+	      Fur expr ist jeder Ausdruck erlaubt, der auch im test-Kommando
+	      moglich ist.
+
+	      Beispiele:
+	      Joerg> @ count = 1
+	      Joerg> @ count = $count + 1
+	      Joerg> echo $count
+	      Joerg> 2
+	      Joerg> _
+
+       [ expr ]
+	      Synonym fur das test Kommando. Beschreibung siehe test.
+
+       alias [fromstr] [tostr]
+	      Ersatz fur die '#'-Kommandos (noch nicht fertig implementiert).
+
+       alloc [arg]
+	      Dient zum Debuggen der allozierungs-Routine des bsh.  Ohne
+	      Argumente werden Statistiken uber den allozierten Bereich
+	      ausgegeben.  Mit einem Argument werden die Adressen und Grossen
+	      der verwalteten Stucke, sowie der Zustand der Stucke ausgegeben.
+	      Dabei werden zerstorte Stucke durch einen Stern hinter der
+	      Statusinformation gekennzeichnet.	 Mit einem 'l' als Argument
+	      wird bei jedem Stuck zusatzlich der lesbare Inhalt ausgegeben,
+	      mit einem 'L' als Argument wird bei nicht lesbarem Inhalt eine
+	      Ersatzdarstellung gezeigt.
+
+       bg [job]
+	      Schickt den zuletzt gestoppten oder den angegebenen job in den
+	      Hintergrund. Dazu wird er wieder gestartet. Der job kann zur
+	      Zeit nur durch die Prozessid eines der Prozesse des jobs
+	      spezifiziert werden.
+
+       break  Bricht eine Schleife ab. Die Interpretation setzt bei dem
+	      Kommando fort, das nachsten end folgt.
+
+	      Beispiele:
+	      Joerg> for i in 1 2 3 4 5 6
+	      > if test $i = 3
+	      > then
+	      > echo ende.
+	      > break
+	      > fi
+	      > echo $i
+	      > end
+	      1
+	      2
+	      ende.
+	      Joerg> _
+
+       case   Wird fur das switch - Kommando zum Erkennen einer Moglichkeit
+	      benotigt. Ausserhalb eines switch - Kommandos ist case nicht
+	      zulassig.
+
+       cd [name]
+       chdir [name]
+       cwd [name]
+	      Andern der Arbeitsdirectory des bsh zur Directory name.  Ist
+	      name nicht angegeben, erfolgt ein Wechsel zu der Directory, die
+	      in der Environment-Variablen HOME angegeben ist.
+
+	      Existiert die Environment-Variable CDPATH, wird name auch in den
+	      entsprechenden Directories aus der Liste in CDPATH gesucht.
+	      Erfolgt ein cd zu einer Directory aus der Liste, wird der
+	      gesamte Name ausgegeben. Bei jedem cd wird die Liste der lokalen
+	      Abkurzungen (./.locals) gegen die aktuelle getauscht.
+
+       compute
+	      Veraltete Intrinsic-Routine des bsh fur die Grundrechenarten auf
+	      Integer-Zahlen.
+
+	      Setzt die Variable $? auf das Ergebnis der Berechnung.  Da es
+	      keine Moglichkeit gibt fehlerhafte Parameter am Returncode zu
+	      erkennen wird Sie demnachst abgeschafft.
+
+	      Bitte nur noch @ oder test verwenden.
+
+       concat name val1 ... valn
+	      Die Werte der Strings val1 ... valn werden zu einem String in
+	      der Variablen name zusammengefasst.
+
+	      Beispiele:
+	      Joerg> concat test a b c . $$
+	      Joerg> echo $test
+	      abc.5123
+	      Joerg> _
+
+       dirs   Ausgabe des Directory-Stacks. Die Spitze ist links und stellt
+	      die augenblickliche Arbeitsdirectory dar. Die Spitze des
+	      Directory-Stacks hat den logischen Offset 0, die direkt rechts
+	      danebenstehende Directory den logischen Offset -1. Der logische
+	      Offset einer Directory im Stack lasst sich fur das pushd und das
+	      popd Kommando gebrauchen.
+
+       do     Das erste Argument des do - Kommandos wird als Kommandozeile
+	      aufgefasst und so interpretiert, als waren die weiteren
+	      Argumente des do - Kommandos die Argumente av[2] .. av[n] des
+	      bsh. Der Effekt ist der gleiche wie bsh -c arg1 .. argn, ohne
+	      dass ein neuer Shell gestartet wird.
+
+	      Beispiele:
+	      Joerg> do 'echo hallo: $r1' 1 2 3 4 5
+	      hallo: 1 2 3 4 5
+	      Joerg> _
+
+       echo [-n|-nnl] [args]
+	      Das echo - Kommando hat die gleiche Funktion wie das /bin/echo -
+	      Kommando. Da es aber in den bsh eingebaut ist, ist seine
+	      Ausfuhrungszeit wesentlich kurzer (wichtig in command-files).
+	      Wird als erstes Argument '-n' oder '-nnl' angegeben, so erfolgt
+	      keine Ausgabe eines Newlinecharacters am Ende der Zeile.
+
+	      Werden keine Argumente angegeben, so erfolgt auch keine Ausgabe
+	      des Newlinecharacters. Wenn man nur ein Newline ausgeben mochte,
+	      dann muss man einen leeren String als Parameter angeben.
+
+	      Wenn keine Argumente angegeben werden, und stdin umgeleitet
+	      wird, dann liest echo von stdin und schreibt das gelesene auf
+	      stdout. (Ahnlich wie cat)
+
+	      Wenn das eingebaute echo - Kommando nicht benutzt werden soll,
+	      muss man /bin/echo schreiben.
+
+	      Beispiele:
+	      Joerg> echo test *.c
+	      test program.c t.c zz.c
+	      Joerg> echo -nnl huhu;echo .pas
+	      huhu.pas
+	      Joerg> echo < .EDTMP;echo ''
+	      bsh.c
+	      Joerg> _
+
+       else
+       end    Siehe Beschreibung von if , switch , loop und for.
+
+       err    Gleiche Funktion wie echo jedoch erfolgt die Ausgabe auf stderr.
+
+       errstr errno
+	      Der Fehlertext zu der Fehlernummer errno wird ausgegeben.
+
+       eval   XXX
+
+       exec [ av0=name] command [args]
+	      Uberschreiben des aktuellen Kommandointerpreters mit dem
+	      Kommando command.
+
+	      Mit der Option av0=name ist es moglich, dem Kommando einen von
+	      seinem Namen abweichendes av[0] zu ubergeben.  Wird beim
+	      Loginshell exec aufgerufen, so bekommt man einen neuen Login-
+	      Prompt, wenn das Kommando command beendet ist.
+
+	      Beispiele:
+	      Joerg>
+	      Joerg2> exec date
+	      Tue Aug 6 1985 13:57:52
+	      Joerg> exec av0=- bsh
+	      Joerg 2> _
+
+	      Das letzte Beispiel startet einen bsh, der glaubt, durch einen
+	      Login-Prozess entstanden zu sein.
+
+       exit [Ruckgabewert]
+	      Beenden eines Kommandointerpreters oder Abbruch einer
+	      Kommandodatei. Der Ruckgabewert kann durch exit <n> definiert
+	      werden. exit ohne Parameter erzeugt einen Ruckgabewert von Null.
+
+	      Beispiele:
+	      Joerg> bsh
+	      Joerg> exit 55
+	      Joerg> echo $?
+	      55
+	      Joerg> _
+
+       fg     XXX
+
+       fi     fi ist das Ende eines if Kommandos.
+
+       for name in [Wortliste]
+	      Schleife. for i in a b c fuhrt alle folgenden Kommandos (bis
+	      end) aus. Die Environment-Variable i erhalt fur die drei
+	      Schleifendurchlaufe jeweils die Werte a, b, und c.
+
+	      Beispiele:
+	      Joerg> for i in 1 2 3
+	      > echo $i
+	      > end
+	      1
+	      2
+	      3
+	      Joerg> _
+
+       function [name] ['cmdlist']
+	      Definition einer Funktion mit Namen name und Body cmdlist.
+	      cmdlist sollte bei der Eingabe unbedingt in ''' gesetzt werden.
+	      cmdlist kann sich auch uber mehrere Zeilen erstrecken, wenn
+	      direkt vor dem Ende einer jeden Zeile ein '\' steht (siehe auch
+	      quoting). Funktionen konnen rekursiv aufgerufen werden.
+
+	      Der Aufruf erfolgt durch Eingabe des Funktionsnamens.  Zur Zeit
+	      ist es nicht moglich, Argumente zu ubergeben.  Eine Funktion
+	      kann mit return beendet werden.
+
+       glob [args]
+	      Hat die gleiche Funktion wie echo, nur das die einzelnen Worte
+	      in der Ausgabe durch null Bytes getrennt sind.
+
+       history
+	      Ausgabe der letzten ausgefuhrten Kommandos (siehe Punkt 4).
+	      Erfolgt die Ausgabe auf stdout, werden die Kommandos in
+	      geschweiften Klammern ausgegeben, bei einer Pipe oder auf ein
+	      File entfallen die geschweiften Klammern. Fur die spatere
+	      Verwendung mit source -h.
+
+	      Beispiele:
+	      Joerg> history
+	      { cat *.c }
+	      { who am i }
+	      { date }
+	      Joerg> _
+
+       if (expr)
+       if command args
+	      XXXX
+	      if command args
+	      then
+	      ....
+	      fi
+	      if command args
+	      else
+	      ....
+	      fi
+	      if command args
+	      then
+	      ....
+	      else
+	      ....
+	      fi
+	      Bedingungsabfrage. Dem if-Kommando muss ein Kommando oder ein
+	      einfacher Ausdruck wie in test in () folgen. Ist der
+	      Ruckgabewert dieses Kommandos gleich Null, wird ein TRUE
+	      erkannt, andernfalls ein FALSE. Wurde ein TRUE erkannt, werden
+	      die Kommandos zwischen dem nachsten then und dem dazugehorigen
+	      else bzw. fi ausgefuhrt. Wurde ein FALSE erkannt, werden die
+	      Kommandos zwischen else und fi ausgefuhrt, falls else vorhanden
+	      ist.
+
+	      Achtung: then , else und fi mussen auf einer eigenen Zeile
+	      stehen.
+
+	      Beispiele:
+	      Joerg> if cc -c programm
+	      > then
+	      > cc -o programm programm.o
+	      > echo fertig.
+	      > else
+	      > echo FEHLER im programm
+	      > fi
+	      programm.c:
+	      linking programm:
+	      fertig.
+	      Joerg> _
+
+       kill [-l] [-sig] pid1 ... pidn
+	      Mit kill lassen sich Signale an Prozesse verschicken.  Wird
+	      keine Signalnummer angegeben, dann wird das Signal SIGTERM (15)
+	      geschickt. Es ist jedoch moglich, andere Signale zu
+	      spezifizieren, indem entweder die Signalnummer mit
+	      vorangestelltem '-' oder der symbolische Name des Signals aus
+	      signal.h ohne den Prefix SIG benutzt wird.
+
+	      Mit der Option -l ist es moglich, eine Liste der erlaubten
+	      Signale zu bekommen.
+
+	      Der bsh verschickt unter BSD4.2, wenn das angegebene Signal
+	      SIGHUP oder SIGTERM ist, zusatzlich des Signal SIGCONT, um den
+	      betreffenden Prozess aufzuwecken, falls er suspendiert ist.
+
+	      Beispiele:
+	      Joerg> kill -l
+	      HUP INT QUIT ILL TRAP IOT EMT FPE KILL BUS SEGV
+	      SYS PIPE ALRM TERM URG
+	      STOP TSTP CONT CHLD TTIN TTOU TINT XCPU XFSZ
+	      VTALRM PROF WINCH
+	      Joerg> kill -HUP 1
+	      Joerg> kill -9 123
+	      Joerg> kill 817 900
+	      Joerg> _
+
+       killpg [-l] [-sig] pgrp1 ... pgrpn
+	      Killpg hat die gleich Funktion wie kill, allerdings wird das
+	      Signal sig den Prozessgruppen pgrp1 bis pgrpn geschickt.
+
+       limit  XXX
+
+       login [name]
+	      Login ist identisch mit exec /bin/login [name]. login ist nur
+	      erlaubt, falls es sich um den Loginshell handelt.
+
+	      Beispiele:
+	      Joerg2> login
+	      Not login shell.
+	      Joerg2> <EOF>
+	      Joerg> login hansi
+	      Password:
+
+       logout
+	      Beenden des ersten Kommandointerpreters.
+
+	      Beispiele:
+	      Joerg2> logout
+	      Not login shell.
+	      use exit to exit.
+	      Joerg2> <EOF>
+	      Joerg> logout
+	      name: _
+
+       loop   Endlos-Schleife.	Alle folgenden Kommandos (bis end) werden
+	      wiederholt ausgefuhrt. Ein Verlassen der Schleife ist mit einem
+	      break , mit ^C oder mit ^D moglich.
+
+	      Beispiele:
+	      Joerg> loop
+	      > echo -nnl "sag mal was: "
+	      > read cmd
+	      > echo soso, $cmd
+	      > end
+	      sag mal was: hallo
+	      soso, hallo
+	      sag mal was: huhu
+	      soso, huhu
+	      sag mal was: ^C
+	      1234: killed
+	      Joerg> _
+
+       map [fromstr] [tostr]
+	      Mit map ist es moglich, beliebige Buchstaben oder Strings des
+	      Terminalinputs, bevor sie den Editor des bsh erreichen,
+	      umzumappen. Damit kann unter anderem eine Anpassung der
+	      Cursortasten an die Kommandos des bsh vorgenommen werden. Wenn
+	      kein Argument angeben wird, dann wird das aktuelle Mapping
+	      ausgegeben. Es wird die unter Punkt 3 erklarte Ersatzdarstellung
+	      fur Controlbuchstaben verwendet.
+
+	      Beispiele:
+	      Joerg> map
+	      ^[[220z^A
+	      ^[[222z^E
+	      ^[[226z^D
+	      ^[[A ^P
+	      ^[[B ^N
+	      ^[[C ^F
+	      ^[[D ^H
+	      ^[n  ^[^N^U
+	      ^[p  ^[^P^U
+	      Joerg> map abc def
+	      Joerg> _
+
+       newgrp
+	      Andern der Benutzergruppe.  Nur bei SYSTEM V.
+
+       pgrp   XXX
+
+       popd [-offset]
+	      Popd ohne Argumente fuhrt ein cd zu der Directory rechts von der
+	      augenblicklichen Arbeitsdirectory durch. Es kann aber bei Angabe
+	      eines Offsets zu einer anderen Directory aus dem Stack gehen.
+
+	      Bei jedem cd wird die Liste der lokalen Abkurzungen (./.locals)
+	      gegen die aktuelle getauscht.
+
+       pushd [name]
+       pushd [-offset]
+	      Wie cd, jedoch bleibt die Arbeitsdirectory auf dem Stack.
+	      Anstelle eines Namens kann auch ein Offset im Stack angegeben
+	      werden.
+
+	      Bei jedem cd wird die Liste der lokalen Abkurzungen (./.locals)
+	      gegen die aktuelle getauscht.
+
+       pwd    Ausgabe der aktuellen Workingdirectory. Arbeitet wie /bin/pwd
+	      erkennt aber wiederholte Benutzung in der gleichen Directory und
+	      ist dadurch schneller. Ausserdem wird die Variable $CWD
+	      aktualisiert.
+
+       read name
+	      Mit der read - Funktion des bsh lassen sich interaktiv
+	      Environment-Variablen fullen. Damit lassen sich z.B.  command-
+	      files schreiben, die, je nach Antwort des Benutzers,
+	      unterschiedliche Aktionen ausfuhren. Wenn read ein ^D liest, ist
+	      in einer Schleife der Effekt der gleiche, als wenn ein break
+	      ausgefuhrt wurde.
+
+	      Beispiele:
+	      Joerg> read cmdline
+	      > huhu dies ist eine testeingabe
+	      Joerg> echo $cmdline
+	      huhu dies ist eine testeingabe
+	      Joerg> _
+
+       remap  Das File ~/.bshmap und der /etc/termcap Eintrag werden neu
+	      gelesen. Das ist z.B. notig, wenn ~/.bshmap oder /etc/termcap
+	      durch Editieren erweitert oder sonstwie geandert wurde, oder die
+	      Environmentvariable TERM geandert wurde.
+
+	      Beispiele:
+	      Joerg> ved ~/.bshmap
+	      .....
+	      .....
+	      Joerg> remap
+	      Joerg> _
+
+       repeat [count=# | c=#|-#] [delay=# | d=#] command
+	      Das Kommando command wird wiederholt ausgefuhrt. Eine
+	      Variablensubstitution wird nur einmal durchgefuhrt. Wird count
+	      nicht angegeben, so ist count = MAXLONG. Wird delay angegeben,
+	      ist die Zeit zwischen dem Starten von zwei aufeinander folgenden
+	      Kommandos # Sekunden.
+
+	      Beispiele:
+	      Joerg> repeat -5 echo hallo
+	      hallo
+	      hallo
+	      hallo
+	      hallo
+	      hallo
+	      Joerg> _
+
+       resume pid
+       resume pid &
+	      Setzt die Ausfuhrung eines suspendierten Prozesses fort.	Der
+	      bsh wartet dann auf seine Beendigung. Wenn der bsh nicht warten
+	      soll, kann der Prozess mit resume <pid> & gestartet werden. Die
+	      Prozessid, die dabei ausgegeben wird, ist zu ignorieren.
+
+	      Beispiele:
+	      Joerg> ved
+	      .....
+	      ....
+	      324: suspended.
+	      Joerg> resume 324
+	      .....
+	      .....
+	      Joerg> (sleep 100000;echo fertig)
+	      ^Y
+	      Joerg> 328: suspended.
+	      Joerg> resume 328 &
+	      329
+	      Joerg> _
+
+       return [retval]
+	      Mit dem return - Kommando konnen Funktionen, die mit function -
+	      Kommando definiert wurden, beendet werden. Es ist moglich, ein
+	      numerisches Argument zu ubergeben.  Dieses Argument kann dann
+	      uber die Variable $? abgefragt werden. Wird kein Argument
+	      angegeben, ist der Return-Wert Null.
+
+       savehistory
+	      Mit dem savehistory - Kommando kann der aktuelle Inhalt der
+	      History im File ~/.history gesichert werden. Eine Anwendung ist
+	      gegeben, wenn ein bsh gestartet werden soll, der die bisherige
+	      History enthalt.
+
+	      Beispiele:
+	      Joerg> history
+	      set
+	      test a
+	      Joerg> savehistory
+	      Joerg> bsh
+	      Joerg 2 > history
+	      set
+	      test a
+	      savehistory
+	      Joerg 2 >
+
+       set [name=val]
+	      Setzen einer Environment-Variablen. set x=huhu setzt die
+	      Environment-Variable 'x' auf den Wert 'huhu'. set ohne Parameter
+	      gibt den Inhalt des gesamten aktuellen Environment's aus.
+
+	      Beispiele:
+	      Joerg> set x=7
+	      Joerg> echo $x
+	      7
+	      Joerg> set x=9
+	      Joerg> echo $x
+	      9
+	      Joerg> _
+
+       setenv [name val]
+	      Hat zur Zeit die gleiche Funktion wie set. Da jedoch die Anzahl
+	      der Variablen, die der bsh verwaltet sehr stark angestiegen ist,
+	      und es z.B. fur die Funktionen wunschenswert ware, dass man auch
+	      Array-Variablen hat, um z.B. Argumente an Funktionen ubergeben
+	      zu konnen, muss in absehbarer Zukunft die Expansion von
+	      Variablen und damit die Funktion der Kommandos set und unset
+	      geandert werden. Dabei wird die ursprungliche Funktion von den
+	      Kommandos setenv und unsetenv ubernommen. Jedoch werden nur
+	      bestimmte Variablen auch global bleiben.	Lokale Variablen
+	      mussen dann mit dem Kommando set bzw.  unset behandelt werden.
+
+	      Beispiele:
+	      Joerg> setenv x 7
+	      Joerg> echo $x
+	      7
+	      Joerg> setenv x 9
+	      Joerg> echo $x
+	      9
+	      Joerg> _
+
+       setmask
+       setmask ownermask groupmask worldmask
+       setmask [+-]{rwxd} [+-]{rwxd} [+-]{rwxd]
+	      Mit dem setmask Kommando lasst sich die File-Erzeugungsmaske des
+	      bsh verandern oder ansehen. Diese Maske wird immer benutzt, wenn
+	      ein Prozess ein File erzeugt. Die aktuelle Maske wird durch
+	      logisches Verunden der Maske und den verlangten Modes erzeugt.
+	      Die File-Erzeugungsmaske vererbt sich auf die Kinder und ist
+	      wichtig fur neu erzeugte Files.
+
+	      +		In Verbindung mit r, w, x oder d addiert diesen Mode.
+
+	      -		In Verbindung mit r, w, x oder d entfernt diesen Mode.
+
+	      r,w,x,d	Ohne + oder - erzeugt nur diesen Mode.
+
+	      =		Die Modes bleiben erhalten.
+
+	      .		Die Modes werden auf '....' gesetzt.
+
+	      Optionen mussen in der richtigen Reihenfolge angegeben werden.
+	      Es muss fur Owner, Group und World ein Modestring angegeben
+	      werden. Wenn kein Zugriff erwunscht ist, kann ein '.' angegeben
+	      werden, wenn sich ein Mode nicht andern soll, kann fur diesen
+	      Mode ein '=' angegeben werden. Setmask verandert nicht die Modes
+	      von existierenden Files.
+
+	      Wird keine Maske angegeben, so wird die aktuelle Maske
+	      ausgegeben.
+
+	      Beispiele:
+	      Joerg> setmask
+	      rwx r.x r.x
+	      Joerg> setmask rwx x -x+w
+	      Joerg> setmask
+	      rwx ..x rw.
+
+       shift [n]
+	      Mit dem shift Kommando wird, falls shift ohne Argumente
+	      aufgerufen wurde, das Argument $1 aus der Argumentliste des
+	      aktuellen bsh eliminiert. Wird shift mit einem Argument
+	      aufgerufen, so werden entsprechen viele Argumente ab dem
+	      Argument $1 entfernt.
+
+	      Beispiele:
+	      Joerg> echo $r1
+	      a b c d e f g h i j
+	      Joerg> shift
+	      Joerg> echo $r1
+	      b c d e f g h i j
+	      Joerg> shift 3
+	      Joerg> echo $r1
+	      e f g h i j
+	      Joerg> shift 10
+	      cannot shift.
+	      Joerg> echo $r1
+	      Joerg> _
+
+       signal [cmdlist] sig#1...sig#n
+	      cmdlist wird ausgefuhrt, wenn der bsh auf ein Kind wartet und
+	      ein Signal aus der angegebenen Liste erhalt.  Das ist z.B.
+	      wichtig, um in Commandfiles bei einem Interrupt Files zu
+	      loschen, die temporar erzeugt wurden.  Das Kommando, das in
+	      cmdlist angegeben wurde, muss sich in av[1] befinden, d.h. wenn
+	      es Zeichen bzw. Wort-Trennzeichen enthalt, muss es in '''
+	      stehen. Wenn cmdlist ausgefuhrt wird, gibt es eine Environment-
+	      Variable $signo, die die Signalnummer enthalt. cmdlist kann sich
+	      uber mehrere Zeilen erstrecken und if then else Strukturen
+	      enthalten. Siehe auch function und call.
+
+	      Eine definierte Funktion lasst sich durch:
+	      signal '' signalnummer
+
+	      aus der Liste loschen.
+
+	      signal ohne Parameter gibt die Liste der bekannten Signalhandler
+	      aus.
+
+       source name
+       source -h name
+       source -h
+	      Mit diesem Kommando kann der bsh veranlasst werden, ein
+	      Kommandofile zu lesen und auszufuhren. Damit lassen sich z.B.
+	      Environment-Variablen setzen. Wird die Option -h angegeben, wird
+	      das File nur gelesen und in die History getan, aber nicht
+	      ausgefuhrt. Wird bei Angabe der -h Option der Filename
+	      weggelassen, erfolgt die Eingabe uber stdin.
+
+	      Beispiele:
+	      Joerg> source -h ~/.history
+	      Joerg> _
+
+       stop   XXX
+
+       suid
+       suid name
+	      Nicht unter UNIX.
+
+	      Veranderung der aktuellen Benutzernummer. su ohne Parameter
+	      startet einen bsh mit der effektiven Benutzernummer Null
+	      (Administrator). su mit Parameter setzt die reale Benutzernummer
+	      auf die des durch den Parameter angegebenen Benutzers. Die
+	      Environment-Variable PROMPT wird entsprechend geandert. Das
+	      Password des Administrators wird in allen moglichen Fallen als
+	      korrekt erkannt.
+
+	      Beispiele:
+	      Joerg> su
+	      Password:
+	      admin> _
+	      Die effektive Benutzernummer ist Null.
+	      Joerg> su admin
+	      Password:
+	      ++admin> exit
+	      Joerg> su peter
+	      Password:
+	      ++peter> _
+
+	      Die reale Benutzernummer ist Null oder die des Benutzers
+	      'peter'.
+
+       suspend [pid1 ... pidn]
+	      Wenn suspend ohne Parameter aufgerufen wird, dann wird der bsh
+	      selbst suspendiert. Mit Parametern werden die Prozesse mit der
+	      Prozessids pid1 ... pidn suspendiert. Damit ist es moglich, ein
+	      su Kommando zeitweilig zu verlassen und spater ohne Password
+	      wieder zu starten. Das geht leider nicht unter SYSTEM V.
+
+       switch val of
+	      Bedingte Mehrfachverzweigung. Der erste Parameter val wird der
+	      Reihe nach in einer folgenden Patternliste gesucht (siehe case).
+	      Alle Kommandos nach dem ersten erfolgreichen Patternmatch fur
+	      den Parameter val werden bis zum Schlusselword break ausgefuhrt.
+	      Es gelten die ublichen oben erklarten Patternmatch-Regeln. Fur
+	      den default - Fall steht ein '*'.
+
+	      Beispiele:
+	      Joerg> set x=hallo
+	      Joerg> switch $x of
+	      > case a*
+	      > case b*
+	      > echo Erster Buchstabe ist ein A oder ein B
+	      > break
+	      > case h*
+	      > echo Erster Buchstabe ist ein H
+	      > break
+	      > case *
+	      > echo Erster Buchstabe ist nicht A B oder H
+	      > end
+	      Erster Buchstabe ist ein H
+	      Joerg> _
+
+       sync   Gleicht den Inhalt der Kernel - File - Buffer fur das Filesystem
+	      und den realen Inhalt der Platte an.
+
+       test expr
+	      test wertet den Ausdruck expr aus, und weist der Variablen $?
+	      einen Wert ungleich Null zu, wenn der Ausdruck expr Falsch ist,
+	      sonst Null. Wenn ein Syntaxfehler vorliegt, dann hat die
+	      Variable $? den Wert -1.
+
+	      Folgende Ausdrucke sind fur expr moglich.
+
+	      Filetests:
+
+	      -r file	Wahr, wenn das File existiert, und lesbar ist.
+
+	      -w file	Wahr, wenn das File existiert, und beschreibbar ist.
+
+	      -x file	Wahr, wenn das File existiert, und ausfuhrbar ist.
+
+	      -e file	Wahr, wenn das File existiert.
+
+	      -s file	Wahr, wenn das File existiert, und eine Grosse
+			ungleich Null hat.
+
+	      -S file	Die Grosse des Files ist der Exitcode.
+			Wenn das File nicht existiert: -1.
+
+	      -d file	Wahr, wenn das File existiert, und eine directory ist.
+
+	      -c file	Wahr, wenn das File existiert, und ein character -
+			special ist.
+
+	      -b file	Wahr, wenn das File existiert, und ein block - special
+			ist.
+
+	      -f file	Wahr, wenn das File existiert, und ein regulares File
+			ist.
+
+	      -h,-L file
+			Wahr, wenn das File existiert, und ein symbolischer
+			Link ist.
+
+	      -p file	Wahr, wenn das File existiert, und eine named Pipe
+			(fifo) ist.
+
+	      -C file	Wahr, wenn das File existiert, und ein Contiguous File
+			ist.
+
+	      -u file	Wahr, wenn das File existiert, und das set-user-id Bit
+			gesetzt ist.
+
+	      -g file	Wahr, wenn das File existiert, und das set-group-id
+			Bit gesetzt ist.
+
+	      -k file	Wahr, wenn das File existiert, und das sticky Bit
+			gesetzt ist.
+
+	      -t fd	Wahr, wenn der Filedescriptor fd im bsh mit einem
+			Terminal verbunden ist.
+
+	      -T fd	Wahr, wenn der Filedescriptor fd im test Kommando mit
+			einem Terminal verbunden ist.
+
+	      Stringtests:
+
+	      -l string
+		     Die Lange des Strings ist der Exitcode.
+
+	      -n string
+		     Wahr, wenn der String eine Lange ungleich Null hat.
+
+	      -z string
+		     Wahr, wenn der String eine Lange gleich Null hat.
+
+	      s1 = s2
+		     Wahr, wenn s1 und s2 identisch sind.
+
+	      s1 == s2
+		     Wahr, wenn s1 und s2 identisch sind.
+
+	      s1 != s2
+		     Wahr, wenn s1 und s2 nicht identisch sind.
+
+	      Arithmetik:
+
+	      Erlaubte Operatoren auf integer Zahlen sind:
+
+	      '+' , '-' , '*' , '/' , '%' , '&' , '|' , '&&' , '||' , '-eq' ,
+	      '-ne' , '>' oder '-gt' , '<' oder '-lt' , '>=' oder '-ge' , '<='
+	      oder '-le' , '>>' , '<<'.
+
+	      Diese Operatoren konnen mit folgenden kombiniert werden:
+
+	      !	     Negation.
+
+	      -a     Binares und.
+
+	      -o     Binares oder.
+		     (-a hat Vorrang gegenuber -o).
+
+	      -and   Logisches und.
+
+	      -or    Logisches oder.
+		     (-and hat Vorrang gegenuber -or).
+
+	      ( expr )
+		     Klammerung zum Gruppieren.
+
+	      Alle Operatoren und Argumente mussen in separaten Argumenten
+	      stehen.
+
+	      Bei der Verwendung von Operatoren, die die Zeichen '>' , '<' ,
+	      '%' , '*' , '&' , oder '|' enthalten, sind die Anfuhrungszeichen
+	      bzw. ein '\' unbedingt anzugeben, um eine Interpretation durch
+	      den Parser des bsh zu verhindern.
+
+       then   Siehe if.
+
+       time   Dieses Kommando ist zur Zeit noch nicht fertig implementiert,
+	      daher heisst es in der aktuellen Version time_ .	Geplant ist,
+	      das damit eine Anzeige der Werte der Resource-Usage Struktur
+	      eines Prozesses angezeigt werden kann.
+
+       umask [mask]
+	      Ohne Argument wird die File-Erzeugungsmaske des bsh angezeigt,
+	      mit Argument kann die File-Erzeugungsmaske gesetzt werden.  Im
+	      Gegensatz zu setmask ist mask hier oktal, wie bei /bin/sh oder
+	      /bin/csh .  Das Kommando umask ist nur aus
+	      Kompatibilitatsgrunden implementiert.
+
+       unalias
+	      Geplante Funktion als Ersatz fur ein '#' -Kommando.
+
+       unmap fromstr
+	      Mit dem unmap Kommando lassen sich Maps, die mit dem map
+	      Kommando gesetzt wurden, wieder aufheben. Da es moglich ist,
+	      verschiedene Fromstrings in den gleichen Tostring zu mappen,
+	      muss, um Eindeutigkeit zu bekommen, der Fromstring als Argument
+	      angeben werden. Das ist nur durch Quoten oder durch die
+	      Verwendung der Ersatzdarstellung moglich, es lasst sich also
+	      kein Beispiel zeigen.
+
+       unset  Loscht eine Environment-Variable.
+	      Beispiele:
+	      Joerg> set test=uu
+	      Joerg> set
+	      PATH=:/bin:/usr/bin
+	      HOME=/
+	      TERM=vterm
+	      IGNOREEOF=off
+	      PROMPT=Joerg>
+	      PROMPT2=>
+	      HISTORY=30
+	      test=uu
+	      Joerg> unset test
+	      Joerg> set
+	      PATH=:/bin:/usr/bin
+	      HOME=/
+	      TERM=vterm
+	      IGNOREEOF=off
+	      PROMPT=Joerg>
+	      PROMPT2=>
+	      HISTORY=30
+	      Joerg> _
+
+       unsetenv
+	      Siehe setenv.
+
+       wait
+       wait pid1..pidn
+	      Warten auf alle Kinder, die im Hintergrund ausgefuhrt werden,
+	      oder auf den/die, die sich in der Liste befinden. Das Warten
+	      kann mit ^C unterbrochen werden.
+
+	      Beispiele:
+	      Joerg> sleep 100000&
+	      518
+	      Joerg> wait 518
+
+       Bei dem Versuch, das richtige Kommando zu finden, wird immer zuerst
+       nach eingebauten Funktionen gesucht (siehe Kapitel Eingebaute Kommandos
+       ); dann wird nach Funktionen gesucht, die mit dem function - Kommando
+       definiert wurden. Alle Kommandos, die nicht auf eingebaute Funktionen
+       referenzieren, werden mit execve gestartet und bekommen die
+       Environment-Liste mit, die mit dem set - Kommando abgefragt werden
+       kann.
+
+
+   '#' Kommandos
+       Fur alle Kommandos, die mit einem '#' beginnen, muss folgendes beachtet
+       werden.:
+
+       Sie werden nur erkannt, wenn sie das erste Kommando innerhalb einer
+       Kommandozeile sind. In diesen Kommandos findet keine Expansion statt.
+       Es ist keinerlei I/O Umleitung moglich. Fur alle Kommandos ist eine
+       Online-Helpfunktion eingebaut, die mit #c -help abgerufen werden kann,
+       wobei c der Name des Kommandos ist.
+
+       Es gibt eine Gruppe von '#' - Kommandos, die sich auf die
+       Abkurzungsmoglichkeiten des bsh beziehen. Bei ihnen ist es moglich,
+       sogenannte Modifier anzugeben, die das Kommando prazisieren oder als
+       Option dienen. Der bsh kennt z.Zt. zwei Tabellen mit Abkurzungen.
+       Solche, die uberall gelten (~/.globals) , und solche, die nur in einer
+       bestimmten Directory gelten (.locals). Bei dem Versuch, ein Wort zu
+       expandieren, wird immer zuerst die lokale Tabelle durchsucht.  Ist dort
+       keine Abkurzung zu finden, wird versucht, eine globale Abkurzung zu
+       finden. Abkurzungsexpansionen haben Vorrang vor den $ - Expansionen. Es
+       gibt Abkurzungen, die nur am Anfang eines Kommandos stehen durfen (auch
+       nach einem ';' oder einem '&' sowie direkt nach einer '(' , die eine
+       Kommandogruppe einleitet) und solche, die uberall stehen durfen. In
+       absehbarer Zeit werden diese Kommandos mit Ausnahme des #! Kommandos in
+       einen dem csh ahnlichen alias Mechanismus geandert.
+
+       #a[g|l] Name Wert
+	      Addiert eine neue Abkurzung zur Tabelle. Name wird uberall auf
+	      der Kommandozeile expandiert. Ist kein Modifier angegeben,
+	      erfolgt ein Eintrag in die Defaulttabelle.
+
+       #b[g|l] Name Wert
+	      Addiert eine neue Begin-Abkurzung zur Tabelle. Name wird nur am
+	      Anfang eines Kommandos expandiert. Ist kein Modifier angegeben,
+	      erfolgt ein Eintrag in die Defaulttabelle.
+
+       #d[g|l] Name
+	      Loscht die Abkurzung Name aus der Tabelle. Ist kein Modifier
+	      angegeben, wird aus der Defaulttabelle geloscht.
+
+       #h
+       #?     Ausgabe von Online - help Information uber alle '#' - Kommandos.
+
+       #l[g|h] [h] [name]
+	      Ausgabe aller Abkurzungen aus der Tabelle. Ist kein Modifier
+	      angegeben, wird die Defaulttabelle ausgegeben.  Ist name
+	      angegeben, wird nur der Eintrag fur name ausgegeben. Es ist
+	      erlaubt, das in name Wildcards des Pattern-Matchers stehen, um
+	      einen Teil der Tabelle auszugeben.
+
+       Ist der Modifier 'h' angegeben, dann erfolgt zusatzlich zur Ausgabe ein
+       Eintrag in die History. Damit lassen sich z.B. Eintrage aus den
+       Tabellen mit Hilfe des Editors des bsh verandern und neu eintragen.
+
+       #p[g|l] [a|b] Name Wert
+	      Mit dem '#p' - Kommando wird eine Abkurzung einer eventuell
+	      bestehenden uberlagert, ohne sie in das dazugehorige File
+	      einzutragen. Damit lassen sich Anderungen fur die Lebensdauer
+	      eines bsh erwirken. Die Information wird in einem Stack
+	      verwaltet. Wird ein gepushter Wert geloscht, dann erscheint eine
+	      eventuell uberlagerte Abkurzung wieder.
+
+       #s[g|l]
+	      Setzen der Default-Tabelle fur '#' - Kommandos; also der
+	      Tabelle, auf die sich die Kommandos '#a','#b','#d','#l','#p'
+	      beziehen, wenn kein Modifier angegeben ist. Das '#s' - Kommando
+	      ohne Modifier bzw.  mit dem Default-Wert, bewirkt eine Ausgabe
+	      der Default-Tabelle.
+
+       #v[on|off]
+	      Setzen oder Lesen des verbose Modes, der falls eingeschaltet,
+	      jedes Kommando vor der Filenamenexpansion ausgibt.
+
+       #! shell [ args ]
+	      Ein alternativer Shell wird zur Ausfuhrung des aktuellen
+	      Kommandofiles benutzt. Nur innerhalb von Command-Files moglich.
+	      shell wird mit args und '$r0' gestartet.
+
+       #      Wird innerhalb von Command-Files ein '#' direkt von einem Blank,
+	      einem Tab oder einem Newline gefolgt, so gilt diese Zeile als
+	      Kommentar.
+
+
+   History
+       Mit Hilfe der History konnen Kommandos gespeichert, abgerufen und
+       geandert werden. Die History ist als begrenzter Ringpuffer
+       implementiert. Kommandozeilen aus der History konnen mit den Cursor-
+       Steuertasten (Cup und Cdown) abgerufen werden. Ein Zeilenende (CR oder
+       LF) fuhrt das Kommando aus.
+
+       Jedes ausgefuhrte Kommando wird wieder an das Ende der History
+       angefugt. Gleiche Kommandos werden weitgehend vermieden. Das letzte
+       Kommando aus der History lasst sich auch mit '!!' wiederholen mit
+       '!<pattern>' lasst sich ein Kommando aus der History wiederholen, dass
+       mit <pattern> beginnt.
+
+       Beispiele:
+       Joerg> history
+       { cd etc }
+       { ved ttys }
+       { p ttys }
+       { who }
+       { echo huhu >/etc/tty5 }
+       { history }
+       Joerg> who
+       tty5 peter Fri Feb 1 1985 13:57:14
+       tty0 Joerg Fri Feb 1 1985 08:01:52
+       Joerg> history
+       { cd etc }
+       { ved ttys }
+       { p ttys }
+       { echo huhu >/etc/tty5 }
+       { who }
+       { history }
+       Joerg> !w
+       who
+       joerg ttyp3 Mar 5 16:55 (HARD)
+       klaus ttyp4 Mar 5 17:01 (TeSe)
+       Joerg> _
+
+
+   Variablen mit besonderer Bedeutung fur den bsh
+       Folgende Variablen konnen sowohl erzeugt, als auch gelesen werden. Sie
+       haben jedoch eine implizite Wirkung auf die Wirkungsweise des bsh.
+
+       HISTORY
+	      Bestimmt die maximale Anzahl der in der History gespeicherten
+	      Zeilen.
+
+	      Beispiele:
+	      Joerg> echo $HISTORY
+	      20
+	      Joerg> history
+	      { cd etc }
+	      { ved ttys }
+	      { p ttys }
+	      { who }
+	      { echo huhu >/etc/tty5 }
+	      { echo $HISTORY }
+	      { history }
+	      Joerg> set HISTORY=4
+	      Joerg> history
+	      { echo huhu >/etc/tty5 }
+	      { echo $HISTORY }
+	      { set HISTORY=4 }
+	      { history }
+	      Joerg> _
+
+       SAVEHISTORY
+	      Wenn diese Variable den Wert on hat, wird bei der Beendigung
+	      eines bsh der aktuelle Inhalt der History im File ~/.history
+	      gesichert. Wenn ein interaktiver bsh gestartet wird und das File
+	      ~/.history existiert, wird es vor der Ausgabe des ersten Prompts
+	      gelesen.
+
+       PROMPT
+	      Bestimmt den Benutzerprompt.
+
+	      Beispiele:
+	      Joerg> set "PROMPT=peter> "
+	      peter> _
+
+       PROMPT2
+	      Bestimmt den zweiten Benutzerprompt. Dieser wird ausgegeben,
+	      wenn der bsh zu einem Kommando noch weitere Eingaben benotigt.
+
+	      Beispiele:
+	      Joerg> if echo ja
+	      > then
+	      > echo ja
+	      > fi
+	      ja
+	      ja
+	      Joerg> set "PROMPT2=more> "
+	      Joerg> if echo ja
+	      more> then
+	      more> echo ja
+	      more> fi
+	      ja
+	      ja
+	      Joerg> _
+
+       PATH   In dieser Variablen ist eine Liste von Directories enthalten,
+	      die bei dem Versuch, ein Kommando zu starten, durchsucht werden.
+	      Die Liste wird von links nach rechts durchsucht. Der erste
+	      Eintrag sollte leer sein, um auf die aktuelle Workingdirectory
+	      zu verweisen. Die einzelnen Eintrage werden durch das Zeichen
+	      ':' getrennt.
+
+	      Beispiele:
+	      Joerg> echo $PATH
+	      :/bin:/usr/bin:/usr/joerg/bin
+	      Joerg> _
+
+       CDPATH
+	      Diese Variable hat den gleichen Aufbau wie PATH. Sie ist fur das
+	      Suchen nach Directories bei dem cd - Kommando zustandig. Der
+	      erste Eintrag muss !! leer sein, sonst funktioniert das cd -
+	      Kommando nicht.
+
+	      Beispiele:
+	      Joerg> echo $CDPATH
+	      :/usr/joerg:/usr/joerg/cmd
+	      Joerg> cd bsh
+	      ~/cmd/bsh
+	      Joerg> _
+
+       CWD    Diese Variable enthalt die aktuelle Working-Directory.  Sie wird
+	      aber aus Effizienzgrunden erst nach dem ersten cd - Kommando
+	      gesetzt.
+
+	      Beispiele:
+	      Joerg> #b wd echo $CWD
+	      Joerg> wd
+	      /usr/joerg/cmd/bsh
+	      Joerg> _
+
+       CD     Hat die Variable CD den Wert on, oder ist nicht gesetzt, ist ein
+	      Wechsel der Workingdirectory jederzeit moglich.  CD=off
+	      verbietet dem Benutzer ein cd - Kommando.	 CD=/usr/schwachsinn
+	      verbietet uber die Directory /usr/schwachsinn hinaufzusteigen.
+
+	      Beispiele:
+	      Joerg> pwd
+	      /user/joerg
+	      Joerg> cd ..
+	      Joerg> cd
+	      Joerg> set CD=off
+	      Joerg> cd ..
+	      Can't change to '..'. Permission denied.
+	      Joerg> pwd
+	      /user/joerg
+	      Joerg> _
+
+       EVLOCK
+	      Verbietet dem Benutzer das Andern einer oder mehrerer EV-
+	      Variablen. Sollen mehrere EV-Variablen gesperrt werden, werden
+	      ihre Namen durch einen Doppelpunkt getrennt. Hat die Variable
+	      EVLOCK den Wert on, so sind alle EV-Variablen gesperrt.
+
+	      Beispiele:
+	      Joerg> echo $HISTORY
+	      20
+	      Joerg> set HISTORY=5
+	      Joerg> echo $HISTORY
+	      5
+	      Joerg> set EVLOCK=HISTORY
+	      Joerg> set HISTORY=15
+	      Can't set environment 'HISTORY=15'. Variable is
+	      locked
+	      Joerg> echo $HISTORY
+	      5
+	      Joerg> set EVLOCK=EVLOCK:PATH:CD:SU:SLASH:PROMPT
+	      Joerg> set PROMPT=la>
+	      Can't set environment 'PROMPT=la>'. Variable is
+	      locked
+	      Joerg> set EVLOCK=off
+	      Can't set environment 'EVLOCK=off'. Variable is
+	      locked
+	      Joerg> _
+
+       SLASH  SLASH=off bewirkt die Nichtbeachtung des Zeichens '/'.  SLASH=on
+	      hat keine Wirkung. Diese Variable wird auch von den Utilities
+	      ved, copy, move und delete gelesen und entsprechend
+	      interpretiert.
+
+	      Beispiele:
+	      Joerg> set SLASH=off
+	      Joerg> /bin/echo hallo
+	      Can't execute ''. Permission denied.
+	      Joerg> set SLASH=on
+	      Joerg> /bin/echo hallo
+	      hallo
+	      Joerg> _
+
+       SU     Mit SU=off kann die Benutzung des su - Kommandos gesperrt
+	      werden.
+
+       IGNOREEOF
+	      Jeder Kommandointerpreter hat nach seinem Start diese Variable
+	      auf off gesetzt (Auch das su Kommando). Will man das verhindern,
+	      kann man in sein ~/.init - File set IGNOREEOF=on schreiben.
+	      Rekursiv aufgerufene Kommandointerpreter konnen dann mit ^D
+	      verlassen werden, falls sich der Cursor am Anfang einer leeren
+	      Zeile befindet, der erste jedoch nicht. Will man auch rekursiv
+	      erzeugte Kommandointerpreter schutzen, gehort in das ~/.init2 -
+	      File die gleiche Zeile. Rekursiv aufgerufene Kommandinterpreter
+	      konnen jedoch mit dem pushd bzw. dem popd - Kommando weitgehend
+	      vermieden werde. Ist IGNOREEOF nicht auf on, wird beim Eintippen
+	      von ^D solange vorwarts geloscht, bis evtl. der Cursor sich am
+	      Anfang einer leeren Zeile befindet; dann wird der bsh verlassen.
+	      (Befindet der Cursor sich nicht am Anfang einer Zeile, so ertont
+	      die Glocke, wenn sich keine Zeichen mehr rechts vom Cursor
+	      befinden.)
+
+
+FILES
+       ~/.init		   wird beim Starten des Loginshells ausgefuhrt.
+       ~/.init2		   wird beim Starten jedes weiteren Shells ausgefuhrt.
+       ~/.final		   wird beim Logout ausgefuhrt.
+       ~/.history	   enthalt die gerettete History nach dem Ausloggen.
+       ~/.bshmap	   enthalt die Tastaturmaps.
+       ~/.globals	   enthalt Macros, die in jeder Directory gelten.
+       ~/.locals	   enthalt Macros, die nur in der aktuellen Directory
+			   gelten.
+       /dev/null	   Stdin fur Hintergundjobs.
+       /etc/initbsh	   Gemeinsames Init-Sriptfile fur alle Loginshells.
+       /etc/initrbsh	   Gemeinsames Init-Sriptfile fur alle restricted
+			   Loginshells.
+       /etc/passwd	   Fur Homedirectory-Expansion (~name).
+       /etc/termcap	   Fur die Standard Cursormaps.
+       /tmp/bsh*	   Temporares File fur <<.
+
+
+BUGS
+   Allgemeines
+       Einige eingebaute Funktionen des bsh lassen sich nicht mit ^C
+       abbrechen. Alle Eingaben, die nach einem '>' Prompt eingegeben wurden,
+       erscheinen nicht in der History. Es ist nicht moglich Kontroll-
+       Strukturen aus if, for, loop und switch durch ';' oder '&' zu trennen.
+
+       Das Quoting von speziellen Buchstaben ist verwirrend, weil an vielen
+       verschiedenen Stellen expandiert wird und jeweils das Zeichen '\'
+       entfernt wird. Besonders verwirrend ist das bei Meister werden.
+
+       Symbolische Links uberlisten den bsh. Wenn ein cd uber einen
+       symbolischen Link fuhrt, hat die Variable $CWD nicht mehr den korrekten
+       Wert.
+
+       Das Kommando cat <<EOF& verwirrt den bsh. Er forkt, bevor der Input
+       gelesen ist, was zur Folge hat, dass man zwei Prompts hat, und Vater
+       und Sohn gleichzeitig lesen wollen.
+
+       Das killpg Kommando lasst sich nur bedingt verwenden, da es unter UNIX
+       kein Kommando gibt, mit dem man die Prozessgruppe eines Prozesses
+       bekommt.
+
+
+   Hinweise:
+       Strings werden ahnlich wie in Programmiersprachen und in grober
+       Annaherung an den sh behandelt:
+       d.h.:
+
+       o      Mit dem doppelten Anfuhrungszeichen wird nur ein String
+	      zusammengefasst und die Expansion von wildcards ($*?{}[])
+	      verhindert. Environment Variablen werden hier noch expandiert.
+
+       o      Mit dem einfachen Anfuhrungszeichen wird jegliche Expansion
+	      verhindert, d.h. alle Macros, die mit dem do - Kommando
+	      arbeiten, mussen !! in einfachen Anfuhrungszeichen stehen, damit
+	      sie nicht schon vor der Ausfuhrung des eigentlichen Kommandos
+	      expandiert werden.  Man sollte, falls man sich nicht sicher uber
+	      den Grund einer moglichen Fehlfunktion eines do Macros ist, das
+	      Kommando:
+	      change '"' "'" ~/.globals ~/.locals
+
+	      absetzen, da in Strings, die mit dem " gebildet werden, schon
+	      eine Expansion erfolgt und deshalb das do - Kommando nicht
+	      korrekt lauft.
+
+       Eine Concatenierung von Strings wie im sh ist z.Zt. nicht moglich.
+
+       Anderungen, die dem technischen Fortschritt dienen, vorbehalten.
+
+Joerg Schilling			 6. Juni 1991			       BSH(1L)

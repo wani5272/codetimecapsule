@@ -1,0 +1,36 @@
+ERRMSG(3)		  Schily's LIBRARY FUNCTIONS		     ERRMSG(3)
+
+NAME
+       errmsg() - prints error message
+
+SYNOPSIS
+       errmsg (format, arg1...argn)
+       char *format;
+
+DESCRIPTION
+       errmsg() prints on the error output stream, a message corresponding to
+       the last error encountered by the system on behalf of the process.
+       errmsg() begins its output with the current program name (as passed to
+       it by exec ). The message can be expanded with additional arguments, in
+       the same form printf() would.
+
+RETURNS
+       none
+
+EXAMPLES
+       while (more_args) {
+	    if (( f = fileopen(arg, "r")) == NULL) {
+		 errmsg("Skipping file %s.\n", arg);
+		 continue;
+	    }
+	    doit(f)
+       }
+
+SEE ALSO
+       comerr(3), comerrno(3), error(3), geterrno(3), printf(3), format(3)
+
+NOTES
+       errmsg() is identical to comerr() except that instead of exiting,
+       errmsg() prints the error message and returns to the caller.
+
+Joerg Schilling			 15. Juli 1988			     ERRMSG(3)

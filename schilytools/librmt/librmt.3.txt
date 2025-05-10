@@ -1,0 +1,67 @@
+LIBRMT(3L)		  Schily's LIBRARY FUNCTIONS		    LIBRMT(3L)
+
+NAME
+       librmt - remote magtape protocol client interface library
+
+SYNOPSIS
+       cc [ flag ... ] file ...	 -lrmt -lsocket -lnsl [ library ... ]
+
+       #include <schily/librmt.h>
+
+DESCRIPTION
+       Functions in this library provide an interface to a remote tape server
+       program.
+
+       This implementation takes care of RMT protocol VERSION 1 that is needed
+       in case that rmt client and rmt server do not run on the same OS and
+       use a CPU with the same bit width and byte order.
+
+       In addition, this implementation supports a GNU extension that allows
+       to use open(2) flags beyond O_RDONLY, O_WRONLY, O_RDWR.
+
+
+ENVIRONMENT
+       RSH    If the RSH environment is present, the remote connection will
+	      not be created via rcmd(3) but by calling the program pointed to
+	      by RSH.  Use e.g.	 RSH=/usr/bin/ssh to create a secure shell
+	      connection.
+
+	      If the environment RSH is empty, then the default rcmd(3) is
+	      used even in case rmtrsh(3) has been called.
+
+       RMT    If the RMT environment is present, the remote tape server will
+	      not be the program /etc/rmt but the program pointed to by RMT.
+
+	      If the environment RMT is empty, then the default /etc/rmt is
+	      used even in case rmtrmt(3) has been called.
+
+	      Note that the remote tape server program name will be ignored if
+	      you log in using an account that has been created with a remote
+	      tape server program as login shell.
+
+INTERFACES
+       rmtinit(3), rmtdebug(3), rmtrmt(3), rmtrsh(3), rmthostname(3),
+       rmtfilename(3), rmtgetconn(3), rmtopen(3), rmtioctl(3), rmtclose(3),
+       rmtread(3), rmtwrite(3), rmtseek(3), rmtxstatus(3), rmtstatus(3),
+       _mtg2rmtg(3), _rmtg2mtg(3)
+
+
+FILES
+SEE ALSO
+       rmt(1), rsh(1), ssh(1), rcmd(3)
+
+
+AUTHOR
+       librmt has been written in 1990 by Joerg Schilling.  In 1995, support
+       for RMT VERSION 1 has been added.  librmt is still maintained by Joerg
+       Schilling.
+
+       Joerg Schilling
+       D-13353 Berlin
+       Germany
+
+       Mail bugs and suggestions to:
+
+       joerg@schily.net
+
+Joerg Schilling			  2020/09/04			    LIBRMT(3L)

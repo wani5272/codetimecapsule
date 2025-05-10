@@ -1,0 +1,26 @@
+FPRINTF(3)		  Schily's LIBRARY FUNCTIONS		    FPRINTF(3)
+
+NAME
+       fprintf() - formats and prints to a file
+
+SYNOPSIS
+       fprintf(file, format, arg1, ..., argn)
+       FILE *file;
+       char *format;
+
+DESCRIPTION
+       fprintf formats its arguments using the format() routine, and writes
+       the result on the given file.
+
+       See format() for information about the available formatting options.
+
+RETURNS
+       none
+
+SEE ALSO
+       format(3), printf(3)
+
+NOTES
+       none
+
+Joerg Schilling			 15. Juli 1988			    FPRINTF(3)

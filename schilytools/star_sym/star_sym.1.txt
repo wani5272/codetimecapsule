@@ -1,0 +1,35 @@
+STAR_SYM(1L)		    Schily's USER COMMANDS		  STAR_SYM(1L)
+
+NAME
+       star_sym - Convert inode data base into human readable format
+
+SYNOPSIS
+       star_sym [ options ]
+
+DESCRIPTION
+       The star_sym command reads a inode data base file from a previous
+       incremental restore via star(1) and prints the data base in a human
+       readable format.
+
+
+OPTIONS
+       -help  Prints a short summary of the star_sym(1) options and exists.
+
+       -version
+	      Prints the star_sym(1) version number string and exists.
+
+
+FILES
+       star-symtable
+	      The file that holds the star inode data base from an incremental
+	      restore.
+
+
+SEE ALSO
+       star(1)
+
+
+NOTES
+BUGS
+
+Joerg Schilling			 15. May 2010			  STAR_SYM(1L)

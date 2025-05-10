@@ -1,0 +1,39 @@
+ASTOI(3)		  Schily's LIBRARY FUNCTIONS		      ASTOI(3)
+
+NAME
+       astoi() - converts ASCII to integer
+
+SYNOPSIS
+       #include <schily/schily.h>
+
+       char *astoi(string,result)
+	    char *string; /* the string to convert */
+	    int *result; /* where to store the result */
+
+DESCRIPTION
+       astoi() converts the characters pointed to by string to an integer
+       stored at result.  It returns a pointer to the first character in the
+       string that was not used for the conversion. If the entire string is to
+       be used, it should point to a NULL character ('\0').  Leading spaces
+       and tabs are skipped.
+
+       The ASCII string accepts a leading `+' or `-'. A leading zero in the
+       string makes the number octal, while a leading 0x makes the number
+       hexadecimal.  Leading spaces and tabs are skipped.
+
+RETURNS
+       Returns a pointer to the first unused character.
+
+EXAMPLES
+       if (*astoi(string, &i) != '\0')
+	    error("Not a number %s\n", string);
+
+SEE ALSO
+       astol(3)
+
+NOTES
+       Range errors are not checked. Conversion stops (and a pointer is
+       returned) at the first non-numeric character other than the leading
+       sign or 0x, as described above.
+
+Joerg Schilling			 15. Juli 1988			      ASTOI(3)

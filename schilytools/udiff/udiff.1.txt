@@ -1,0 +1,104 @@
+UDIFF(1)		    Schily's USER COMMANDS		      UDIFF(1)
+
+NAME
+       udiff, fdiff, fsdiff - shows where two files differ
+
+SYNOPSIS
+       udiff [ options ] file1 file2
+
+       fdiff [ options ] file1 file2
+
+       fsdiff [ options ] file1 file2
+
+DESCRIPTION
+       udiff shows what lines differ between two files.	 udiff supports
+       arbitrary line lengths and treats binary files the same as text files.
+
+       It does not support many options or features and there is no best match
+       resync mechanism, but the output is typically identical to the output
+       from the classical UNIX diff(1).
+
+       If called as fdiff or fsdiff, the POSIX output style is used and the
+       nmatch=# resync default value is set to 1 line.
+
+       If called as fsdiff, the exit code is compatible to bdiff(1) and
+       differences in the files still result in a zero exit code; only an
+       error causes a non-zero exit code.  This allows fsdiff to be used as a
+       replacement for the bdiff program for SCCS.
+
+       Since the performance of udiff is only a linear function of the file
+       size, using fsdiff speeds up SCCS with large files.
+
+       Since the differences reported by fsdiff are smaller that what bdiff
+       reports, this helps to keep SCCS history files smaller.
+
+
+       The normal output if called as udiff contains lines of these forms:
+
+	 -------- 1 line deleted at %ld:
+	 -------- %ld lines deleted at %ld:
+	 -------- 1 line added at %ld:
+	 -------- %ld lines added at %ld:
+	 -------- 1 line changed at %ld from:
+	 -------- %ld lines changed at %ld-%ld from:
+	 -------- 1 line changed to %ld lines at %ld from:
+	 -------- %ld lines changed to 1 line at %ld-%ld from:
+	 -------- %ld lines changed to %ld lines at %ld-%ld from:
+	 -------- to:
+
+       followed by blocks with the changed text.  This is easier to read by
+       humans than the POSIX output variant.
+
+
+
+       The POSIX output variant contains lines of these forms:
+
+	 n1 a n3,n4
+	 n1,n2 d n3
+	 n1,n2 c n3,n4
+
+
+
+       where n1 and n2 represent lines file1 and n3 and n4 represent lines in
+       file2 These lines resemble ed(1) commands to convert file1 to file2.
+       By exchanging a for d and reading backward, file2 can be converted to
+       file1.  As in ed, identical pairs, where n1=n2 or n3=n4, are
+       abbreviated as a single number.
+
+
+       Following each of these lines come all the lines that are affected in
+       the first file flagged by `<', then all the lines that are affected in
+       the second file flagged by `>'.
+
+OPTIONS
+       -help  Prints a short summary of the udiff options and exists.
+
+       -version
+	      Prints the udiff version number string and exists.
+
+       nmatch=#
+	      Sets the number of matching lines to resync.  If udiff is called
+	      as udiff, the default is two lines, otherwise it is one line.
+
+       -posix Output the differences in POSIX style instead of using udiff
+	      style.
+
+EXIT STATUS
+       The following exit values are returned:
+
+       0      No differences were found (udiff and fdiff only).
+
+       0      No error occurred (fsdiff only).
+
+       1      Differences were found (udiff and fdiff only).
+
+       other  An error occurred.
+
+
+NOTES
+       No output is generated if the files are the same.
+
+AUTHOR
+       udiff was written 1985 - 2020 by Joerg Schilling
+
+Joerg Schilling			  2020/09/02			      UDIFF(1)

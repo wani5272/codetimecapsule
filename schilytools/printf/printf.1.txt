@@ -1,0 +1,64 @@
+printf(1)			 User Commands			     printf(1)
+
+NAME
+       printf - write formatted output
+
+SYNOPSIS
+       printf format [argument]...
+
+DESCRIPTION
+       The printf command writes formatted operands to the standard output.
+       The argument operands are formatted under control of the format
+       operand.	 The format operand is treated like a printf(3) format string
+       and the escape sequences '\a', '\b', '\f', '\n', '\r', '\t', '\v', '\\'
+       and '\ddd', where ddd is one to three octal digits, are expanded as if
+       they were in a C string.
+
+       In addition to the format specifiers %c, %s, %d, %i, %o, %u, %x, %X,
+       %e, %E, %f, %F, %g, %G, the format %b is supported.  The integers are
+       handled internally as intmax_t to avoid range problems even though only
+       the standard int type specifiers are supported in the format operand.
+       The format %b is treated like %s except that escape sequences in the
+       argument string are expanded as with the echo command.
+
+       Field width and precision may be specified either numerically in the
+       format operand or via the '*' format specifier and related arguments.
+
+       The printf(3) flag characters '+', ' ', '#' and '0' are supported.
+
+       The format strings %n$ and *m$, where n or m are decimal integers in
+       the range 1 ..  maxargs, allow to specify the position in the parameter
+       list.  See printf(3) for more information.
+
+       The format operand is reused as often as necessary to satisfy the
+       argument operands.  If the format operand contains more format
+       specifiers than argument operands have been specified, string formats
+       are treated as if an empty string has been supplied and integer
+       arguments are treated as if a 0 has been supplied.
+
+
+OPTIONS
+       none
+
+EXAMPLES
+ENVIRONMENT
+EXIT STATUS
+       The following exit values are returned:
+
+       0      Successful completion.
+
+       >0     An error occurred.
+
+FILES
+       none
+
+SEE ALSO
+       bosh(1), printf(3).
+
+DIAGNOSTICS
+NOTES
+BUGS
+AUTHOR
+       printf was written 2015 - 2017 by Joerg Schilling
+
+Joerg Schilling			  2017/11/21			     printf(1)

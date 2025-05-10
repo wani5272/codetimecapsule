@@ -1,0 +1,64 @@
+COUNT(1L)		    Schily's USER COMMANDS		     COUNT(1L)
+
+NAME
+       count - counts items in a file
+
+SYNOPSIS
+       count [ options ] file1 ... filen
+
+DESCRIPTION
+       Count reads all of the specified files and produces one line of output
+       for each input file: the number of the characters, the number of
+       'words', and the number of lines in the specified files. 'Words' is an
+       arbitrary term in reference to programs, because they tend to have a
+       lot of punctuation. For text files a word is a sequence of characters
+       separated by white space.
+
+       If more than one file is given, a grand total is also printed.  If no
+       filenames are given, count reads from standard input. Any combination
+       of options works; the default is (-c -w -l -llen -t).
+
+OPTIONS
+       All options except tab= and -llen can be abbreviated to their first
+       letter.	The option -llen can be abbreviated with -ll.
+
+       -chars	 Counts characters based on bytes.
+
+       -mchars	 Counts multi byte characters.
+
+       -words	 Counts words.
+
+       -lines	 Counts lines.
+
+       -llen	 Counts maximum line length.
+
+       tab=tab width
+		 Set the width of a tab to tab width for counting maximum line
+		 length.
+
+       -stat	 Use stat(2) system call to get the character count of a file.
+		 This is much faster but cannot count anything but characters.
+
+       -total	 Grand totals of several files.
+
+       -help	 Prints a short summary of the count options and exists.
+
+       -version	 Prints the count version number string and exists.
+
+NOTES
+       none
+
+BUGS
+       none
+
+
+AUTHOR
+       Joerg Schilling
+       D-13353 Berlin
+       Germany
+
+       Mail bugs and suggestions to:
+
+       joerg@schily.net
+
+Joerg Schilling			  2020/09/04			     COUNT(1L)
