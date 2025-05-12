@@ -1,0 +1,143 @@
+sccs-help(1)			 User Commands			  sccs-help(1)
+
+NAME
+       sccs-help, help - ask for help regarding SCCS error or warning messages
+
+SYNOPSIS
+       /usr/ccs/bin/help [argument]...
+
+
+DESCRIPTION
+       The help utility retrieves information to further explain errors
+       messages and warnings from SCCS commands. It also provides some
+       information about SCCS command usage. If no arguments are given, help
+       prompts for one.
+
+
+       An argument may be a message number (which normally appears in
+       parentheses following each SCCS error or warning message), or an SCCS
+       command name.  help responds with an explanation of the message or a
+       usage line for the command.
+
+
+       When the argument is all non-numeric, the text is searched in the file
+       cmds.  See the section FILES below for the related base directory.
+
+       When the argument starts with alpha characters and ends in numbers, the
+       alpha prefix is used as a key to locate a file.	If the key is seen in
+       the helploc file, a new directory prefix is taken from that file, else
+       it is used as a file name with the standard prefix to search for
+       messages.  The remainder of the argument is used to search a label in
+       the message file and to print the message text.
+
+       When the argument starts with numbers, or a file related to key could
+       not be found, the text is searched in the file default.
+
+
+       When all else fails, try `/usr/ccs/bin/help  stuck'.
+
+
+ENVIRONMENT VARIABLES
+       See environ(5) for descriptions of the following environment variables
+       that affect the execution of help(1): LANG, LC_ALL, LC_CTYPE,
+       LC_MESSAGES, and NLSPATH.
+
+
+EXIT STATUS
+       The following exit values are returned:
+
+
+       0    Successful completion.
+
+
+       1    No help could be printed.
+
+
+FILES
+       /usr/ccs/lib/help/locale/locale_name
+		      directory containing files of message text
+
+
+       /usr/ccs/lib/help/locale/C
+		      directory containing default files of message text in
+		      case that there is no text for the current locale
+
+
+       /usr/ccs/lib/help/helploc
+		      A file to map search keys to alternate directories to
+		      look for help messages. Each line in the file contains a
+		      search key, a TAB character and a directory name.	 If a
+		      matching key is found, the file searched for messages is
+		      named: directory_name/locale_name/key
+
+FILE FORMAT
+       The message files use the following format:
+
+       *	      Lines that start with a star are ignored and used as
+		      comments.
+
+       -label	      Lines that start with a minus sign and that end in a
+		      label mark the beginning of message text related to
+		      label.
+
+       other	      Other text is the message block that is printed until
+		      the next label ot the end of the file is seen.
+
+ATTRIBUTES
+       See attributes(5) for descriptions of the following attributes:
+
+
+       +----------------------------+-----------------------------+
+       |      ATTRIBUTE TYPE	    |	    ATTRIBUTE VALUE	  |
+       +----------------------------+-----------------------------+
+       |Availability		    | SUNWsprot			  |
+       +----------------------------+-----------------------------+
+
+SEE ALSO
+       sccs(1), sccs-add(1), sccs-admin(1), sccs-branch(1), sccs-cdc(1),
+       sccs-check(1), sccs-clean(1), sccs-comb(1), sccs-commit(1),
+       sccs-create(1), sccs-cvt(1), sccs-deledit(1), sccs-delget(1),
+       sccs-delta(1), sccs-diffs(1), sccs-edit(1), sccs-editor(1),
+       sccs-enter(1), sccs-fix(1), sccs-get(1), sccs-histfile(1),
+       sccs-info(1), sccs-init(1), sccs-istext(1), sccs-ldiffs(1),
+       sccs-log(1), sccs-print(1), sccs-prs(1), sccs-prt(1), sccs-rcs2sccs(1),
+       sccs-remove(1), sccs-rename(1), sccs-rmdel(1), sccs-root(1),
+       sccs-sact(1), sccs-sccsdiff(1), sccs-status(1), sccs-tell(1),
+       sccs-unedit(1), sccs-unget(1), sccs-val(1), bdiff(1), diff(1), what(1),
+       sccschangeset(4), sccsfile(4), attributes(5), environ(5), standards(5).
+
+
+AUTHORS
+       The SCCS suite was originally written by Marc J. Rochkind at Bell Labs
+       in 1972.	 Release 4.0 of SCCS, introducing new versions of the programs
+       admin(1), get(1), prt(1), and delta(1) was published on February 18,
+       1977; it introduced the new text based SCCS v4 history file format
+       (previous SCCS releases used a binary history file format).  The SCCS
+       suite was later maintained by various people at AT&T and Sun
+       Microsystems.  Since 2006, the SCCS suite is maintained by Joerg
+       Schilling.
+
+
+SOURCE DOWNLOAD
+       A frequently updated source code for the SCCS suite is included in the
+       schilytools project and may be retrieved from the schilytools project
+       at Sourceforge at:
+
+	   http://sourceforge.net/projects/schilytools/
+
+       The download directory is:
+
+	   http://sourceforge.net/projects/schilytools/files/
+
+       Check for the schily-*.tar.bz2 archives.
+
+       Less frequently updated source code for the SCCS suite is at:
+
+	   http://sourceforge.net/projects/sccs/files/
+
+       Separate project informations for the SCCS project may be retrieved
+       from:
+
+	   http://sccs.sf.net
+
+SunOS 5.11			  2020/08/05			  sccs-help(1)

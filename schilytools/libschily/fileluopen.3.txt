@@ -1,0 +1,29 @@
+FILELUOPEN(3)		  Schily's LIBRARY FUNCTIONS		 FILELUOPEN(3)
+
+NAME
+       fileluopen() - opens a file given a logical unit number
+
+SYNOPSIS
+       FILE *fileluopen(lu, modes)
+       int lu;
+       char *modes;
+
+DESCRIPTION
+       fileluopen() makes an object of type FILE, suitable for use with
+       fileread(), putc(), etc.
+
+       The lu argument is a logical unit number assigned by the kernel when it
+       opens a file. Logical unit numbers are not usually visible, although
+       several routines reguire LUs as arguments and fdown() may be used to
+       map a FILE object to a corresponding LU number.
+
+       The modes argument is a string encoding the modes of the file, just as
+       for fileopen(), except that the 'c' and 't' options are not allowed.
+
+RETURNS
+       Returns the FILE value.
+
+NOTES
+       none
+
+Joerg Schilling			 15. Juli 1988			 FILELUOPEN(3)

@@ -1,0 +1,34 @@
+ASTOL(3)		  Schily's LIBRARY FUNCTIONS		      ASTOL(3)
+
+NAME
+       astol() - converts ASCII to long
+
+SYNOPSIS
+       astol(string,l)
+       char *string;
+       int *l;
+
+DESCRIPTION
+       astol() converts the characters pointed to by string to a long stored
+       at l. It returns a pointer to the first character in the string that
+       was not used for the conversion. If the entire string is to be used, it
+       should point to a NULL character ('\0').	 Leading spaces and tabs are
+       skipped.
+
+RETURN VALUES
+ERRORS
+EXAMPLES
+       extern char *astol();
+       if (*astod(string, &l) != '\0')
+	    error("Not a number %s\n", string);
+
+SEE ALSO
+       astod(3), astof(3), astoi(3)
+
+RETURNS
+       Returns a pointer to first unused character.
+
+NOTES
+       none
+
+Joerg Schilling			 15. Juli 1988			      ASTOL(3)

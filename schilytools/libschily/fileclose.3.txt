@@ -1,0 +1,21 @@
+FILECLOSE(3)		  Schily's LIBRARY FUNCTIONS		  FILECLOSE(3)
+
+NAME
+       fileclose() - closes a file
+
+SYNOPSIS
+       fileclose(f)
+       FILE *f;
+
+DESCRIPTION
+       fileclose() closes the file f and flushes all buffers.
+
+RETURNS
+       0      on success
+
+       EOF    on error none
+
+NOTES
+       none
+
+Joerg Schilling			  2020/02/09			  FILECLOSE(3)

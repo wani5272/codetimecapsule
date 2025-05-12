@@ -1,0 +1,35 @@
+PATCOMPILE(3)		  Schily's LIBRARY FUNCTIONS		 PATCOMPILE(3)
+
+NAME
+       patcompile() - compiles a matching pattern
+
+SYNOPSIS
+       int patcompile(pattern, length, aux)
+       char *pattern;
+       int length;
+       int aux[];
+
+DESCRIPTION
+       patcompile() compiles a pattern into an internal form which patmatch(3)
+       can use.
+
+       The string at pattern with size length is scanned. The array aux is
+       filled in with state information for patmatch(3).  aux should have at
+       least length elements.
+
+RETURNS
+       Returns 0 if the pattern contains an error.
+
+       Other values should be passed to patmatch(3) as the alt argument.
+
+SEE ALSO
+       match(1)
+
+       For a description ot the regular expressions.
+
+NOTES
+       The pattern matching functions are based on ones presented by Martin
+       Richards in "A Compact Function for Regular Expression Pattern
+       Matching", Software-Practice and Experience vol 9, 527-534 (1979).
+
+Joerg Schilling			 15. Juli 1988			 PATCOMPILE(3)

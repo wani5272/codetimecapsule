@@ -1,0 +1,93 @@
+cdda2ogg(1)		    General Commands Manual		   cdda2ogg(1)
+
+NAME
+       cdda2ogg, cdda2mp3 - extract CD audio tracks and encode them
+
+SYNOPSIS
+       cdda2ogg [ options ][ dev=device ] [file prefix] [ogg opts]
+
+       cdda2mp3 [ options ][ dev=device ] [file prefix] [lame opts]
+
+DESCRIPTION
+       cdda2ogg is a script that uses the cdda2wav command to extract all
+       audio tracks with the cdda2wav command and encode them using the
+       oggenc(1) Ogg Vorbis encoder.
+
+       cdda2mp3 is a script that uses the cdda2wav command to extract all
+       audio tracks with the cdda2wav command and encode them using the
+       lame(1) MP3 encoder.
+
+       There is no CDDB support yet.
+
+
+OPTIONS
+       -help	   print a short online usage message and exit.
+
+       dev=device  The device to read the data from. If there is only one CD-
+		   ROM drive in the system, the dev= option may be omitted.
+		   For possible values of the device parameter, see the
+		   cdrecord(1) man page.
+
+       -*	   Any other option beginning with a '-' sign is passed to the
+		   cdda2wav program.
+
+       Any other option past the file prefix argument and beginning with a '-'
+       sign is passed to the encoder program.
+
+ENVIRONMENT VARIABLES
+       The following environment variables may be used to change the behavior
+       of the cdda2ogg and the cdda2mp3 command:
+
+       CDDA2WAV
+	      Defines the command to extract WAV data from the CD.  The
+	      default value is cdda2wav.
+
+       CDDA2WAV_OPTS
+	      Defines the options passed to the CDDA program while extracting
+	      from the CD.  The default value is -H -q.
+
+       MP_CODER
+	      The encoder program used to compress the audio data.  The
+	      default value is oggenc for cdda2ogg and lame for cdda2mp3.
+
+       MP_OPTIONS
+	      Options passed to the encoder program.  The default is empty.
+
+       FILEPREFIX
+	      The base filename part of the resulting audio files.  The
+	      default file name is $TRACK-$FILEPREFIX.ogg for cdda2ogg and
+	      $TRACK-$FILEPREFIX.mp3 for cdda2mp3 if no file prefix argument
+	      was given on the command line.
+
+FILES
+       If the following files are present, then the scripts source them to set
+       up local defaults:
+
+       /etc/default/cdda2ogg
+	      To set up default values for cdda2ogg.
+
+       /etc/default/cdda2mp3
+	      To set up default values for cdda2mp3.
+
+       The content may be set up to modify environment variables or to set up
+       local defaults.
+
+
+SEE ALSO
+       cdda2wav(1), cdrecord(1), oggenc(1), lame(1).
+
+NOTES
+       If a CD contains a hidden audio track before track 1, a file name with
+       track number 00 is created with the content of the hidden track.
+
+       The program oggenc(1) is part of the vorbis-tools project See
+       http://www.vorbis.com for more information.
+
+       The program lame(1) is part of the lame project.	 See
+       http://lame.sourceforge.net/ for more information.
+
+AUTHOR
+       The first versions of the scripts have been based on a news article by
+       Tom Kludy.
+
+				  Version 3.0			   cdda2ogg(1)

@@ -1,0 +1,31 @@
+FILEPOS(3)		  Schily's LIBRARY FUNCTIONS		    FILEPOS(3)
+
+NAME
+       filepos() - returns the logical position in a file
+
+SYNOPSIS
+       off_t filepos(f)
+       FILE *f;
+
+DESCRIPTION
+       filepos() returns the current file position as an offset in bytes from
+       the beginning of the file. This is the position of the next byte to be
+       read or written.
+
+RETURNS
+       Returns the current offset into file f.
+
+NOTES
+       The numbering of bytes in a file starts at 0. For byte sequential
+       devices, such as a terminal, the value returned will be the number of
+       bytes read or written from the current file, unless a seek call is
+       issued which changes the logical position but does not affect the
+       device.
+
+       File positions may be set to arbitrary values (via fileseek()) and are
+       only used by the file system when actual reading or writing occurs.
+
+       Normally, the file position is incremented by the amount of data
+       transferred for each sequential read or write.
+
+Joerg Schilling			  2020/02/09			    FILEPOS(3)

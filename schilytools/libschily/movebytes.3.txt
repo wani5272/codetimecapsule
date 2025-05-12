@@ -1,0 +1,29 @@
+MOVEBYTES(3)		  Schily's LIBRARY FUNCTIONS		  MOVEBYTES(3)
+
+NAME
+       movebytes() - moves data
+
+SYNOPSIS
+       char *movebytes(from, to, size)
+	    const void	   *from;
+	    void	   *to;
+	    ssize_t	   size;
+
+DESCRIPTION
+       movebytes() copies size bytes from from to to.
+
+RETURN VALUE
+       A pointer just after the last transferred byte in the to string.
+
+ERRORS
+       No errors are defined
+
+EXAMPLES
+SEE ALSO
+       cmpbytes(3), cmpmbytes(3), cmpnullbytes(3), fillbytes(3), findbytes(3),
+       movecbytes(3), swapbytes(3), zerobytes(3)
+
+NOTES
+       This routine correctly handles overlapping buffers.
+
+Joerg Schilling			  2017/02/08			  MOVEBYTES(3)

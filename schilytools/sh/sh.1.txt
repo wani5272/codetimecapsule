@@ -1,0 +1,4202 @@
+sh(1)				 User Commands				 sh(1)
+
+NAME
+       sh, bosh, jsh - standard and job control shell and command interpreter
+
+SYNOPSIS
+       /usr/bin/sh   [-abCcefhikmnprstuvxP] [argument]...
+
+
+       /usr/bin/bosh [-abCcefhikmnprstuvxP] [argument]...
+
+
+       /usr/bin/pbosh [-abCcefhikmnprstuvxP] [argument]...
+
+
+       /usr/bin/jsh  [-abCcefhikmnprstuvxP] [argument]...
+
+
+DESCRIPTION
+       The /usr/bin/sh utility is a command programming language that executes
+       commands read from a terminal or a file.
+
+       The name bosh permits to call this implementaton even when /usr/bin/sh
+       has been linked to another shell.
+
+       The jsh utility is an interface to the shell that provides all of the
+       functionality of sh and enables job control (see Job Control section
+       below) by default.  Job control may also be enabled by calling the
+       shell via the standard name and then calling set -m or set -o monitor.
+       Since POSIX requires that job control is auto-enabled for interactive
+       shells, jsh can be seen as an artefact from the historic Bourne Shell,
+       but is kept for compatibility.
+
+       pbosh is a shell with strict POSIX mode enabled by default and with
+       bosh specific enhancements disabled.  It may be used to check scripts
+       for portability with the minimal POSIX feature set.
+
+       Arguments to the shell are listed in the Invocation section below.
+
+   Definitions
+       A blank is a tab or a space. A name is a sequence of ASCII letters,
+       digits, or underscores, beginning with a letter or an underscore. A
+       parameter is a name, a digit, or any of the characters *, @, #, ?, -,
+       $, and !.
+
+
+   Invocation
+       If the shell is invoked through exec(2) and the first character of
+       argument zero is -, commands are initially read from /etc/profile and
+       from $HOME/.profile, if such files exist.  Next, for interactive
+       shells, commands are read from /etc/sh.shrc and from the file with a
+       name that results from doing Parameter Substitution on the environment
+       variable ENV if the file exists (by default this is the file
+       $HOME/.shrc).  Thereafter, commands are read as described below, which
+       is also the case when the shell is invoked as /usr/bin/sh.
+
+
+OPTIONS
+       The options below are interpreted by the shell on invocation only.
+       Note: Unless the -c or -s option is specified, the first argument is
+       assumed to be the name of a file containing commands, and the remaining
+       arguments are passed as positional parameters to that command file:
+
+       -c string   If the -c option is present commands are read from string,
+		   where string is the first non-option argument after -c.
+		   The remaining arguments become positional parameters
+		   starting at $0.
+
+		   Optional options between -c and string have not been
+		   supported by older versions of sh.
+
+       -i	   If the -i option is present or if the shell input and
+		   output are attached to a terminal, this shell is
+		   interactive.	 In this case, TERMINATE is ignored (so that
+		   kill 0 does not kill an interactive shell) and INTERRUPT is
+		   caught and ignored (so that wait is interruptible). In all
+		   cases, QUIT is ignored by the shell.
+
+       -p	   If the -p option is present, the shell does not set the
+		   effective user and group IDs to the real user and group
+		   IDs.
+
+       -r	   If the -r option is present the shell is a restricted shell
+		   (see rsh(1M)).
+
+       -s	   If the -s option is present or if no arguments remain,
+		   commands are read from the standard input. Any remaining
+		   arguments specify the positional parameters. Shell output
+		   (except for Special Commands) is written to file descriptor
+		   2.
+
+       -version	   Print the current Bourne Shell version and exit.
+
+       Using + rather than - causes the related options to be turned off.  The
+       remaining options and arguments are described under the set command
+       below.
+
+
+USAGE
+   Commands
+       A simple-command is a sequence of non-blank words separated by blanks.
+       The first word specifies the name of the command to be executed. Except
+       as specified below, the remaining words are passed as arguments to the
+       invoked command. The command name is passed as argument 0 (see
+       exec(2)).  The value of a simple-command is its exit status if it
+       terminates normally, or (octal) 200+status if it terminates abnormally.
+       See signal.h(3HEAD) for a list of status values.
+
+
+       A pipeline is a sequence of one or more commands separated by |.	 The
+       standard output of each command but the last is connected by a pipe(2)
+       to the standard input of the next command.  If the extended pipe syntax
+       is enabled via set -o fdpipe, the pipe symbol (|) may be preceded by a
+       digit that specifies the file descriptor which should be associated to
+       the command from the left side instead of the default stdout, e.g.  2|
+       for a pipe from stderr.	Each command is run as a separate process. The
+       shell waits for the last command to terminate. The exit status of a
+       pipeline is the exit status of the last command in the pipeline.	 Each
+       pipeline can be preceded by the reserved word !.	 This causes the exit
+       status of the pipeline to become 0 if the exit status of the last
+       command is non-zero, and 1 if the exit status of the last command is 0.
+
+
+       A list is a sequence of one or more pipelines separated by ;, &, &&, or
+       ||, and optionally terminated by ; or &.	 Of these four symbols, ; and
+       & have equal precedence, which is lower than that of && and ||.	The
+       symbols && and || also have equal precedence. A semicolon (;) causes
+       sequential execution of the preceding pipeline, that is, the shell
+       waits for the pipeline to finish before executing any commands
+       following the semicolon. An ampersand (&) causes asynchronous execution
+       of the preceding pipeline, that is, the shell does not wait for that
+       pipeline to finish. The symbol && (||) causes the list following it to
+       be executed only if the preceding pipeline returns a zero (non-zero)
+       exit status. An arbitrary number of newlines can appear in a list,
+       instead of semicolons, to delimit commands.
+
+
+       A command is either a simple-command or one of the following.  Unless
+       otherwise stated, the value returned by a command is that of the last
+       simple-command executed in the command.
+
+
+       for name [ in word ... ] do list done
+	      Each time a for command is executed, name is set to the next
+	      word taken from the in word list. If in word ... is omitted,
+	      then the for command executes the do list once for each
+	      positional parameter that is set (see Parameter Substitution
+	      section below). Execution ends when there are no more words in
+	      the list.
+
+
+       select name [ in word ... ] do list done
+	      The select command prints on standard error (file descriptor 2),
+	      the set of words, each preceded by a number.  If in word ... is
+	      omitted, then the positional parameters are used instead.	 See
+	      Parameter Substitution.  The PS3 prompt is printed and a line is
+	      read from the standard input.  If this line consists of the
+	      number of one of the listed words, then the value of the
+	      variable name is set to the word corresponding to this number.
+	      If this line is empty. the selection list is printed again.
+	      Otherwise the value of the variable name is set to NULL.	(See
+	      Blank Interpretation about NULL).	 The contents of the line read
+	      from standard input is saved in the shell variable REPLY.	 The
+	      list is executed for each selection until a break or EOF is
+	      encountered. If the REPLY variable is set to NULL by the
+	      execution of list, then the selection list is printed before
+	      displaying the PS3 prompt for the next selection.
+
+	      The select keyword was not supported by older versions of sh and
+	      is not required by POSIX.
+
+
+       case word in [ [(] pattern [ | pattern ] ) list ;; ] ...	 esac
+	      A case command executes the list associated with the first
+	      pattern that matches word.  The form of the patterns is the same
+	      as that used for file-name generation (see File Name Generation
+	      section), except that a slash, a leading dot, or a dot
+	      immediately following a slash need not be matched explicitly.
+
+	      The ;; operator causes execution of case to terminate.  If ;& is
+	      used in place of ;; the next subsequent list, if any, is
+	      executed.	 This causes a fall through to the next command list.
+	      If ;;& is used in place of ;;, the shell tests the next pattern
+	      list in the statement, if any, and executes any associated list
+	      on a successful match.
+
+	      When not in POSIX mode, sh implements a fallback to a simple
+	      string compare, in case that an attempt to match the pattern
+	      similar to fnmatch(3) fails.
+
+	      The optional opening parenthesis was not supported by older
+	      versions of sh.  It has been added as it is required by POSIX.
+
+       if list then list [ elif list then list ] ... [ else list ] fi
+	      The list following if is executed and, if it returns a zero exit
+	      status, the list following the first then is executed.
+	      Otherwise, the list following elif is executed and, if its value
+	      is zero, the list following the next then is executed. Failing
+	      that, the else list is executed. If no else list or then list is
+	      executed, then the if command returns a zero exit status.
+
+       while list do list done
+       until list do list done
+	      A while command repeatedly executes the while list and, if the
+	      exit status of the last command in the list is zero, executes
+	      the do list; otherwise the loop terminates. If no commands in
+	      the do list are executed, then the while command returns a zero
+	      exit status; until can be used in place of while to negate the
+	      loop termination test.
+
+       (list)
+	      Execute list in a sub-shell.
+
+       { list;}
+	      list is executed in the current (that is, parent) shell. The {
+	      must be followed by a space.
+
+       name () { list;}
+	      Define a function which is referenced by name.  The body of the
+	      function is the list of commands between { and }.	 The { must be
+	      followed by a space. Execution of functions is described below
+	      (see Execution section). The { and } are unnecessary if the body
+	      of the function is a command as defined above, under Commands.
+
+       time pipeline
+	      The pipeline is executed and the elapsed time as well as the
+	      user and system time are printed to standard error.  The
+	      TIMEFORMAT variable can be set to a format string that specifies
+	      how the timing information should be displayed.  Command based
+	      timing from set -o time is temporarily disabled while pipeline
+	      based timing is in effect.  If time is followed by white space
+	      and a '-', it is interpreted as a normal command in order to
+	      permit time -p, as required by POSIX.
+
+       POSIX does not require time to be a keyword.
+
+       The following words are only recognized as the first word of a command
+       and when not quoted:
+
+
+	 !	    if	     then     else    elif    fi      case
+	 esac	    for	     while    until   do      done    {	  }
+	 select	    time
+
+       The reserved words !, select and time were not supported in older
+       versions of sh.
+
+   Comments Lines
+       A word beginning with # causes that word and all the following
+       characters up to a newline to be ignored.
+
+   # commands
+       If the hash character # is the first character in a command line and
+       hash commands have been enabled via set -o hashcmds, the whole line is
+       processed by the hash command interpreter.  This allows to have an
+       alternate entry to the alias definitions that avoids complex quoting by
+       working on the raw alias definitions.
+
+       Hash commands are frequently used to edit alias definitions using the
+       command line history editor.
+
+       No I/O redirection is possible for hash commands.  No exit code is
+       created for hash commands, $?  is left intact from the last regular
+       command.	 Quoting is not possible for hash commands.  For all hash
+       commands, there is a built in help text that is printed when #c -help
+       is called, where c is one of the command letters.
+
+       When hash commands are enabled, the character that immediately follows
+       the # is the command character.	The command character may be followed
+       by one or more command modifier characters.  The following commands are
+       supported:
+
+
+       #a[g|l] name value
+	      Add a new all expand alias. Such an alias is expanded regardless
+	      where it occurs on the command line.  Without modifier, the
+	      alias is entered into the current default table.
+
+	      The first word surrounded by spaces is taken as the alias name,
+	      after skipping spaces, all text up to the end of the line is
+	      taken as the alias value.
+
+	      When using the 'g' modifier, the command works on global
+	      aliases, regardless of the current default.
+
+	      When using the 'l' modifier, the command works on local aliases,
+	      regardless of the current default.
+
+	      At startup, the default is to use the global aliases.
+
+       #b[g|l] name value
+	      Add a new begin alias.  Such an alias is only expanded for the
+	      first word in a command.	Without modifier, the alias is entered
+	      into the current default table.
+
+       #d[g|l] name
+	      Removes the alias name from the list of known aliases.  Without
+	      modifier, the alias is removed from the current default table.
+
+       #h
+       #?     Print an overview help for all # commands.
+
+       #l[g|l][h] [name]
+	      Lists aliases from the table.  Without modifier, the aliases
+	      from the current default table are printed.  Without name, all
+	      aliases are listed. With name, only matching aliases are listed.
+	      Wildcards may be used.
+
+	      When using the 'h' modifier, the alias is also entered into the
+	      command history.	This permits to edit existing aliases with the
+	      history editor and to re-enter the modified entries into the
+	      list of aliases.
+
+       #p[g|l][a|b] name value
+	      With the #p command, an alias may be pushed on top of an
+	      existing alias without writing to the related file. When a
+	      pushed value is removed, the old definition reappears.
+
+	      When using the 'a' modifier, an all expand alias is pushed.
+
+	      When using the 'b' modifier, a begin alias is pushed.
+
+       #s[g|l]
+	      Set or list the default table for other # command alias
+	      operations.  If no modifier letter is used, the current default
+	      is printed otherwise the new default is set.
+
+       #      In interactive mode, when entered as first character on the
+	      command line, this prints the shell version.
+
+	      After the command set -o hashcmds has been issued in a shell
+	      script, a # as first character of a command line inside that
+	      shell script, if followed by a non-space character is no longer
+	      interpreted as a comment. This may be a problem in the file
+	      $HOME/.shrc as this file is typically used to enable hashcmds
+	      via set -o hashcmds for an interactive shell.  It is thus
+	      recommended to have set -o hashcmds close to the bottom of the
+	      file $HOME/.shrc.
+
+
+   Alias Substitution
+       After a token has been recognized, but before applying the grammatical
+       rules, a resulting word that is identified as the command name of a
+       simple command is examined whether it is an unquoted valid alias name.
+       A valid alias name is replaced by the value of the alias.  The shell
+       prevents infinite alias loops by not expanding the same alias more than
+       once for the same word.
+
+       Alias expansion is performed when the commands are read, not when they
+       are executed.
+
+       Aliases can be used to redefine built-in commands but cannot be used to
+       redefine the reserved words listed in the Commands section. Aliases can
+       be created and listed with the alias command and removed with the
+       unalias command.
+
+       POSIX compliant temporary alias definitions are not inherited by
+       separate invocations of the shell or when interpreting scripts.
+
+       The Bourne Shell implements enhanced alias features beyond the POSIX
+       alias definition. Enhanced alias features are disabled by default.
+       They need to be turned on (see set command below) to make them
+       operational.  The following additional alias features are available:
+
+       persistent aliases
+	      If turned on by set -o globalaliases, persistent global aliases
+	      are automatically loaded by all interactive shells.
+
+       local aliases
+	      If turned on by set -o localaliases, persistent local aliases
+	      are automatically loaded by all interactive shells as a result
+	      of the cd command.  Local aliases are specific to the current
+	      working directory. The local aliases definitions from the
+	      previous working directory are automatically disabled when the
+	      working directory is changed to a different directory.  Local
+	      aliases have higher precedence than global aliases.
+
+
+   Tilde Expansion
+       A tilde-prefix consists of an unquoted tilde character at the beginning
+       of a word, followed by all of the characters preceding the first
+       unquoted slash in the word, or all the characters in the word if there
+       is no slash. In an assignment, multiple tilde-prefixes can be used: at
+       the beginning of the word (that is, following the equal sign of the
+       assignment), following any unquoted colon or both. A tilde-prefix in an
+       assignment is terminated by the first unquoted colon or slash. If none
+       of the characters in the tilde-prefix are quoted, the characters in the
+       tilde-prefix following the tilde are treated as a possible login name
+       from the user database.
+
+
+       A portable login name cannot contain characters outside the set given
+       in the description of the LOGNAME environment variable. If the login
+       name is null (that is, the tilde-prefix contains only the tilde), the
+       tilde-prefix is replaced by the value of the variable HOME.  If HOME is
+       unset, the results are unspecified. Otherwise, the tilde-prefix is
+       replaced by a pathname of the home directory associated with the login
+       name obtained using the getpwnam function. If the system does not
+       recognize the login name, the results are undefined.
+
+
+       Tilde expansion generally occurs only at the beginning of words, but an
+       exception based on historical practice has been included:
+
+	 PATH=/usr/xpg4/bin:~joerg/bin
+
+
+
+       is eligible for tilde expansion because tilde follows a colon and none
+       of the relevant characters is quoted. Consideration was given to
+       prohibiting this behavior because any of the following are reasonable
+       substitutes:
+
+	 PATH=$(printf %s ~karels/bin : ~bostic/bin)
+	 for Dir in ~maart/bin ~srb/bin .
+	 do
+	      PATH=${PATH:+$PATH:}$Dir
+	 done
+
+
+
+       With the first command, explicit colons are used for each directory. In
+       all cases, the shell performs tilde expansion on each directory because
+       all are separate words to the shell.
+
+
+       Expressions in operands such as:
+
+	 make -k mumble LIBDIR=~chet/lib
+
+
+
+       do not qualify as shell variable assignments and tilde expansion is not
+       performed (unless the command does so itself, which make does not).
+
+
+       Because of the requirement that the word not be quoted, the following
+       are not equivalent; only the last causes tilde expansion:
+
+	 \~hlj/	  ~h\lj/   ~"hlj"/   ~hlj\/   ~hlj/
+
+
+
+
+       The results of giving tilde with an unknown login name are undefined by
+       POSIX because the Bourne Shell ~+ and ~- constructs make use of this
+       condition, but in general it is an error to give an incorrect login
+       name with tilde. The results of having HOME unset are unspecified
+       because some historical shells treat this as an error.
+
+
+       If a tilde that matches the criteria is found, the word up to a / (or
+       up to a : in case of a variable assignment) is checked to see if it
+       matches a user name in the password database. If a match is found, the
+       ~ and the matched login name are replaced by the login directory of the
+       matched user.  If no match is found, the original text is left
+       unchanged. A ~ by itself, or in front of a /, is replaced by $HOME.  A
+       ~ followed by a + or - is replaced by the value of $PWD and $OLDPWD
+       respectively.
+
+
+   Command Substitution
+       The shell reads commands enclosed in parenthesis preceded by a dollar
+       sign (that is, $(command)) or from the string between two grave accents
+       (``) and the standard output from these commands can be used as all or
+       part of a word. Trailing newlines from the standard output are removed.
+
+
+       No interpretation is done on the string before the string is read,
+       except when using the second (obsolete) form using the backquoted
+       syntax, where backslashes (\) are used to escape other characters.
+
+       When using the backquoted syntax, backslashes can be used to escape a
+       grave accent (`) or another backslash (\) and are removed before the
+       command string is read.	Escaping grave accents allows nested command
+       substitution in this form.  If the command substitution lies within a
+       pair of double quotes (" ...` ...` ... "), a backslash used to escape a
+       double quote (\") is removed. Otherwise, it is left intact.
+
+
+       If a backslash is used to escape a newline character (\newline), both
+       the backslash and the newline are removed (see the later section on
+       Quoting).  In addition, backslashes used to escape dollar signs (\$)
+       are removed. Since no parameter substitution is done on the command
+       string before it is read, inserting a backslash to escape a dollar sign
+       has no effect. Backslashes that precede characters other than \, `, ",
+       newline, and $ are left intact when the command string is read.
+
+       In the $() form, nested command substitutions do not need special
+       quoting.
+
+       Command substitution allows the output of a command to be substituted
+       in place of the command name itself. Command substitution occurs when
+       the command is enclosed as follows:
+
+	 $(command)
+
+       or (backquoted version):
+
+	 `command`
+
+       The shell expands the command substitution by executing command in a
+       subshell environment and replacing the command substitution (the text
+       of command plus the enclosing $() or backquotes) with the standard
+       output of the command, removing sequences of one or more newline
+       characters at the end of the substitution. Embedded newline characters
+       before the end of the output is not be removed; however, they can be
+       treated as field delimiters and eliminated during field splitting,
+       depending on the value of IFS and quoting that is in effect.
+
+       With the $(command) form, all characters following the open parenthesis
+       to the matching closing parenthesis constitute the command. Any valid
+       shell script can be used for command.
+
+       The results of command substitution are not field splitting and
+       pathname expansion processed for further tilde expansion, parameter
+       expansion, command substitution or arithmetic  expansion. If a command
+       substitution occurs inside double-quotes, it is not be performed on the
+       results of the substitution.
+
+       The $() form of command substitution solves a problem of inconsistent
+       behavior when using backquotes. For example:
+
+       +----------------------------------------------------------+
+       |	  Command			Output		  |
+       +----------------------------------------------------------+
+       |echo '\$x'		      \$x			  |
+       |echo `echo '\$x'`	      $x			  |
+       |echo $(echo '\$x')	      \$x			  |
+       +----------------------------------------------------------+
+       Additionally, the backquoted syntax has historical restrictions on the
+       contents of the embedded command. While the new $() form can process
+       any kind of valid embedded script, the backquoted form cannot handle
+       some valid scripts that include backquotes. For example, these
+       otherwise valid embedded scripts do not work in the left column, but do
+       work on the right:
+
+       +----------------------------------------------------------+
+       |echo `			      echo $(			  |
+       |cat <<eof		      cat <<eof			  |
+       |a here-doc with `	      a here-doc with )		  |
+       |eof			      eof			  |
+       |`			      )				  |
+       |echo `			      echo $(			  |
+       |echo abc # a comment with `   echo abc # a comment with ) |
+       |`			      )				  |
+       |echo `			      echo $(			  |
+       |echo '`'		      echo ')'			  |
+       |`			      )				  |
+       +----------------------------------------------------------+
+       Because of these inconsistent behaviors, the backquoted variety of
+       command substitution is not recommended for new applications that nest
+       command substitutions or attempt to embed complex scripts.
+
+       If the command substitution consists of a single subshell, such as:
+
+	 $( (command) )
+
+       a portable application must separate the $( and ( into two tokens (that
+       is, separate them with white space). This is required to avoid any
+       ambiguities with arithmetic expansion.
+
+
+   Arithmetic Expansion
+       An arithmetic expression enclosed in double parentheses preceded by a
+       dollar sign is replaced by the value of the arithmetic expression
+       within the double parenthesis.  Arithmetic expansion provides a
+       mechanism for evaluating an arithmetic expression and substituting its
+       value. The format for arithmetic expansion is as follows:
+
+	 $((arithmetic-expression))
+
+
+       The expression is treated as if it were in double-quotes, except that a
+       double-quote inside the expression is not treated specially. The shell
+       expands all tokens in the expression for parameter expansion, command
+       substitution and quote removal.
+
+
+       Next, the shell treats this as an arithmetic expression and substitutes
+       the value of the expression. The arithmetic expression is processed
+       according to the rules of the ISO C with the following exceptions:
+
+	      o	     Only signed long long integer arithmetic is supported.
+
+	      o	     The sizeof() operator is not supported.
+
+	      o	     Selection, iteration, and jump statements are not
+		     supported.
+
+       If the expression is invalid, the expansion fails and the shell writes
+       a message to standard error indicating the failure.
+
+       POSIX does not require to support the prefix and postfix ++ and --
+       operators, so avoid them in portable shell scripts.
+
+       POSIX does not require to support more than signed long arithmetic, so
+       avoid arithmetic that requires more in portable scripts.
+
+       In older versions of sh, arithmetic expansion was not supported.
+
+       A simple example using arithmetic expansion:
+
+	 # repeat a command 100 times
+	 x=100
+	 while [ $x -gt 0 ]
+	 do
+	      command
+	      x=$((x-1))
+	 done
+
+
+   Parameter Substitution
+       The character $ is used to introduce substitutable parameters.  There
+       are two types of parameters, positional and keyword. If parameter is a
+       digit, it is a positional parameter. Positional parameters can be
+       assigned values by set.	Keyword parameters (also known as variables)
+       can be assigned values by writing:
+
+
+       name=value [ name=value ] ...
+
+
+       The evaluation of the assignments is done from the left to the right in
+       this shell.
+
+       Pattern-matching is not performed on value.  There cannot be a function
+       and a variable with the same name.
+
+       ${parameter}		The value, if any, of the parameter is
+				substituted. The braces are required only when
+				parameter is followed by a letter, digit, or
+				underscore that is not to be interpreted as
+				part of its name, or when the parameter name
+				contains a dot (.).  If parameter is * or @,
+				all the positional parameters, starting with
+				$1, are substituted (separated by spaces).
+				Parameter $0 is set from argument zero when
+				the shell is invoked.
+
+
+       ${parameter:-word}	Use Default Values.  If parameter is unset or
+				null, the expansion of word is substituted;
+				otherwise, the value of parameter is
+				substituted.
+
+
+       ${parameter-word}	Use Default Values.  If parameter is unset,
+				the expansion of word is substituted;
+				otherwise, the value of parameter is
+				substituted.
+
+
+       ${parameter:=word}	Assign Default Values.	If parameter is unset
+				or null, the expansion of word is assigned to
+				parameter.  In all cases, the final value of
+				parameter is substituted. Only variables, not
+				positional parameters or special parameters,
+				can be assigned in this way.
+
+
+       ${parameter=word}	Assign Default Values.	If parameter is unset,
+				the expansion of word is assigned to
+				parameter.  In all cases, the final value of
+				parameter is substituted. Only variables, not
+				positional parameters or special parameters,
+				can be assigned in this way.
+
+
+       ${parameter:?word}	Indicate Error if Null or Unset.  If parameter
+				is set and is non-null, substitute its value;
+				otherwise, print word and exit from the shell.
+				If word is omitted, the message "parameter
+				null or not set" is printed.
+
+
+       ${parameter?word}	Indicate Error if Null or Unset.  If parameter
+				is set, substitute its value; otherwise, print
+				word and exit from the shell. If word is
+				omitted, the message "parameter null or not
+				set" is printed.
+
+
+       ${parameter:+word}	Use Alternative Value.	If parameter is set
+				and is non-null, substitute word; otherwise
+				substitute nothing.
+
+
+       ${parameter+word}	Use Alternative Value.	If parameter is set,
+				substitute word; otherwise substitute nothing.
+
+
+       If the colon (:) is omitted from the above expressions, the shell only
+       checks whether parameter is set or not.	The following table summarizes
+       the effect of the <colon>:
+
+			  | parameter nonnull |	 parameter null	 | parameter unset
+       -------------------+-------------------+------------------+-----------------
+       ${parameter:-word} | subst. parameter  | subst. word	 | subst. word
+       -------------------+-------------------+------------------+-----------------
+       ${parameter-word}  | subst. parameter  | subst. null	 | subst. word
+       -------------------+-------------------+------------------+-----------------
+       ${parameter:=word} | subst. parameter  | assign word	 | assign word
+       -------------------+-------------------+------------------+-----------------
+       ${parameter=word}  | subst. parameter  | subst. null	 | assign word
+       -------------------+-------------------+------------------+-----------------
+       ${parameter:	  | word}	      | subst. parameter | error, exit
+       -------------------+-------------------+------------------+-----------------
+       ${parameter	  | word}	      | subst. parameter | subst. null
+       -------------------+-------------------+------------------+-----------------
+       ${parameter:+word} | subst. word	      | subst. null	 | subst. null
+       -------------------+-------------------+------------------+-----------------
+       ${parameter+word}  | subst. word	      | subst. word	 | subst. null
+       -------------------+-------------------+------------------+-----------------
+
+       In all cases shown with "assign", parameter is assigned that value,
+       which also replaces the expression.
+
+
+       In the above, word is not evaluated unless it is to be used as the
+       substituted string, so that, in the following example, pwd is executed
+       only if d is not set or is null:
+
+	 echo  ${d:-`pwd`}
+
+
+       ${#parameter}		String Length.	The length in characters of
+				the value of parameter.	 If parameter is * or
+				@, the results are unspecified.
+
+
+       The following four varieties of parameter expansion provide for
+       substring processing. In each case, pattern matching notation, rather
+       than regular expression notation, is used to evaluate the patterns.  If
+       parameter is * or @, the results are unspecified.  Enclosing the full
+       parameter expansion string in double-quotes does not cause the
+       following four varieties of pattern characters to be quoted, whereas
+       quoting characters within the braces has this effect.
+
+
+       ${parameter%word}	Remove Smallest Suffix Pattern.	 The word is
+				expanded to produce a pattern.	The parameter
+				expansion then results in parameter, with the
+				smallest portion of the suffix matched by the
+				pattern deleted.  If word begins with a '%',
+				the character needs to be quoted.
+
+
+       ${parameter%%word}	Remove Largest Suffix Pattern.	The word is
+				expanded to produce a pattern.	The parameter
+				expansion then results in parameter, with the
+				largest portion of the suffix matched by the
+				pattern deleted.
+
+
+       ${parameter#word}	Remove Smallest Prefix Pattern.	 The word is
+				expanded to produce a pattern.	The parameter
+				expansion then results in parameter, with the
+				smallest portion of the prefix matched by the
+				pattern deleted.  If word begins with a '#',
+				the character needs to be quoted.
+
+
+       ${parameter##word}	Remove Largest Prefix Pattern.	The word is
+				expanded to produce a pattern.	The parameter
+				expansion then results in parameter, with the
+				largest portion of the prefix matched by the
+				pattern deleted.
+
+
+       The following parameters are automatically set by the shell.
+
+       #       The number of positional parameters in decimal.
+
+       n       The n-th positional parameter.  The parameter name n is in the
+	       range from 1 to $#.
+
+       0       Parameter $0 is set from argument zero when the shell is
+	       invoked.	 If running a script, $0 is the name of the script.
+
+       *       All positional parameters starting from $1.  "$*" expands to
+	       one argument that contains all positional parameters separated
+	       by the first character in the IFS variable or by a space, in
+	       case IFS is unset.  If IFS is set to a null string, its first
+	       character does not exist, so the parameter values are
+	       concatenated.
+	       In older versions of sh, IFS was not evaluated for "$*" and the
+	       separator was always a space character.
+
+       @       All positional parameters starting from $1.  "$@" expands to $#
+	       arguments.
+
+       -       Flags supplied to the shell on invocation or by the set
+	       command.
+
+       ?       The decimal value returned by the last synchronously executed
+	       command or a decimal number derived from the signal number that
+	       killed the process.
+
+	       Only the low 8 bits of the exit code from the command are
+	       visible unless exit code masking is switched off by
+	       ``set -o fullexitcode''.	 The ability to see all 32 bits from
+	       the exit code requires a modern UNIX compliant operating system
+	       with working support for waitid(2).
+
+	       If the executable file could not be found, the returned value
+	       is 127.	If the file exists but could not be executed, the
+	       returned value is 126.
+
+	       If bosh has been compiled with DO_EXIT_MODFIX (which is not the
+	       default and not recommended by POSIX) and if a command's exit
+	       code modulo 256 is zero and ``set -o fullexitcode'' is not in
+	       effect, the returned value is 128, except when the operating
+	       system does not support waitid(2), as the exit code then is
+	       masked by the kernel.
+
+	       If the command was killed by a signal, the returned value is
+	       128 + the signal number.	 As a result, apparent exit code
+	       values in the range 129..200 may also have been caused by a
+	       signal.
+
+	       If the shell itself or a sub shell catches a signal while
+	       preparing a job, the exit code is 2000, or (when exit codes are
+	       masked to only the low 8 bits) 208.
+
+       /       A decimal number or text indicating the exit status returned by
+	       the last synchronously executed command.
+
+	       If $/ returns a decimal number, this is (on a POSIX system) the
+	       32 bit exit code from the last command that did normally exit.
+	       Older non-POSIX systems like Linux or UNIX systems from before
+	       SVr4 return only the low 8 bits from the exit code.  In any
+	       case, the number was a result from a normal program exit.
+
+	       If $/ returns text, this is either a signal name with the
+	       leading ``SIG'' stripped off, like ``INT'' (see kill -l) for
+	       the signal that terminated the program or one of the strings
+	       ``NOEXEC'' or ``NOTFOUND'', in case the program could not be
+	       run at all.  The strings ``NOEXEC'' and ``NOTFOUND'' are
+	       returned reliably from vfork(2) childs or when the related
+	       state is already known by the cache.  This is true for all
+	       simple commands.
+
+	       Note that unless ``set -o fullexitcode'' is in effect, $/ may
+	       have a non-zero value where value mod 256 == 0 and the shell in
+	       such a case evaluates conditional execution as if the exit code
+	       was zero.  This is the default behavior required by POSIX for
+	       compatibility with historic shells.
+
+       $       The decimal process number of this shell.  In a subshell, this
+	       still expands to the same value as that of the current invoked
+	       shell.
+
+       !       The process number of the last background command invoked.
+
+
+       .sh.code
+	       The numerical reason waitid(2) returned for the child status
+	       change. It matches the CLD_* definitions from signal.h.	Note
+	       that the numbers are usually in the range 1..6 but this is not
+	       guaranteed.  Use ${.sh.codename} for portability.
+
+       .sh.codename
+	       The reason waitid(2) returned for the child status change as
+	       text that is generated by stripping off CLD_ from the related
+	       definitions from signal.h.  Possible values are:
+
+	       EXITED	   The program had a normal termination and the
+			   exit(2) code is in ${.sh.status}.
+
+	       KILLED	   The program was killed by a signal, the signal
+			   number is in ${.sh.status} the signal name is in
+			   ${.sh.termsig}.
+
+	       DUMPED	   The program was killed by a signal, similar to
+			   KILLED above, but the program in addition created a
+			   core dump.
+
+	       TRAPPED	   A traced child has trapped.
+
+	       STOPPED	   The program was stopped by a signal, the signal
+			   number is in ${.sh.status} the signal name is in
+			   ${.sh.termsig}.
+
+	       CONTINUED   A stopped child was continued.
+
+	       NOEXEC	   An existing file could not be executed. This can
+			   happen when e.g. either the type of the file is not
+			   plain file or when the file does not have execute
+			   permission, or when the argument list is too long.
+
+			   This is not a result from waitid(2) but from
+			   execve(2).
+
+	       NOTFOUND	   A file was not found and thus could not be
+			   executed.
+
+			   This is not a result from waitid(2) but from
+			   execve(2).
+
+	       The child codes NOEXEC and NOTFOUND in ${.sh.codename} need
+	       shared memory (e.g. from vfork(2)) to allow a reliable
+	       reporting.
+
+       .sh.path
+	       The absolute path name for the current shell binary, if
+	       available.
+
+       .sh.pid The process number of the process that caused the current
+	       waitid(2) status.
+
+       .sh.shell
+	       The name of the shell. This shell returns:
+
+		    sh (Schily Bourne Shell)
+
+       .sh.signame
+	       The name of the causing signal.	If the status is related to a
+	       set of waitid(2) return values, this is CHLD or CLD, depending
+	       on the os.  When a trap(1) command is executed, ${.sh.signame}
+	       holds the signal that caused the trap.
+
+       .sh.signo
+	       The signal number related to ${.sh.signame}.
+
+       .sh.status
+	       The decimal value returned by the last synchronously executed
+	       command.	 The value is unaltered and contains the full int from
+	       the exit(2) call in the child in case the shell is run on a
+	       modern os.
+
+       .sh.termsig
+	       The signal name related to the numerical ${.sh.status} value.
+	       The translation to signal names takes place regardless of
+	       whether the child was terminated by a signal or terminated
+	       normally.
+
+       .sh.version
+	       A string that identifies the version of this shell.
+
+       Note that trying to use the ${.sh.xxx} parameters on older shells will
+       cause the older shells to exit with a bad substitution message unless
+       the shell is an interactive shell.
+
+       The following parameters are used by the shell. The parameters in this
+       section are also referred to as environment variables.
+
+       HOME	    The default argument (home directory) for the cd command,
+		    set to the user's login directory by login(1) from the
+		    password file (see passwd(4)).
+
+
+       PATH	    The search path for commands (see Execution section
+		    below).  If PATH is not set, it defaults to /usr/bin:.
+
+
+       BEEP	    If set to off, the history editor will not beep in case of
+		    an error.  Use this to allow e.g. silent working in
+		    meetings.
+
+		    BEEP is only supported if sh was compiled with support for
+		    history editing.
+
+		    The variable BEEP was not supported in older versions of
+		    sh.
+
+
+       CDPATH	    The search path for the cd command.
+
+
+       ENV	    This variable is used when and only when an interactive
+		    shell is invoked.  It is subject to Parameter Substitution
+		    by the shell, and the resulting value is used as the
+		    pathname of a script that is executed when the shell is
+		    invoked.  This file is typically used to define function
+		    definitions and transient alias definitions or to turn on
+		    persistent alias features or jobcontrol.  The default
+		    value is $HOME/.shrc.  If the result of the Parameter
+		    Substitution starts with /./ or ./ the file /etc/sh.shrc
+		    is not executed.
+
+		    The variable ENV was not supported in older versions of
+		    sh.
+
+		    The recommended content of the file ${ENV} is:
+
+		    set -o globalaliases
+		    set -o localaliases
+		    set -o fdpipe
+		    set -o hostprompt
+		    set -o hashcmds
+		    set -o time
+
+		    Make sure set -o time is the last entry to avoid timing
+		    the commands from the .shrc file.
+
+
+       FCEDIT	    The name default editor name for the fc command.
+
+		    FCEDIT is only supported if sh was compiled with support
+		    for history editing.
+
+		    The variable FCEDIT was not supported in older versions of
+		    sh, it is an artefact from ksh and required by a POSIX
+		    feature named user portability.
+
+
+       HISTFILE	    The name of the file to use in order to read or save the
+		    command history.  If HISTFILE is not set before the shell
+		    reads the initial history at startup, the name
+		    $HOME/.history is used.  If HISTFILE is set, then the
+		    shell will save the history while exiting even in case
+		    that SAVEHISTORY was not set.
+
+		    HISTFILE is only supported if sh was compiled with support
+		    for history editing.
+
+		    The variable HISTFILE was not supported in older versions
+		    of sh.
+
+
+       HISTORY	    The maximum number of lines to keep in the command history
+		    editor.  The default is to keep 128 lines of command
+		    history.  This is the historic name that is in use since
+		    1984, it is used as a fallback, when the POSIX variable
+		    HISTSIZE (introduced 1992) was not set.
+
+		    HISTORY is only supported if sh was compiled with support
+		    for history editing.
+
+		    The variable HISTORY was not supported in older versions
+		    of sh.
+
+
+       HISTSIZE	    The maximum number of lines to keep in the command history
+		    editor.  The default is to keep 128 lines of command
+		    history.  This is the POSIX variable name that has
+		    precedence over HISTORY.
+
+		    HISTSIZE is only supported if sh was compiled with support
+		    for history editing.
+
+		    The variable HISTSIZE was not supported in older versions
+		    of sh.
+
+
+       IGNOREEOF    If set to on, the shell will not exit if a ^D is typed and
+		    the cursor is on an empty command line; the command exit
+		    must be used instead.  The default is not to ignore EOF.
+		    See also the command set -o ignoreeof below.  This is the
+		    historic interface that is in use since 1984.  The POSIX
+		    interface is to call set -o ignoreeof.
+
+		    IGNOREEOF is only supported if sh was compiled with
+		    support for history editing.
+
+		    The variable IGNOREEOF was not supported in older versions
+		    of sh.
+
+
+       LINENO	    The line number of the current line within the script.
+		    This variable currently does not have all POSIX features.
+
+		    The variable LINENO was not supported in older versions of
+		    sh.
+
+
+       MAIL	    If this parameter is set to the name of a mail file and
+		    the MAILPATH parameter is not set, the shell informs the
+		    user of the arrival of mail in the specified file.
+
+
+       MAILCHECK    This parameter specifies how often (in seconds) the shell
+		    checks for the arrival of mail in the files specified by
+		    the MAILPATH or MAIL parameters. The default value is 600
+		    seconds (10 minutes). If set to 0, the shell checks before
+		    each prompt.
+
+
+       MAILPATH	    A colon-separated list of file names. If this parameter is
+		    set, the shell informs the user of the arrival of mail in
+		    any of the specified files. Each file name can be followed
+		    by % and a message that is e printed when the modification
+		    time changes. The default message is, you have mail.
+
+
+       OLDPWD	    The previous working directory, set by the cd, the pushd
+		    and the popd command.  OLDPWD is not set before the first
+		    cd, pushd or popd command.
+
+		    The variable OLDPWD was not supported in older versions of
+		    sh.
+
+
+       OPTARG	    This variable is used by getopts to store the argument if
+		    an option is using arguments.
+
+
+       OPTIND	    This variable is used by getopts as the index of the next
+		    argument to be processed.
+
+
+       PPID	    The process number of the parent of the shell.  The
+		    variable is setup once at program start and then set
+		    readonly.
+
+		    The variable PPID was not supported in older versions of
+		    sh.
+
+
+       PS1	    Primary prompt string, by default "$ " for normal users
+		    and "privileged users.  Each time an interactive shell is
+		    ready to read a command, the value of this variable is
+		    subject to parameter expansion and written to standard
+		    error.  See the description for set -o promptcmdsubst
+		    below for more information.
+
+		    The variable PS1 was not subject to parameter expansion in
+		    older versions of sh.
+
+
+       PS2	    Secondary prompt string, by default "> ".  Each time, the
+		    user enters a <newline> prior to completing a command line
+		    in an interactive shell, the value of this variable is
+		    subject to parameter expansion and written to standard
+		    error.  See the description for set -o promptcmdsubst
+		    below for more information.
+
+		    The variable PS2 was not subject to parameter expansion in
+		    older versions of sh.
+
+
+       PS3	    Selection prompt string, by default "#? ".
+
+		    The variable PS3 was not supported in older versions of
+		    sh.
+
+
+       PS4	    Execution trace prompt string, by default "+ ".  If unset,
+		    "+ " is used.  The value of this variable is subject to
+		    parameter expansion and written to standard error.	See
+		    the description for set -o promptcmdsubst below for more
+		    information.
+
+		    The variable PS4 was not supported in older versions of
+		    sh.
+
+
+       PWD	    The present working directory, set by the cd, the pushd
+		    and the popd command.  POSIX requires PWD to be set and
+		    verified at program startup. This may prevent a login for
+		    users with a networked home directory in case of a NFS
+		    based hang.
+
+		    The variable PWD was not supported in older versions of
+		    sh.
+
+
+       REPLY	    This variable is set by the select statement and by the
+		    read special builtin command when no arguments are
+		    supplied.
+
+		    The variable REPLY was not supported in older versions of
+		    sh.
+
+
+       IFS	    Internal field separators, normally space, tab, and
+		    newline (see Blank Interpretation section).
+
+
+       SAVEHISTORY  If set to on, the current history is saved in the file
+		    $HOME/.history when this shell exits.  The default is not
+		    to save the history.  This is the historic interface that
+		    is in use since 1984.  The POSIX interface is to set
+		    HISTFILE to the absolute path name of the persistent
+		    history file.
+
+		    SAVEHISTORY is only supported if sh was compiled with
+		    support for history editing.
+
+		    The variable SAVEHISTORY was not supported in older
+		    versions of sh.
+
+
+       SHACCT	    If this parameter is set to the name of a file writable by
+		    the user, the shell writes an accounting record in the
+		    file for each shell procedure executed.
+
+
+       SHELL	    When the shell is invoked, it scans the environment (see
+		    Environment section below) for this name.  If the past
+		    pathname component equals to rsh or rbosh, the shell is
+		    swichted into a restricted shell.
+
+
+       SYSV3	    When the SYSV3 Environment is set, the builtin echo
+		    command is switched into SYSV3 mode and supports escape
+		    sequences and the BSD -n option to suppress the newline
+		    character at the end of the output.
+
+
+       TERM	    Used to determine the name of the terminal type.  If this
+		    variable is unset or null, an unspecified default terminal
+		    type is used.  TERM is only supported if sh was compiled
+		    with support for history editing.
+
+		    The variable TERM was not supported in older versions of
+		    sh.
+
+
+       TERMCAP	    This variable holds either a precompiled termcap entry or
+		    the pathname to be used to find a termcap database file.
+		    If it holds a precompiled entry that does not match the
+		    TERM environment, the termcap database is parsed as if the
+		    TERMCAP environment is not set.  TERMCAP is automatically
+		    exported after filling it with a precompiled entry to
+		    speed up termcap based applications.  TERMCAP is only
+		    supported if sh was compiled with support for history
+		    editing.
+
+		    See NOTES section for hints on what to do when your
+		    platform does not provide an /etc/termcap file.
+
+		    The variable TERMCAP was not supported in older versions
+		    of sh.
+
+
+       TERMPATH	    If TERMCAP is empty or not set, then the TERMPATH
+		    environment is scanned for pathnames of files that contain
+		    a termcap database.	 It holds a list of filenames
+		    separated by colons or spaces (i.e., ":" or " ").  If the
+		    TERMPATH symbol is not set, the files $HOME/.termcap and
+		    /etc/termcap are scanned in that order.  TERMPATH is only
+		    supported if sh was compiled with support for history
+		    editing.
+
+		    The variable TERMPATH was not supported in older versions
+		    of sh.
+
+
+       TIMEFORMAT   Controls the output format for command timing.  The %
+		    character introduces a format sequence that is expanded to
+		    a time value or other information.
+
+		    The meaning of format sequences are as follows:
+
+		    %%	      Prints a literal %.
+
+		    %pT	      Set the threshold to p seconds, p is a single
+			      digit.  If the number of seconds computed from
+			      adding the user and system cpu time is less than
+			      the threshold, the rest of the format string is
+			      not processed, except when the timing is a
+			      result of using the time reserved word; if this
+			      format appears at the beginning of TIMEFORMAT,
+			      the whole output is suppressed.
+
+		    %P	      Prints the cpu percentage computed as
+			      100*(U + S) / R.	On multi-cpu systems, this
+			      value may be larger than 100.
+
+		    %[p][f]E  Prints the elapsed (real) wallclock time in
+			      seconds.
+
+		    %[p][f]S  Prints the number of cpu seconds spend in system
+			      mode.
+
+		    %[p][f]U  Prints the number of cpu seconds spend in user
+			      mode.
+
+		    %W	      Number of times the process was swapped.
+
+		    %X	      The average amount in shared text space used in
+			      Kbytes.  This field is currently not supported.
+
+		    %D	      The average amount in unshared data space used
+			      in Kbytes.  This field is currently not
+			      supported.
+
+		    %K	      The average amount of unshared stack space used
+			      in Kbytes.  This field is currently not
+			      supported.
+
+		    %M	      The maximum memory the process had in use at any
+			      time in Kbytes.  This field is currently not
+			      supported.
+
+		    %F	      The number of major page faults (page faults
+			      that caused physical I/O).
+
+		    %R	      The number of minor page faults (page faults
+			      that did not caused physical I/O).
+
+		    %I	      The number of input operations
+
+		    %O	      The number of output operations.
+
+		    %r	      The number of socket messages received.
+
+		    %s	      The number of socket messages sent.
+
+		    %k	      The number of signals received.
+
+		    %w	      Number of voluntary context switches (waits).
+
+		    %c	      Number of involuntary context switches.
+
+		    %J	      The name of this job. This string is only
+			      available when in job control mode.
+
+		    On some minimal POSIX systems and on BeOS and Haiku only
+		    the times are supported.
+
+		    The optional p is a digit specifying the precision, the
+		    number of fractional digits after a decimal point.	A
+		    value of 0 causes no decimal point to be printed.  A value
+		    larger than 6 is treated as 6.  If p is not specified, the
+		    value 3 is used.
+
+		    The optional f is a letter specifying the format to be
+		    used.  If it is missing, a plain floating point number
+		    based on seconds is used.  The following characters are
+		    supported to specify a different format:
+
+		    l	   The l-format is the POSIX output format for
+			   times(1).  It always prints minutes and seconds in
+			   the following form: ddmdd.ppps.
+
+		    L	   The L-format is similar to the l-format but it
+			   prints hours and minutes where the l-format prints
+			   just minutes regardless of whether there are more
+			   than 59 minutes.  Minutes and hours are only
+			   printed if the value is more than 59 seconds or 59
+			   minutes.  The format is: ddhddmdd.ppps.
+
+		    :	   The :-format is similar to the L-format but it
+			   prints no s after the seconds and it replaces m and
+			   h by :.  The format is: dd:dd:dd.ppp.
+
+		    The value of the decimal point in the floating point
+		    formats above is subject to locale specific adoptions
+		    based on LC_NUMERIC or LC_ALL.
+
+		    If TIMEFORMAT is unset, the value:
+
+		      '%:E real %U user %S sys %P%% cpu'
+
+		    is used for automatic timing with set -o time and:
+
+		      '\nreal	%6:E\nuser   %6U\nsys	 %6S'
+
+		    is used for pipelines prefixed with the time reserved
+		    word.  If TIMEFORMAT is empty, no timing information is
+		    printed.  A recommended format that is similar to what
+		    csh(1) prints by default, but with the available precision
+		    from modern operating systems is:
+
+		      '%6:Er %6Uu %6Ss %P%% %I+%Oio %Fpf+%Ww'
+
+		    A trailing newline is added when the format string is
+		    displayed.
+
+		    The variable TIMEFORMAT was not supported in older
+		    versions of sh.
+
+
+
+       See environ(5) for descriptions of the following environment variables
+       that affect the execution of sh: LANG, LC_ALL, LC_CTYPE , LC_MESSAGES
+       and LC_NUMERIC.
+
+
+       The shell gives default values to ENV, PATH, PS1, PS2, PS3, PS4,
+       MAILCHECK, HISTORY, OPTIND, and IFS.  Default values for HOME and MAIL
+       are set by login(1).  For security reasons, the value for IFS is never
+       imported from the environment.
+
+       When the shell is initially in POSIX mode, it marks all variables
+       imported from the environment with the export property. See Environment
+       section below.
+
+   Blank Interpretation
+       After parameter and command substitution, the results of substitution
+       are scanned for internal field separator characters (those found in
+       IFS) and split into distinct arguments where such characters are found.
+       Explicit null arguments ("" or '') are retained. Implicit null
+       arguments (those resulting from parameters that have no values) are
+       removed.
+
+
+   Input/Output Redirection
+       A command's input and output can be redirected using a special notation
+       interpreted by the shell. The following can appear anywhere in a
+       simple-command or can precede or follow a command and are not passed on
+       as arguments to the invoked command.  Note: Parameter and command
+       substitution occurs before word or digit is used.
+
+       <word	       Use file word as standard input (file descriptor 0).
+
+
+       >word	       Use file word as standard output (file descriptor 1).
+		       If the file does not exist, it is created.  If the file
+		       exists, and the noclobber option is on, this causes an
+		       error.  Otherwise, it is truncated to zero length.
+
+
+       >|word	       Same as >, except that it overrides the noclobber
+		       option.	This feature was not supported in older
+		       versions of sh.
+
+
+       >>word	       Use file word as standard output. If the file exists,
+		       output is appended to it by first seeking to the EOF.
+		       Otherwise, the file is created.
+
+
+       <>word	       Open file word for reading and writing as standard
+		       input.
+
+
+       <<[-]word       After parameter and command substitution is done on
+		       word, the shell input is read up to the first line that
+		       literally matches the resulting word, or to an EOF.
+		       If, however, the hyphen (-) is appended to <<:
+
+			   1.	  leading tabs are stripped from word before
+				  the shell input is read (but after parameter
+				  and command substitution is done on word);
+
+			   2.	  leading tabs are stripped from the shell
+				  input as it is read and before each line is
+				  compared with word; and
+
+			   3.	  shell input is read up to the first line
+				  that literally matches the resulting word,
+				  or to an EOF.
+		       If any character of word is quoted (see Quoting section
+		       later), no additional processing is done to the shell
+		       input. If no characters of word are quoted:
+
+			   1.	  parameter and command substitution occurs;
+
+			   2.	  (escaped) \newlines are removed; and
+
+			   3.	  \ must be used to quote the characters \, $,
+				  and `.
+		       The resulting document becomes the standard input.
+
+
+       <&digit	       Use the file associated with file descriptor digit as
+		       standard input.	Similarly for the standard output
+		       using >&digit.
+
+
+       <&-	       The standard input is closed. Similarly for the
+		       standard output using >&-.
+
+
+
+       If any of the above is preceded by a digit, the file descriptor which
+       is associated with the file is that specified by the digit (instead of
+       the default 0 or 1).  For example:
+
+	 ... 2>&1
+
+
+
+
+       associates file descriptor 2 with the file currently associated with
+       file descriptor 1.
+
+
+       The order in which redirections are specified is significant. The shell
+       evaluates redirections left-to-right. For example:
+
+	 ... 1>xxx 2>&1
+
+
+
+
+       first associates file descriptor 1 with file xxx.  It associates file
+       descriptor 2 with the file associated with file descriptor 1 (that is,
+       xxx).  If the order of redirections were reversed, file descriptor 2
+       would be associated with the terminal (assuming file descriptor 1 had
+       been) and file descriptor 1 would be associated with file xxx.
+
+
+       Using the terminology introduced on the first page, under Commands, if
+       a command is composed of several simple commands, redirection is
+       evaluated for the entire command before it is evaluated for each simple
+       command.	 That is, the shell evaluates redirection for the entire list,
+       then each pipeline within the list, then each command within each
+       pipeline, then each list within each command.
+
+
+       If a command is followed by & and job control (see set -m) is not
+       active, the default standard input for the command is the empty file,
+       /dev/null.  Otherwise, the environment for the execution of a command
+       contains the file descriptors of the invoking shell as modified by
+       input/output specifications.
+
+   File Name Generation
+       Before a command is executed, each command word is scanned for the
+       characters *, ?, and [.	If one of these characters appears the word is
+       regarded as a pattern.  The word is replaced with alphabetically sorted
+       file names that match the pattern. If no file name is found that
+       matches the pattern, the word is left unchanged. The character .	 at
+       the start of a file name or immediately following a /, as well as the
+       character / itself, must be matched explicitly.
+
+       *	    Matches any string, including the null string.
+
+
+       ?	    Matches any single character.
+
+
+       [...]	    Matches any one of the enclosed characters. A pair of
+		    characters separated by - matches any character lexically
+		    between the pair, inclusive.  If the first character
+		    following the opening [ is a !, any character not enclosed
+		    is matched.
+
+
+
+       Notice that all quoted characters (see below) must be matched
+       explicitly in a filename.
+
+   Quoting
+       The following characters have a special meaning to the shell and cause
+       termination of a word unless quoted:
+
+
+       ;  &  (	)  |  ^	 <  >  newline	space  tab
+
+
+       A character can be quoted (that is, made to stand for itself) by
+       preceding it with a backslash (\) or inserting it between a pair of
+       quote marks ('' or ""). During processing, the shell can quote certain
+       characters to prevent them from taking on a special meaning.
+       Backslashes used to quote a single character are removed from the word
+       before the command is executed. The pair \newline is removed from a
+       word before command and parameter substitution.
+
+
+       All characters enclosed between a pair of single quote marks (''),
+       except a single quote, are quoted by the shell. Backslash has no
+       special meaning inside a pair of single quotes. A single quote can be
+       quoted inside a pair of double quote marks (for example, "'"), but a
+       single quote can not be quoted inside a pair of single quotes.
+
+
+       Inside a pair of double quote marks (""), parameter and command
+       substitution occurs and the shell quotes the results to avoid blank
+       interpretation and file name generation. If $* is within a pair of
+       double quotes, the positional parameters are substituted and quoted,
+       separated by quoted spaces ("$1 $2 ..."). However, if $@ is within a
+       pair of double quotes, the positional parameters are substituted and
+       quoted, separated by unquoted spaces ("$1""$2"  ... ).  \ quotes the
+       characters \, `, , (comma), and $.  The pair \newline is removed before
+       parameter and command substitution. If a backslash precedes characters
+       other than \, `, , (comma), $, and newline, then the backslash itself
+       is quoted by the shell.
+
+   Prompting
+       When used interactively, the shell prompts with the value of PS1 before
+       reading a command. If at any time a newline is typed and further input
+       is needed to complete a command, the secondary prompt (that is, the
+       value of PS2) is issued.
+
+   Environment
+       The environment (see environ(5)) is a list of name-value pairs that is
+       passed to an executed program in the same way as a normal argument
+       list. The shell interacts with the environment in several ways. On
+       invocation, the shell scans the environment and creates a parameter for
+       each name found, giving it the corresponding value. If the user
+       modifies the value of any of these parameters or creates new
+       parameters, none of these affects the environment unless the export
+       command is used to bind the shell's parameter to the environment (see
+       also set -a).  A parameter can be removed from the environment with the
+       unset command.  The environment seen by any executed command is thus
+       composed of any unmodified name-value pairs originally inherited by the
+       shell, minus any pairs removed by unset, plus any modifications or
+       additions, all of which must be noted in export commands.
+
+       When the shell starts in POSIX mode, all variables imported from the
+       environment are given the export property and the shell internal values
+       cannot be modified independently from the values propagated via the
+       environment to child processes.
+
+
+       The environment for any simple-command can be augmented by prefixing it
+       with one or more assignments to parameters. Thus:
+
+	 TERM=450 command
+
+
+
+
+       and
+
+	 (export TERM; TERM=450; command)
+
+
+
+
+       are equivalent as far as the execution of command is concerned if
+       command is not a Special Command. If command is a Special Command, then
+
+	 TERM=450 command
+
+
+
+
+       modifies the TERM variable in the current shell.
+
+
+       If the -k flag is set, all keyword arguments are placed in the
+       environment, even if they occur after the command name. The following
+       example first prints a=b c and c:
+
+	 echo a=b  c
+
+	 a=b  c
+
+	 set  -k
+
+	 echo a=b  c
+
+	 c
+
+
+
+   Signals
+       The INTERRUPT and QUIT signals for an invoked command are ignored if
+       the command is followed by &.  Otherwise, signals have the values
+       inherited by the shell from its parent, with the exception of signal 11
+       (but see also the trap command below).
+
+   Execution
+       Each time a command is executed, the command substitution, parameter
+       substitution, blank interpretation, input/output redirection, and
+       filename generation listed above are carried out. If the command name
+       matches the name of a defined function, the function is executed in the
+       shell process (note how this differs from the execution of shell script
+       files, which require a sub-shell for invocation). If the command name
+       does not match the name of a defined function, but matches one of the
+       Special Commands listed below, it is executed in the shell process.
+
+
+       The positional parameters $1, $2, ... are set to the arguments of the
+       function. If the command name matches neither a Special Command nor the
+       name of a defined function, a new process is created and an attempt is
+       made to execute the command via exec(2).
+
+
+       The shell parameter PATH defines the search path for the directory
+       containing the command. Alternative directory names are separated by a
+       colon (:).  The default path is /usr/bin:.  The current directory is
+       specified by a null path name, which can appear immediately after the
+       equal sign, between two colon delimiters anywhere in the path list, or
+       at the end of the path list. If the command name contains a / the
+       search path is not used. Otherwise, each directory in the path is
+       searched for an executable file. If the file has execute permission but
+       is not an a.out file, it is assumed to be a file containing shell
+       commands. A sub-shell is spawned to read it. A parenthesized command is
+       also executed in a sub-shell.
+
+
+       The location in the search path where a command was found is remembered
+       by the shell (to help avoid unnecessary execs later). If the command
+       was found in a relative directory, its location must be re-determined
+       whenever the current directory changes. The shell forgets all
+       remembered locations whenever the PATH variable is changed or the hash
+       -r command is executed (see below).
+
+   Built-in Commands
+       The following commands are executed in the shell process.  Input/output
+       redirection is permitted for these commands. File descriptor 1 is the
+       default output location. When Job Control is enabled, additional
+       Built-in Commands are added to the shell's environment (see Job Control
+       section below).
+
+       Commands marked with a + are treated specially in the following ways:
+
+	      1.     Parameter assignments that precede a special builtin
+		     command affect the shell itself.
+
+	      2.     I/O redirections are processed after variable assignments
+		     for variables that precede the builtin command.
+
+	      3.     Errors may cause a script that contains them to abort.
+
+       In older versions of sh, parameter assignments that precede any builtin
+       command did always affect the shell itself.
+
+       + :
+
+	   No effect; the command does nothing. A zero exit code is returned.
+
+
+       + . filename
+
+	   Read and execute commands from filename and return. The search path
+	   specified by PATH is used to find the directory containing
+	   filename.
+
+
+       [ [expr] ]
+
+	   See test builtin below.
+
+
+       alias [ options ] [alias-name[=value]...]
+
+	   The alias command creates, redefines or lists existing alias
+	   definitions.	 An alias definition provides a string value that
+	   replaces a command name when it is encountered on the command line.
+
+	   The alias command in the Bourne Shell supports temporary aliases
+	   (POSIX aliases) that affect only the current execution environment
+	   as well as persistent aliases that affect all interactive shells
+	   that are called after a persistent alias definition was entered or
+	   modified.
+
+	   An argument in the form alias-name causes alias to list the related
+	   alias on stdout.  An argument in the form alias-name=value causes
+	   alias to define or redefine an alias or to push an alias definition
+	   on top of an old one.  If no argument was given, alias lists all
+	   current alias definitions.
+
+	   Alias definitions using the alias shell built-in must be written
+	   with appropriate quoting so that it is suitable for reinput to the
+	   shell parser.
+
+	   The # commands provide an alternate interface to define aliases
+	   that does not use the standard shell parser. It thus does not
+	   require quoting that goes beyond the quoting needed for the final
+	   command line in the expanded command.
+
+	   The alias command was not supported in older versions of sh.
+
+	   When operating on temporary aliases (i.e. when neither -g nor -l
+	   have been specified), the alias command always pushes new
+	   definitions on top of older ones.  This makes such alias
+	   definitions temporary in the global aliases name space by default,
+	   as required by the POSIX standard.  The following options may be
+	   used to modify operation:
+
+	   -a	  Define an alias definition that is expanded on all arguments
+		  of a command line and not only for command names. Use with
+		  care.
+
+	   -e	  List the everlasting version of the persistent alias
+		  definitions instead of listing the currently active
+		  definitions that may have been pushed on top of the
+		  persistent definitions.
+
+	   -g	  Define or list persistent global aliases that are stored in
+		  the file $HOME/.globals and read by interactive shells.
+		  When defining an alias with -g in effect, alias by default
+		  modifies the current top level definition for global
+		  aliases.  If there was no push operation before on the
+		  related alias, the current definition is made persistent by
+		  writing the definitions to $HOME/.globals.  The option -g is
+		  not permitted if persistent global aliases are disabled (see
+		  set command below).
+
+	   -l	  Define or list persistent directory local aliases that are
+		  stored in the file .locals in the current directory and read
+		  by interactive shells.  When defining an alias with -l in
+		  effect, alias by default modifies the current top level
+		  definition for local aliases.	 If there was no push
+		  operation before on the related alias, the current
+		  definition is made persistent by writing the definitions to
+		  .locals in the current directory.  The option -l is not
+		  permitted if persistent local aliases are disabled (see set
+		  command below).
+
+	   -p	  When defining or redefining aliases, enforce a push
+		  operation even if the option -g or -l has been specified.
+		  In push mode, the new alias definition is pushed temporarily
+		  on top of existing definitions instead of modifying the
+		  current definition.
+
+		  When listing aliases, this option implements compatibility
+		  to bash/ksh93 and outputs aliases in a form that can be used
+		  as input to the shell to recreate the current aliases.  With
+		  -p in effect in list mode, the persistent definition and all
+		  pushed definitions are listed; otherwise only the current
+		  active definitions are listed.
+
+	   -r	  Reload persistent aliases after removing all current
+		  aliases.  If persistent aliases are disabled, the effect is
+		  the same as with calling unalias -a.	No arguments are
+		  allowed with this option.
+
+	   -R
+	   -raw
+	   --raw  Output the listing in the raw format that is used in the
+		  persistent definition files $HOME/.globals and .locals.
+		  This increases readability as the quoting needed for
+		  defining an alias with the alias command is omitted.
+
+		  Aliases can be edited in the raw format using # commands,
+		  see the related section above.
+
+	   Aliases are often used together with the dosh builtin in order to
+	   run small parameterized pseudo shell scripts.  An alias to list
+	   files in the long format and to pipe the result into more(1) could
+	   be implemented this way:
+
+	       alias lm='dosh '\''ls -l "$@" | more'\'' lm-alias'
+
+
+       alloc
+
+	   In case sh has been compiled with storage debugging support, the
+	   alloc command prints information about the curren state of the
+	   storage subsystem; otherwise alloc is a dummy command.
+
+	   The alloc command was not supported in older versions of sh.
+
+
+       bg [%jobid ...]
+
+	   When Job Control is enabled, the bg command is added to the user's
+	   environment to manipulate jobs. Resumes the execution of a stopped
+	   job in the background. If %jobid is omitted the current job is
+	   assumed.  (See Job Control section below for more detail.)
+
+
+       builtin [ -dis ] [ -f lib ] [ name ... ]
+
+	   The builtin command allows to manage builtin commands.
+
+	   When no name parameter and neither -d nor -f are specified, the
+	   list of builtin commands is printed.	 When -i is specified, only
+	   shell intrinsic commands are listed.	 When -s is specified, only
+	   special builtin commands are listed.
+
+	   When -d is specified, each named builtin command is deleted.
+	   Special builtin commands cannot be deleted.
+
+	   On platforms that allow to load dynamic libraries, -f allows to
+	   load a dynamic library that contains builtin commands.
+
+	   Without -d all name parameters are added as builtins.
+
+	   The builtin command was not supported in older versions of sh.
+	   POSIX does not require the builtin command to be supported.
+
+
+       + break [ n ]
+
+	   Exit from the enclosing for or while loop, if any. If n is
+	   specified, break n levels.
+
+
+       cd [ -L | -P ] [ argument ]
+
+	   Change the current directory to argument.  If arg is - the
+	   directory is changed to the previous directory.  The shell
+	   parameter HOME is the default argument.  The shell parameter CDPATH
+	   defines the search path for the directory containing argument.
+	   Alternative directory names are separated by a colon (:).  The
+	   default path is <null> (specifying the current directory).  Note:
+	   The current directory is specified by a null path name, which can
+	   appear immediately after the equal sign or between the colon
+	   delimiters anywhere else in the path list. If argument begins with
+	   a / the search path is not used. Otherwise, each directory in the
+	   path is searched for argument.
+
+	   The previous working directory is kept in the shell parameter
+	   OLDPWD, the new working directory is kept in the shell parameter
+	   PWD.	 The top of the directory stack is replaced by the new working
+	   directory.
+
+	   -L	  Handles the operation dot-dot (..) logically.	 Symbolic link
+		  components are not resolved before dot-dot components are
+		  processed and dot-dot (..) operations are handled by
+		  removing the path component to the left of the dot-dot (..)
+		  in the supplied path or in PWD.
+
+	   -P	  Handles the operation dot-dot physically.  Symbolic link
+		  components are resolved before dot-dot components are
+		  processed.
+
+	   If both -L and -P are specified, the last one applies.  If neither
+	   -L nor -P is specified, cd behaves as if -P had been specified,
+	   except when in POSIX mode where the default is -L.  See section
+	   COMPATIBILITY below.
+
+	   The options -L and -P and the special parameter - were not
+	   recognised by older versions of sh.
+
+
+       chdir [ -L | -P ] [ dir ]
+
+	   chdir changes the shell's working directory to directory dir.  If
+	   no argument is given, change to the home directory of the user. If
+	   dir is a relative pathname not found in the current directory,
+	   check for it in those directories listed in the CDPATH variable. If
+	   dir is the name of a shell variable whose value starts with a /,
+	   change to the directory named by that value.
+
+
+       command [ -p ] [ -v | -V ] name [arg ...]
+
+	   Without the option -v or -V, command executes name with the
+	   arguments specified by arg.
+
+	   With -v or -V, name is not executed but a description of name is
+	   printed.  With -V, the output is like the output from the type
+	   built-in command but function definitions are not listed. With -v,
+	   the output is less verbose.
+
+	   The option -p causes a default path to be searched that grants all
+	   POSIX commands to be found, rather than using the search path
+	   defined by the value of PATH.
+
+	   Functions are not searched when trying to execute name.  In
+	   addition, if name refers to a special built-in, none of the special
+	   properties associated with the built-in commands marked with
+	   leading daggers are honored.	 For example, using command exec
+	   instead of exec prevents a script from terminating when an invalid
+	   redirection is specified.
+
+	   The command built-in command was not supported in older versions of
+	   sh.
+
+
+       + continue [ n ]
+
+	   Resume the next iteration of the enclosing for or while loop. If n
+	   is specified, resume at the n-th enclosing loop.
+
+
+       dirs [ -L | -P ]
+
+	   Print the content of the directory stack.  The top of the stack is
+	   the leftmost element which has the logical offset 0.	 The next
+	   element to the right has the logical offset 1.  The logical offset
+	   of a directory may be used as argument to the pushd and the popd
+	   command.  If there is no directory stack, the result is the same as
+	   with calling pwd.
+
+	   -L	  If the PWD shell parameter contains an absolute pathname of
+		  the current directory that does not contain the filenames
+		  dot or dot-dot, pwd writes this pathname to standard output,
+		  regardless of whether it contains filename components that
+		  refer to symbolic links.  Otherwise, the -L option behaves
+		  like the -P option.
+
+	   -P	  The absolute pathname written does not contain filename
+		  components that refer to files of type symbolic link.
+
+	   If both -L and -P are specified, the last one applies.  If neither
+	   -L nor -P is specified, pwd behaves as if -P had been specified,
+	   except when in POSIX mode where the default is -L.  See section
+	   COMPATIBILITY below.
+
+	   The dirs command was not supported in older versions of sh.
+
+
+       dosh command_string [ command_name [ args ]]
+
+	   The dosh command executes commands from command_string with new
+	   positional parameters as if the commands in command_string were
+	   read from a shell script.  If the optional parameter command_name
+	   is present, it replaces the positional parameter $0.	 Additional
+	   arguments are set up as positional parameters for the commands in
+	   command_string, starting with $1.  The dosh command thus behaves
+	   like sh -c command_string, but does not launch a new shell.
+	   Calling return returns from command_string as if returning from a
+	   function.  Calling exit does not exit the shell but returns from
+	   the command_string.	The dosh command is often used together with
+	   aliases in order to implement parameterized aliases.
+
+	   The dosh command was not supported in older versions of sh.	POSIX
+	   does not require the dosh command to be supported.
+
+
+       echo [ arguments ... ]
+
+	   The words in arguments are written to the shell's standard output,
+	   separated by space characters. See echo(1) for fuller usage and
+	   description.
+
+	   If /usr/ucb appears before any other system directory in PATH and
+	   the first argument is -n, echo does not print a final new-line and
+	   does not interpret backslashed escape characters.  Otherwise, -n is
+	   treated as a normal argument.  If the $SYSV3 variable is set in the
+	   initial environment passed to the shell, the -n argument is also
+	   interpreted, but escape sequences are processed as usual.
+
+	   The following character sequences are recognized within any of the
+	   arguments:
+
+	   \a	  Alert character.
+	   \b	  Backspace.
+	   \c	  Print line without new-line. All characters following the \c
+		  in the argument are ignored.
+	   \f	  Form-feed.
+	   \n	  New-line.
+	   \r	  Carriage return.
+	   \t	  Tab.
+	   \v	  Vertical tab.
+	   \\	  Backslash.
+	   \0n	  Where n is the 8-bit character whose ASCII code is the 1-,
+		  2- or 3-digit octal number representing that character.
+
+
+       errstr [ errno ]
+
+	   Print the error message for errno on stdout.
+
+	   The errstr command was not supported in older versions of sh.
+	   POSIX does not require the errstr command to be supported.
+
+
+       + eval [ argument ... ]
+
+	   The arguments are read as input to the shell and the resulting
+	   command(s) executed.
+
+
+       + exec [-a name] [ argument ... ]
+
+	   The command specified by the arguments is executed in place of this
+	   shell without creating a new process. Input/output arguments can
+	   appear and, if no other arguments are given, cause the shell
+	   input/output to be modified.	 The -a option causes name rather than
+	   the first arg, to become argv[0] for the new process.
+
+
+       + exit [ n ]
+
+	   Causes the calling shell or shell script to exit with the exit
+	   status specified by n.  If n is omitted the exit status is that of
+	   the last command executed (an EOF also causes the shell to exit.)
+
+
+       + export [ -p ] [ name[=value] ... ]
+
+	   The given names are marked for automatic export to the environment
+	   of subsequently executed commands. If no arguments are given,
+	   variable names that have been marked for export during the current
+	   shell's execution are listed.  The -p option causes the word export
+	   to be inserted before each name.  (When not in POSIX mode, variable
+	   names exported from a parent shell are listed only if they have
+	   been exported again during the current shell's execution.) Function
+	   names are not exported.
+
+	   The option -p was not supported in older versions of sh.
+	   Specifying a value was not supported in older versions of sh.
+
+
+       false
+
+	   The false builtin does nothing. A non-zero exit code (1) is
+	   returned.  Used with until for infinite loops.
+
+	   The false command was not a builtin command in older versions of
+	   sh.
+
+       fc [-r] [-e editor] [first [last]]
+       fc -l [-nr] [first [last]]
+       fc -s [old=new] [first]
+
+	   The fc builtin lists, or edits and re-executes, commands previously
+	   entered to an interactive sh.
+
+	   In the first form, a range of commands from first to last is
+	   selected and edited followed by a re-execution of the edit result.
+	   If the editor returns a non-zero exit status, the commands are not
+	   re-executed.
+
+	   In the second form, a range of commands from first to last is
+	   listed.
+
+	   In the third form, the command specified by first is re-executed.
+
+	   When commands are edited or re-executed, the resulting lines are
+	   entered at the end of the history list and then re-executed by sh.
+	   The fc command that caused the editing or re-execution is not
+	   entered into the history list.
+
+	   The following options are supported:
+
+	   -e editor
+		  Use editor to edit the commands.  The value in the FCEDIT
+		  variable is used as a default when -e is not specified.  If
+		  FCEDIT is null or unset, ed is used as the editor.
+
+	   -l	  List the commands rather than invoking an editor on them.
+		  The commands are written in the sequence indicated by the
+		  first and last operands and affected by -r, with each
+		  command preceded by the command number.
+
+		  In this case, the fc command is entered into the history.
+
+	   -n	  Suppress command numbers when listing with -l.
+
+	   -r	  Reverse the order of the commands listed or edited.
+
+	   -s	  Re-execute the command without invoking an editor.
+
+	   The following operands are supported:
+
+	   first, last
+		  Select the commands to list or edit.	The number of previous
+		  commands that can be accessed is determined by the value of
+		  the HISTSIZE variable.  The value of first or last or both
+		  may be one of the following:
+
+		  [+]number
+			 A positive number representing a command number.
+			 Command numbers can be displayed with the -l option.
+
+		  -number
+			 A negative number representing the command that was
+			 executed number of commands previously.  For example,
+			 -1 is the previous command and -0 is the current
+			 command.
+
+		  string A string indicating the most recently entered command
+			 that begins with that string.	If the old=new operand
+			 is not also specified with -s, the string form of the
+			 first operand cannot contain an embedded equal-sign.
+
+		  If first is omitted, -15 is assumed in list mode (-l) and -1
+		  in other cases.  If 0 is used as the value for first, the
+		  whole history is selected.
+
+	   old=new
+		  Replace the first occurrence of the string old in the
+		  commands to be re-executed by the string new.
+
+	   Note that the history is an interactive feature; commands read from
+	   scripts are not entered into the history.
+
+	   The fc command was not supported in older versions of sh, it is an
+	   artefact from ksh from a time when ksh still needed an external
+	   editor to modify the history.
+
+	   The interactive history implementation that is used in this version
+	   of the Bourne Shell already supported fully integrated editing
+	   features in the command line in 1984 and uses concepts from 1982
+	   that make fc a deprecated feature for editing commands in the
+	   history.  fc is required by a POSIX feature named user portability,
+	   it should be avoided in favor of the history command.
+
+
+       find file1 ... filen [find_expr]
+
+	   The find command is available as a builtin command that is
+	   implemented via libfind.
+
+	   The find implementation of this shell includes primary operators
+	   called -call and -calldir that allow to directly call back commands
+	   into the shell.  As this does not need to create a new process, it
+	   is much faster than the -exec primary.
+
+	   In the Bourne Shell, the command following the -call primary is
+	   evaluated similar to the eval(1) command in case the first argument
+	   to -call does not contain a shell variable reference and similar to
+	   sh -c command call argument...  or the dosh(1) builtin in case
+	   there is a variable reference.
+
+	   The eval(1) mode is triggered with simple commands that do not
+	   contain variable references:
+
+	       find . -call echo {} \;
+
+	   The dosh(1) mode is triggered with commands that contain variable
+	   references:
+
+	       find . -call 'test -d "$1" && echo dir: "$1"' {} \;
+
+	   The shell variable $0 is set to the value call in this case and the
+	   equivalent find command using -exec would be:
+
+	       find . -exec sh -c 'test -d "$1" && echo dir: "$1"' call {} \;
+
+	   You may like to try both commands to see the performance win using
+	   the -call find(1) primary.
+
+	   See sfind(1) for more information.
+
+	   The find command was not supported as builtin command in older
+	   versions of sh.
+
+
+       fg [%jobid ...]
+
+	   When Job Control is enabled, the fg command is added to the user's
+	   environment to manipulate jobs. This command resumes the execution
+	   of a stopped job in the foreground and also moves an executing
+	   background job into the foreground. If %jobid is omitted, the
+	   current job is assumed. (See Job Control section below for more
+	   detail.)
+
+
+       getopts optstring name [arg...]
+
+	   Use in shell scripts to support command syntax standards (see
+	   Intro(1)).  This command parses positional parameters and checks
+	   for legal options. See getoptcvt(1) for usage and description.
+
+	   The getopts builtin command parses its args or the global args of
+	   the current shell, using optstring as option definition.  Each time
+	   it is invoked, it places the next option character into the
+	   variable name and the index of the next argument to be processed
+	   into OPTIND.	 Whenever the shell or a shell script is invoked,
+	   OPTIND is initialized to 1.	Calling getopts repeatedly causes one
+	   option to be retrieved per call.
+
+	   When an option requires an option-argument, getopts places it in
+	   the shell variable OPTARG.
+
+	   If an illegal option is encountered, ?  is placed in name.  If
+	   optstring starts with a colon and a required option-argument is
+	   missing, a colon is placed in name.
+
+	   When the end of options is encountered, getopts exits with a non-
+	   zero exit status.  The special arg -- can be used to delimit the
+	   end of the options.
+
+	   optstring must contain the option letters the command using getopts
+	   recognizes. If a letter is followed by a colon, the option is
+	   expected to have an argument, or group of arguments, which must be
+	   separated from it by white space.
+
+	   Unless optstring starts with a colon, getopts prints an error
+	   message on the standard error when it encounters an option letter
+	   not included in optstring.
+
+	   If optstring starts with a ``+'', options in the form +o,
+	   +long-option or ++long-option are recognised and the name shell
+	   variable gets a value with a leading ``+'' in case an option in the
+	   form +o, +long-option or ++long-option is used.
+
+	   If more than one flag character from ":", "+" or "()" is used in
+	   optstring, "()" needs to be last.
+
+	   getopts supports one or more long options as an alias to a short
+	   option.  You must enclose each long option equivalent in
+	   parentheses, as follows:
+
+	     getopts "f:(file)(input-file)o:(output-file)"
+
+	   In the above example, both --file and --input-file are the
+	   equivalent of -f, and --output-file is the equivalent of -o.
+
+	   If optstring starts with "()", getopts supports long options with a
+	   single dash.	 Long options with a single dash have been introduced
+	   with Multics and appeared on UNIX around 1980, see e.g.  kill(1).
+
+	   If a long name argument follows a single dash and cannot be
+	   identified as a long option, it is retried as a combination of
+	   single character letters.  To suppress error messages, the optional
+	   initial colon in optstring must precede the "()":
+
+	     getopts ":()f:(file)(input-file)o:(output-file)"
+
+	   In the above example, -file, --file, -input-file, --input-file are
+	   the equivalent of -f, and -output-file and --output-file is the
+	   equivalent of -o.  Error messages from getopts are suppressed and a
+	   colon is placed in name when an option argument for an option like
+	   -f is missing.
+
+	   getopts also supports one or more long options with no related
+	   short option.  You must set up a decimal numerical value >= 256
+	   between two question mark signs in place of an option letter in
+	   optstring:
+
+	     getopts "f:(file)(input-file)?900?:(output-file)"
+
+	   In the above example, the long option --output-file is associated
+	   to the integer value 900 and in case the option --output-file was
+	   specified, string 900 is set up as the value for name.
+
+
+       hash [ -r ] [ name ... ]
+
+	   For each name, the location in the search path of the command
+	   specified by name is determined and remembered by the shell. The -r
+	   option causes the shell to forget all remembered locations. If no
+	   arguments are given, information about remembered commands is
+	   presented.  Hits is the number of times a command has been invoked
+	   by the shell process.  Cost is a measure of the work required to
+	   locate a command in the search path. If a command is found in a
+	   "relative" directory in the search path, after changing to that
+	   directory, the stored location of that command is recalculated.
+	   Commands for which this are done are indicated by an asterisk (*)
+	   adjacent to the hits information.  Cost is incremented when the
+	   recalculation is done.
+
+
+       history [-nr] [first [last]]
+
+	   Print the current command history.  The history command is only
+	   supported if sh was compiled with support for history editing.
+
+	   If no command or command range is specified, the last 16 commands
+	   are listed.	If only first with a value of 0 is specified, the
+	   whole history is printed.
+
+	   The following options are supported:
+
+	   -n	  Suppress command numbers when listing with -l.
+
+	   -r	  Reverse the order of the commands listed or edited.
+
+	   The history command was not supported in older versions of sh.
+	   POSIX does not require the history command to be supported.
+
+
+       jobs [-p|-l] [%jobid ...]
+       jobs -x command [arguments]
+
+	   Reports all jobs that are stopped or executing in the background.
+	   If %jobid is omitted, all jobs that are stopped or running in the
+	   background are reported. (See Job Control section below for more
+	   detail.)
+
+
+       kill [ -sig | -s sig ] [ pid ] [ %job ] ...
+       kill -l [ sig ] ...
+
+	   Sends either the TERM (terminate) signal or the specified signal to
+	   the specified jobs or processes. Signals are either given by number
+	   or by names (as given in signal.h(3HEAD) stripped of the prefix
+	   "SIG" with the exception that SIGCHD is named CHLD).	 If the signal
+	   being sent is TERM (terminate) or HUP (hangup), then the job or
+	   process is sent a CONT (continue) signal if it is stopped. The
+	   argument job can be the process id of a process that is not a
+	   member of one of the active jobs. See Job Control section below for
+	   a description of the format of job.	In the second form, kill -l,
+	   the signal numbers and names are listed.  The optional sig argument
+	   list may contain signal numbers or $?  exit values that refer to a
+	   program terminated by a signal.  (See kill(1)).
+
+	   Signal numbers are not portable across platforms, except for the
+	   following:
+
+	   0	  No signal
+	   1	  HUP
+	   2	  INT
+	   3	  QUIT
+	   6	  ABRT
+	   9	  KILL
+	   14	  ALRM
+	   15	  TERM
+
+	   The kill option -s and kill -l with arguments was not supported in
+	   older versions of sh.
+
+
+       killpg [ -sig | -s sig ] [ pgrp ] [ %job ] ...
+       killpg -l [ sig ] ...
+
+	   Sends either the TERM (terminate) signal or the specified signal to
+	   the specified jobs or processgroups. See kill for more information.
+
+	   The killpg command was not supported in older versions of sh.
+
+
+       limit [-HS] [resource [limit]]
+
+	   limit is a csh compatibility variant of the ulimit command.
+
+	   If no option is supplied, the soft limits are modified and both,
+	   hard and soft limits are displayed.
+
+	   If no argument is supplied, all limits are displayed.
+
+	   The limit command was not supported in older versions of sh.
+
+
+       local [ name[=value] ... ]
+
+	   The given names are marked for local scope to the function from
+	   where local is called.  The scope is effective for the rest of the
+	   function and its children or until local is called again with the
+	   same variable name.	The local variable is created with the same
+	   content and attributes as the current variable.  If the local
+	   variable is exported, it's local value is seen by child processes
+	   called from a function.  If no arguments are given, variable names
+	   that have been marked for local scope are listed.  It is an error
+	   to use local when not within a function.
+
+	   The local command was not supported in older versions of sh.
+
+
+       login [ argument ... ]
+
+	   Equivalent to `exec login argument....' See login(1) for usage and
+	   description.
+
+
+       map
+       map -r
+       map map_from map_to [ comment ]
+       map -u map_from
+
+	   Handle history editor input mapping.	 Input mapping in the history
+	   editor is automatically managed via TERMCAP for the cursor keys and
+	   via manual maps in the file $HOME/.bshmap.  The map command is only
+	   supported if sh was compiled with support for history editing.
+
+	   If the map command is called without arguments, it prints the
+	   current input mapping.
+
+	   If map is called with -r, all current mappings are removed and the
+	   default mapping is reloaded from TERMCAP and $HOME/.bshmap.	Call
+	   map -r after changing TERM, TERMCAP or TERMPATH or when a change
+	   was made in the file $HOME/.bshmap.
+
+	   It map is called with two or three arguments, a new mapping is set
+	   up.	The parameters map_from and map_to may need quoting to be
+	   correctly passed to the mapping engine.
+
+	   Call map -u map_from to unmap an existing mapping.  The parameter
+	   map_from needs quoting for both the input mapper and the shell to
+	   be correctly passed to the mapping engine.
+
+	   For more information and for escape sequences known by the mapper
+	   see the section History Editing Input Mappings below.
+
+	   The map command was not supported in older versions of sh.  POSIX
+	   does not require the map command to be supported.
+
+
+       newgrp [ argument ]
+
+	   Equivalent to exec newgrp argument.	See newgrp(1) for usage and
+	   description.
+
+
+       pgrp [%jobid ...]
+
+	   Print the process groups and session groups for the specified
+	   processes or jobs.  The argument job can be the process id of a
+	   process that is not a member of one of the active jobs. See Job
+	   Control section below for a description of the format of job.  If
+	   %jobid is omitted, the process group for the current shell and the
+	   process group for the tty connected to stdin of the pgrp command is
+	   printed.
+
+	   If the process group id equals the process id, the process ia a
+	   progrss group leader.  If the session group id equals the process
+	   id, the process ia a session group leader.
+
+	   The pgrp command was not supported in older versions of sh.	POSIX
+	   does not require the pgrp command to be supported.
+
+
+       popd [ -L | -P ] [ -offset ]
+
+	   Calling popd without argument removes the current top directory
+	   stack element from the directory stack and then performs a cd to
+	   the new top directory stack element.	 Calling popd with an offset
+	   argument removes the current the top directory stack element from
+	   the directory stack, then removes the directory stack element named
+	   by offset from the current directory stack and then makes it the
+	   new top directory stack element and performs a cd to this
+	   directory.  The new directory name is always printed as it was not
+	   given as an argument.  See dirs for an explanation of offset.
+
+	   -L	  Handles the operation logically.  Symbolic link components
+		  are not resolved before the PWD shell parameter is assigned
+		  the new value.
+
+	   -P	  Handles the operation physically.  Symbolic link components
+		  are resolved before the PWD shell parameter is assigned the
+		  new value.
+
+	   If both -L and -P are specified, the last one applies.  If neither
+	   -L nor -P is specified, cd behaves as if -P had been specified,
+	   except when in POSIX mode where the default is -L.  See section
+	   COMPATIBILITY below.
+
+	   The popd command was not supported in older versions of sh.
+
+
+       printf format [argument ...]
+
+	   The printf command writes formatted operands to the standard
+	   output.  The argument operands are formatted under control of the
+	   format operand.  The format operand is treated like a printf(3)
+	   format string and the escape sequences '\a', '\b', '\f', '\n',
+	   '\r', '\t', '\v', '\\' and '\ddd', where ddd is one to three octal
+	   digits, are expanded as if they were in a C string.
+
+	   In addition to the format specifiers %c, %s, %d, %i, %o, %u, %x,
+	   %X, %e, %E, %f, %F, %g, %G, the format %b is supported.  The
+	   integers are handled internally as intmax_t to avoid range problems
+	   even though only the standard int type specifiers are supported in
+	   the format operand.	The format %b is treated like %s except that
+	   escape sequences in the argument string are expanded as with the
+	   echo command.
+
+	   Field width and precision may be specified either numerically in
+	   the format operand or via the '*' format specifier and related
+	   arguments.
+
+	   The printf(3) flag characters '+', ' ', '#' and '0' are supported.
+
+	   The format strings %n$ and *m$, where n or m are decimal integers
+	   in the range 1 ..  maxargs, allow to specify the position in the
+	   parameter list.  See printf(3) for more information.
+
+	   The format operand is reused as often as necessary to satisfy the
+	   argument operands.  If the format operand contains more format
+	   specifiers than argument operands have been specified, string
+	   formats are treated as if an empty string has been supplied and
+	   integer arguments are treated as if a 0 has been supplied.
+
+	   Note that POSIX neither requires support for floating point numbers
+	   nor support for the %n$ and *m$ format.
+
+	   The printf command was not a builtin command in older versions of
+	   sh.
+
+
+       pushd [ -L | -P ] [ name ]
+       pushd [ -L | -P ] [ -offset ]
+
+	   The pushd command is similar to the cd command, but it keeps the
+	   previous working directory on the directory stack.  If -offset is
+	   used instead of a directory name, it exchanges the content of the
+	   top directory stack element with the directory stack element named
+	   by offset and then performs a cd to the new top directory stack
+	   element.  If the new directory stack has more than one element, it
+	   is printed.	See dirs for an explanation of offset.
+
+	   -L	  Handles the operation dot-dot (..) logically.	 Symbolic link
+		  components are not resolved before dot-dot components are
+		  processed and dot-dot (..) operations are handled by
+		  removing the path component to the left of the dot-dot (..)
+		  in the supplied path or in PWD.
+
+	   -P	  Handles the operation dot-dot physically.  Symbolic link
+		  components are resolved before dot-dot components are
+		  processed.
+
+	   If both -L and -P are specified, the last one applies.  If neither
+	   -L nor -P is specified, pushd behaves as if -P had been specified,
+	   except when in POSIX mode where the default is -L.  See section
+	   COMPATIBILITY below.
+
+	   The pushd command was not supported in older versions of sh.
+
+
+       pwd [ -L | -P ]
+
+	   Print the current working directory as absolute pathname that does
+	   not contain the filenames dot (.) or dot-dot (..).  See pwd(1) for
+	   usage and description.  The current working directory is kept in
+	   the shell parameter PWD.
+
+	   -L	  If the PWD shell parameter contains an absolute pathname of
+		  the current directory that does not contain the filenames
+		  dot or dot-dot, pwd writes this pathname to standard output,
+		  regardless of whether it contains filename components that
+		  refer to symbolic links.  Otherwise, the -L option behaves
+		  like the -P option.
+
+	   -P	  The absolute pathname written does not contain filename
+		  components that refer to files of type symbolic link.
+
+	   If both -L and -P are specified, the last one applies.  If neither
+	   -L nor -P is specified, pwd behaves as if -P had been specified,
+	   except when in POSIX mode where the default is -L.  See section
+	   COMPATIBILITY below.
+
+	   The options -L and -P - were not recognised by older versions of
+	   sh.
+
+
+       read [ -r ] [ name ... ]
+
+	   One line is read from the standard input and, using the internal
+	   field separator, IFS (normally space or tab), to delimit word
+	   boundaries, the first word is assigned to the first name, the
+	   second word to the second name, and so forth, with leftover words
+	   assigned to the last name.  Lines can be continued using \newline.
+	   Characters other than newline can be quoted by preceding them with
+	   a backslash. These backslashes are removed before words are
+	   assigned to names, and no interpretation is done on the character
+	   that follows the backslash.	If name is omitted then REPLY is used
+	   as the default name.	 The exit code is 0, unless an EOF is
+	   encountered.
+
+	   -r	  Do not treat a backslash character in any special way.
+		  Consider each backslash to be part of the input line.	 The
+		  option -r was not supported in older versions of sh.
+
+	   Omiting the name parameter of the read command was not supported in
+	   older versions of sh.
+
+
+       + readonly [ -p ] [ name[=value] ... ]
+
+	   The given names are marked readonly and the values of the these
+	   names can not be changed by subsequent assignment. If no arguments
+	   are given, a list of all readonly names is printed.	The -p option
+	   causes the word readonly to be inserted before each name.
+
+	   The option -p was not supported in older versions of sh.
+	   Specifying a value was not supported in older versions of sh.
+
+
+       repeat [ -c count ] [ -d delay ] command [ args ]
+
+	   The command command is executed repeatedly as if it was called via
+	   eval.  If the -c option is present, command is repeated count
+	   times, otherwise execution is repeated forever.  If the -d option
+	   is present, sh waits delay seconds before command is executed
+	   again, otherwise there is no delay between executions.
+
+	   If the command command is terminated by a signal or if the exit
+	   code of command is nonzero, the whole repeat command is terminated.
+
+	   The repeat command was not supported in older versions of sh.
+	   POSIX does not require the repeat command to be supported.
+
+
+       + return [ n ]
+
+	   Causes a function or '.' script to return to the invokint script
+	   with the return value specified by n.  If n is omitted, the return
+	   status is that of the last command executed.
+
+	   The return command did not support to terminate '.' scripts in
+	   older versions of sh.
+
+
+       savehistory
+
+	   Save the current history in the file $HOME/.history.
+
+	   The savehistory command was not supported in older versions of sh.
+
+
+       + set [ -abCefhkmntuvxP [ -o [ option ]] [ argument ... ] ]
+
+	   The set commands supports the following options:
+
+	   -a	 Mark variables which are modified or created for export.
+
+
+	   -b	 Prints job completion messages as soon as a background job
+		 changes state rather than waiting for the next prompt.	 This
+		 options is currently without effect.  The option -b was not
+		 supported in older versions of sh.
+
+
+	   -C	 Prevents redirection (>) from truncating existing files.
+		 Files that are created are opened with the O_EXCL mode.
+		 Requires >| to truncate a file when turned on.	 The option -C
+		 was not supported in older versions of sh.
+
+
+	   -e	 Exit immediately if a command exits with a non-zero exit
+		 status.  The shell however does not exit if the command that
+		 fails is part of the  command list immediately following a
+		 while or until keyword, it it is part of the test following
+		 the if or elif reserved words, if it is part of a command
+		 executed in a && or || list except the command that is the
+		 final command in that list, if it is not the last command in
+		 a pipeline, or if the exit value of a command is being
+		 inverted with !.  If a trap on ERR is set, it is executed
+		 before the shell exits.
+
+	   -f	 Disable file name generation.
+
+
+	   -h	 Locate and remember function commands as functions are
+		 defined (function commands are normally located when the
+		 function is executed).
+
+
+	   -k	 All keyword arguments are placed in the environment for a
+		 command, not just those that precede the command name.
+
+
+	   -m	 Switch job control mode on.  All jobs are run in their own
+		 process groups.  See section Job Control (jsh) below.	On
+		 systems with job control, this flag is turned on
+		 automatically for interactive shells.
+
+		 The option -m was not auto-enabled for interactive shells in
+		 older versions of sh.
+
+
+	   -n	 Read commands but do not execute them.	 Setting -n in an
+		 interactive shell is ignored as this could not be undone and
+		 the shell could not even be terminated anymore.
+
+
+	   -t	 Exit after reading and executing one command.
+
+
+	   -o [option]
+		 If option is not specified, list the current option setting
+		 to stdout; when invoked with +o instead of -o, the output is
+		 written in a format that is suitable to reinput to the shell
+		 to restore the current setting.  When invoked with +o and
+		 with option argument, the related option is cleared.  The +o
+		 option may be repeated to enable or disable multiple options.
+		 The value of option must be one of the following:
+
+		 allexport	Equivalent to -a.
+		 aliasowner=name
+				Set an alternate trusted owner for the files
+				$HOME/.globals and .locals.  By default, the
+				shell ignores alias files if they are not
+				owned by the current shell user. This option
+				allows to set up an alternate file owner that
+				is accepted. Setting the alternate owner to
+				the empty string disables the feature.
+		 bgnice		All background jobs are run at a lower
+				priority.  This is the default in interactive
+				mode.
+		 errexit	Equivalent to -e.
+		 fdpipe		Enables the extended pipe syntax that allows
+				to have a pipe output file descriptor number
+				in front of the pipe sign (|), e.g.  2| for a
+				pipe from stderr.  It is recommended to put
+				`set -o fdpipe' into the file $HOME/.shrc to
+				enable the extended pipe syntax for
+				interactive shells by default.	Scripts that
+				like to use this feature, need to enable it.
+		 fullexitcode	Do not mask the exit code with 0xFF when
+				expanding $?.  This gives access to the full
+				32 bits from the child's exit code via $?  on
+				all modern operating systems that support
+				waitid(2).  Setting fullexitcode is needed to
+				evaluate exitcode mod 256 == 0 in conditional
+				expressions as non-zero exit code.
+		 globalaliases	Enables/disables persistent global aliases
+				that are read from the file $HOME/.globals.
+				Changing the state for this option first
+				removes all current global aliases.  If the
+				new state is on, the persistent global aliases
+				are loaded.
+		 globskipdot	If set, the entries "." and ".." are skipped
+				and not shown in globbing results.  If not
+				set, the entries "." and ".." are always
+				returned, even when they are not part of the
+				readdir(3) results.  The shell flag
+				globskipdot is enabled by default.
+		 hashall	Equivalent to -h.
+		 hashcmds	Enable hash commands, see section # commands
+				above.
+		 hostprompt	Set the PS1 value to ``hostname uname> '' if
+				it was not yet changed from the default value.
+		 ignoreeof	The POSIX variant of telling the shell not to
+				exit on EOF; the command exit must be used
+				instead.  The original method of the history
+				editor introduced in 1984 is to set
+				IGNOREEOF=on see section Parameter
+				Substitution for more information.  If the
+				parameter IGNOREEOF=on was set and ignoreeof
+				is off, EOF is still ignored.
+		 interactive	Equivalent to -i.
+		 keyword	Equivalent to -k.
+		 localaliases	Enables/disables persistent directory local
+				aliases that are read from the file .locals in
+				the current directory.	Local aliases are
+				specific to the current working directory.
+				Changing the state for this option first
+				removes all current local aliases.  If the new
+				state is on, the persistent local aliases are
+				loaded from the current directory.
+		 monitor	Equivalent to -m.
+		 noclobber	Equivalent to -C.
+		 noexec		Equivalent to -n.
+		 noglob		Equivalent to -f.
+		 notify		Equivalent to -b.
+		 nounset	Equivalent to -u.
+		 onecmd		Equivalent to -t.
+		 pfsh		Equivalent to -P.
+		 posix		Set the behavior of the Bourne Shell to POSIX
+				mode where its default differs from the POSIX
+				standard.
+				When in POSIX mode, it is disallowed to use
+				``^'' as the pipe symbol, support for test -t
+				without a parameter is switched off and the
+				default for directory operations is set to -L.
+				If this option is enabled at startup or later,
+				all shell variables from the imported
+				environment are given the export property.  If
+				this option is switched off, the export
+				property is switched off for all imported
+				variables that have not yet been modified.
+				POSIX mode is enabled by default if the
+				executable path of the shell equals a compiled
+				in value, e.g.	/usr/xpg4/bin/sh.
+		 privileged	Equivalent to -p.
+		 promptcmdsubst Apply command substitution and arithmetic
+				substitution to the variables PS1, PS2 and
+				PS4.  By default, promptcmdsubst is switched
+				off to avoid security problems caused by
+				imported variables.  If promptcmdsubst is
+				switched on, the variables PS1, PS2 and PS4
+				are reset to their default values for security
+				reasons.  Note that POSIX only requires
+				parameter substitution, but no command
+				substitution or arithmetic substitution for
+				PS1, PS2 and PS4.
+		 restricted	Equivalent to -r.
+		 stdin		Equivalent to -s.
+		 time		Switch on automatic timing for commands.  The
+				variable TIMEFORMAT may be used to control the
+				output format.
+		 verbose	Equivalent to -v.
+		 ved		Allow shell command line editing using the
+				built in ved(1) editor.
+		 vi		Allow shell command line editing using the
+				built in vi editor.  The Bourne Shell
+				currently does not allow to set the vi mode
+				for any type of terminal.
+		 xtrace		Equivalent to -x.
+
+		 The option -o was not supported in older versions of sh.
+
+
+	   -u	 Treat unset variables as an error when substituting.
+
+
+	   -v	 Print shell input lines as they are read.
+
+
+	   -x	 Print commands and their arguments as they are executed.
+
+
+	   -P	 Switch profile mode on.  In this mode, the shell runs
+		 privilleged programs automatically in privilleged mode.  See
+		 pfexec(1) for further information.  This feature is only
+		 supported on Solaris 10 and above.  The option -P was not
+		 supported in older versions of sh.
+
+
+	   -	 Clear the -v and -x option.
+
+
+	   --	 Stop option processing.  Further parameters are handled as
+		 normal args even when they start with a -.  If no arguments
+		 follow this delimiter, then the positional parameters are
+		 unset.
+
+		 Older versions of sh did not allow to unset the positional
+		 parameters with ``set --''.
+
+	   Using + rather than - causes these flags to be turned off.  These
+	   flags can also be used upon invocation of the shell.	 The flags -c,
+	   -i, -p, -r and -s can only be set upon invocation of the shell,
+	   they cannot be modified using the set command.  The current set of
+	   flags can be found in $-.  The remaining arguments are positional
+	   parameters and are assigned, in order, to $1, $2, ...
+
+	   If no arguments are given, the names and values of all variables
+	   are printed.	 When is POSIX mode (via set -o posix), only shell
+	   variables are printed; otherwise functions are listed amongst the
+	   shell variables.
+
+
+       + shift [ n ]
+
+	   The positional parameters from $n+1 ... are renamed $1 ... . If n
+	   is not given, it is assumed to be 1.
+
+
+       stop pid ...
+
+	   Halt execution of the process number pid.  (see ps(1)).
+
+
+       suspend
+
+	   Stops the execution of the current shell (but not if it is the
+	   login shell).
+
+
+       test [expr]
+
+	   Evaluate conditional expressions. See test(1) for usage and
+	   description. If the value of the expression expr, is true then test
+	   returns zero exit status; otherwise, a non zero exit status is
+	   returned.  test returns a non zero exit status if there are no
+	   arguments.
+
+	   The following primaries are used to evaluate a condition:
+
+	   -b file   True if file exists and is a block special file.
+	   -c file   True if file exists and is a character special file.
+	   -C file   True if file exists and is a contiguous file.  The option
+		     -C was not supported in older versions of sh.
+	   -d file   True if file exists and is a directory.
+	   -D file   True if file exists and is a door.	 The option -D was not
+		     supported in older versions of sh.
+	   -e file   True if file exists.  The option -e was not supported in
+		     older versions of sh.
+	   -f file   True if file exists and is a regular file.
+		     Alternatively, if Bourne Shell users specify /usr/ucb
+		     before /usr/bin in their PATH environment variable, then
+		     test returns true if file exists and is
+		     (not-a-directory).
+	   -g file   True if file exists and its set group ID flag is set.
+	   -G file   True if file exists and its group matches the effective
+		     group id of this process.	The option -G was not
+		     supported in older versions of sh.
+	   -h file   True if file exists and is a symbolic link.
+	   -k file   True if file exists and has its set sticky bit set.
+	   -L file   True if file exists and is a symbolic link.
+	   -n string True if the length of string is non-zero.
+	   -N file   True if file exists and its modification time is greater
+		     than its access time .  The option -N was not supported
+		     in older versions of sh.
+	   -o option True if the option named option is on.
+	   -o ?option
+		     True if the option named option is a valid option name.
+		     The option -o was not supported in older versions of sh.
+	   -O file   True if file exists and its owner matches the effective
+		     user id of this process.  The option -O was not supported
+		     in older versions of sh.
+	   -p file   True if file exists and is a named pipe (FIFO).
+	   -P file   True if file exists and is an event port.	The option -P
+		     was not supported in older versions of sh.
+	   -r file   True if file exists and is readable.
+	   -s file   True if file exists and has a size greater then zero.
+	   -S file   True if file exists and is a socket.  The option -S was
+		     not supported in older versions of sh.
+	   -t [file-descriptor]
+		     True if the file whose file descriptor number is
+		     file-descriptor is open and is associated with a
+		     terminal.	If file-descriptor is not specified, 1 is used
+		     as a default value.  When is POSIX mode (via
+		     set -o posix), file-descriptor must always be specified.
+	   -u file   True if file exists and its set user ID flag is set.
+	   -w file   True if file exists and is writable.
+	   -x file   True if file exists and is executable.  True indicates
+		     only that the execute flag is on.	If file is a
+		     directory, true indicates that file can be searched.
+	   -z string True if the length of string is zero.
+
+	   file1 -ef file2
+		     True if file1 and file2 exists and refer to the same
+		     file.  The option -ef was not supported in older versions
+		     of sh.
+	   file1 -nt file2
+		     True if file1 exists and file2 does not or file1 is newer
+		     than file2.  The option -nt was not supported in older
+		     versions of sh.
+	   file1 -ot file2
+		     True if file2 exists and file1 does not or file1 is older
+		     than file2.  The option -ot was not supported in older
+		     versions of sh.
+
+	   string    True if string is not the null string.
+	   s1 = s2   True if the strings s1 and s2 are identical.
+	   s1 != s2  True if the strings s1 and s2 are not identical.
+	   n1 -eq n2 True if the integers n1 and n2 are algebraically equal.
+	   n1 -ne n2 True if the integers n1 and n2 are not algebraically
+		     equal.
+	   n1 -gt n2 True if the integer n1 is algebraically greater than the
+		     integer n2.
+	   n1 -ge n2 True if the integer n1 is algebraically greater or equal
+		     to the integer n2.
+	   n1 -lt n2 True if the integer n1 is algebraically less than the
+		     integer n2.
+	   n1 -le n2 True if the integer n1 is algebraically less or equal to
+		     the integer n2.
+
+	   The primaries above may be combined with the following operators:
+
+	   ( expr )  Bracketing to group precedence.
+	   !	     unary negation operator.
+	   -a	     binary and operator.  The -a binary primary is left
+		     associative and has higher precedence than the -o binary
+		     primary.
+	   -o	     binary or operator.  The -o binary primary is left
+		     associative.
+
+	   The algorithm for determining the precedence of the operators and
+	   the return value that is generated is based on the number of
+	   arguments presented to test.	 (However, when using the [...] form,
+	   the right-bracket final argument is not counted in this algorithm.)
+
+
+	   In the following list, $1, $2, $3 and $4 represent the arguments
+	   presented to test as a condition, condition1, or condition2.
+
+
+	       0 arguments:  Exit false (1).
+
+	       1 argument:   Exit true (0) if $1 is not null. Otherwise, exit
+			     false.
+
+	       2 arguments:
+
+			     o	    If $1 is !, exit true if $2 is null, false
+				    if $2 is not null.
+
+			     o	    If $1 is a unary primary, exit true if the
+				    unary test is true, false if the unary
+				    test is false.
+
+			     o	    Otherwise, produce unspecified results.
+
+	       3 arguments:
+
+			     o	    If $2 is a binary primary, perform the
+				    binary test of $1 and $3.
+
+			     o	    If $1 is !, negate the two-argument test
+				    of $2 and $3.
+
+			     o	    If $1 is ( and $3 is ), perform the unary
+				    test of $2.
+
+			     o	    Otherwise, produce unspecified results.
+
+	       4 arguments:
+
+			     o	    If $1 is !, negate the three-argument test
+				    of $2, $3, and $4.
+
+			     o	    If $1 is ( and $4 is ), perform the two-
+				    argument test of $2 and $3.
+
+			     o	    Otherwise, the results are unspecified.
+
+	   Scripts should be careful when dealing with user-supplied input
+	   that could be confused with primaries and operators. Unless the
+	   application writer knows all the cases that produce input to the
+	   script, invocations like test "$1" -a "$2" should be written as
+	   test "$1" && test "$2" to avoid problems if a user supplied value
+	   such as $1 is set to !  and $2 is set to the null string. That is,
+	   in cases where maximal portability is of concern, replace test
+	   expr1 -a expr2 with test expr1 && test expr2, and replace test
+	   expr1 -o expr2 with test expr1 || test expr2. But notice that, in
+	   test, -a has higher precedence than -o, while && and || have equal
+	   precedence in the shell.
+
+
+	   + times
+
+		  Print the accumulated user and system times for processes
+		  run from the shell.
+
+		  The first line lists the shell's user and system times, the
+		  second line lists the children's user and system times.
+
+	   + trap [ [argument] n [ n2 ... ]]
+	   + trap -p [ n [ n2 ... ]]
+
+		  The command argument is to be read and executed when the
+		  shell receives numeric or symbolic signal(s) (n).  (Note:
+		  argument is scanned once when the trap is set and once when
+		  the trap is taken.) Trap commands are executed in order of
+		  signal numbers of the corresponding symbolic names. Any
+		  attempt to set a trap on a signal that was ignored on entry
+		  to the current shell is ineffective.
+
+		  If argument is absent, all trap(s) n are reset to their
+		  original values.
+
+		  If argument is the null string, this signal is ignored by
+		  the shell and by the commands it invokes.
+
+		  If n is 0 or EXIT, the command argument is executed on exit
+		  from the shell.
+
+		  If n is ERR, the command argument is executed if a command
+		  terminates with a non-zero exit code.	 The ERR command is
+		  however not executed on the same conditions that do not
+		  cause the shell to exit when the errexit (-e) option is set.
+
+		  The trap command with no arguments prints a list of commands
+		  associated with each signal number.
+
+		  If argument is -, all trap(s) n are reset to their original
+		  values.
+
+		  If the option -p is present, all signals from the argument
+		  list (or all signals if further arguments are absent) are
+		  printed even when they are currently set to the default.
+		  This permits to restore the whole trap state by using:
+
+		    old_traps=$(trap -p)
+		    trap "some commands" INT QUIT
+		    ...
+		    eval "$old_traps"
+
+		  The shell does not produce a diagnostic message in case that
+		  a command is set up for uncatchable signals like SIGKILL or
+		  SIGSTOP.
+
+		  The - argument was not supported in older versions of sh.
+
+		  The option -p was not supported in older versions of sh.
+
+		  The trap name ERR was not supported in older versions of sh
+		  and is not part of the POSIX standard.
+
+
+	   true
+
+		  The true builtin does nothing. A zero exit code is returned.
+		  Used with while for infinite loops.
+
+		  The true command was not a builtin command in older versions
+		  of sh.
+
+
+	   type [ -F ] [ name ... ]
+
+		  For each name, indicate how it would be interpreted if used
+		  as a command name.  If the option -F is specified with no
+		  arguments, all defined functions are listed.	type displays
+		  information about each operand identifying the operand as a
+		  shell built-in, shell intrinsic, function, alias, hashed
+		  command, or keyword, and where applicable, may display the
+		  operand's path name.	The meaning is as follows:
+
+		  shell built-in    A normal command built into the shell.
+				    Some of these commands do not need to be
+				    built into the shell.  A command usually
+				    is in this group because it was built into
+				    the shell for historical reasons or
+				    because it is an extension to the current
+				    POSIX standard.
+
+		  special shell built-in
+				    A command built into the shell that is
+				    subject to special treatment.  This type
+				    of commands needs to be built into the
+				    shell in order to be able to have the
+				    desired result.
+
+		  shell intrinsic   A command built into the shell.  This type
+				    of commands needs to be built into the
+				    shell in order to be able to have the
+				    desired result.
+
+		  global alias	    A global alias that is expanded in any
+				    directory.
+
+		  local alias	    A local alias that is bound to the current
+				    directory and expanded in the current
+				    directory only.
+
+		  function	    A function defined in this shell.
+
+		  keyword	    A keyword in the syntax of this shell.
+
+		  command	    An external command identified by it's
+				    path name.
+
+		  hashed command    An external command that was already
+				    subject to a path name search and hashing.
+
+	   ulimit [ [-HS] [-a | -bcdefiklLmMnoPqrRstuvw] ]
+	   ulimit [ [-HS] [resource-option] ] limit
+
+		  ulimit prints or sets hard or soft resource limits. These
+		  limits are described in getrlimit(2).
+
+		  If limit is not present, ulimit prints the specified limits.
+		  Any number of limits can be printed at one time. The -a
+		  option prints all limits.
+
+		  If limit is present, ulimit sets the specified limit to
+		  limit.  The string unlimited requests that the current
+		  limit, if any, be removed. Any user can set a soft limit to
+		  any value less than or equal to the hard limit. Any user can
+		  lower a hard limit. Only a user with appropriate privileges
+		  can raise or remove a hard limit. See getrlimit(2).
+
+		  The -H option specifies a hard limit. The -S option
+		  specifies a soft limit. If neither option is specified,
+		  ulimit sets both limits and print the soft limit.
+
+		  The following options specify the resource whose limits are
+		  to be printed or set. If no option is specified, the file
+		  size limit is printed or set.
+		  -b	 maximum size of socket buffer usage in bytes
+		  -c	 maximum core file size (in 512-byte blocks)
+		  -d	 maximum size of data segment or heap (in kbytes)
+		  -e	 maximum scheduling priority
+		  -f	 maximum file size (in 512-byte blocks)
+		  -i	 maximum number of pending signals
+		  -k	 maximal number of kqueues for this user ID
+		  -l	 maximum size of locked memory (in kbytes)
+		  -L	 maximum number of file locks
+		  -m	 maximum resident set size (in kbytes)
+		  -M	 address space limit (in kbytes), usually an alias for
+			 -v
+		  -n	 maximum file descriptor plus 1
+		  -o	 maximal number of process-shared locks for this user
+			 ID
+		  -P	 maximum number of pseudo ttys
+		  -q	 maximum number of POSIX message queues
+		  -r	 maximum realtime priority
+		  -R	 maximum realtime quantum (in usec)
+		  -s	 maximum size of stack segment (in kbytes)
+		  -t	 maximum CPU time (in seconds)
+		  -u	 maximum number of child processes
+		  -v	 maximum size of virtual memory (in kbytes)
+		  -w	 maximum size of swap (in kbytes)
+
+		  Not all resources are supported on all platforms.  To get a
+		  list of all resources available on the current platform,
+		  call ``ulimit -a''.
+
+		  Run the sysdef(1M) command to obtain the maximum possible
+		  limits for your system. The values reported are in
+		  hexadecimal, but can be translated into decimal numbers
+		  using the bc(1) utility. See swap(1M).)
+
+		  As an example of ulimit, to limit the size of a core file
+		  dump to 0 Megabytes, type the following:
+
+		    ulimit -c 0
+
+
+
+
+	   umask [ -S ] [ mask ]
+
+		  The user file-creation mask is set to mask (see umask(1)).
+		  The mask may either be an octal numner or a symbolic
+		  notation (see chmod(1)).  If the symbolic notation for mask
+		  starts with a - sign, it must be preceded with -- to keep it
+		  from being interpreted as an option.	The command
+		  umask -- -w sets the file-creation mask so that subsequently
+		  created files have all their write bits cleared.
+
+		  If mask is omitted, the current value of the mask is
+		  printed.
+
+		  Do not use a symbolic mask or -S in Bourne Shell scripts
+		  that should be portable to older revisions.
+
+		  -S	 Print the current file-creation mask in symbolic
+			 form.	The output is suitable as argument for the
+			 umask command.
+
+
+		  The symbolic mode was not supported in older versions of sh.
+
+
+	   unalias [ options ] [alias-name...]
+
+		  The unalias command removes existing alias definitions.
+
+		  The unalias command in the Bourne Shell supports temporary
+		  aliases (POSIX aliases) that affect only the current
+		  execution environment as well as persistent aliases that
+		  affect all interactive shells that are called after a
+		  persistent alias definition was entered or modified.
+
+		  The unalias command was not supported in older versions of
+		  sh.
+
+		  When operating on temporary aliases (i.e. when neither -g
+		  nor -l have been specified), all alias definitions for a
+		  specified alias-name are popped from the existing global
+		  definitions. No alias definition for the specified
+		  alias-name remains active, but the file with persistent
+		  alias definitions is not touched.  This makes unalias
+		  compatible to the POSIX standard and able to support
+		  persistent aliases at the same time.	The following options
+		  may be used to modify operation:
+
+		  -a	 Remove all alias definitions from the current shell
+			 execution environment.	 No arguments are permitted
+			 with this option.  As the persistent definitions are
+			 not touched, the persistent aliases may be restored
+			 by calling alias -r.
+
+		  -g	 Pop a single alias definition for alias-name from the
+			 global aliases.  If the related alias definition is
+			 the last for alias-name (use alias -p -g alias-name
+			 to verify), remove it from the persistent global
+			 aliases that are stored in the file $HOME/.globals
+			 and read by interactive shells.
+
+		  -l	 Pop a single alias definition for alias-name from the
+			 local aliases.	 If the related alias definition is
+			 the last for alias-name (use alias -p -l alias-name
+			 to verify), remove it from the persistent local
+			 aliases that are stored in the file .locals in the
+			 current directory and read by interactive shells.
+
+		  -p	 When removing aliases, enforce a pop all operation
+			 even if the option -g or -l has been specified.  In
+			 pop all mode, all alias definitions for a specified
+			 alias-name are popped from the existing definitions.
+			 No alias definition for the specified alias-name
+			 remains active, but the file with persistent alias
+			 definitions is not touched.
+
+
+	   + unset [ -f | -v ] [ name ... ]
+
+		  For each name, remove the corresponding variable or function
+		  value.  Readonly variables cannot be unset.  If the option
+		  -v is used, only variables will be unset.  If the option -f
+		  is used, only functions will be unset.
+
+		  The options -f and -v have not been supported in older
+		  versions of sh.
+
+
+	   wait [ n ... ]
+
+		  Wait for your background process whose process id is n and
+		  report its termination status.  The process identifier n may
+		  either be a UNIX process id or a shell job id. See Job
+		  Control (jsh) section below for information on shell job
+		  ids.
+
+		  The return code of wait is the exit code of the last process
+		  from the argument list that has successfully been waited
+		  for, or 127 / NOTFOUND in case that the argument refers to a
+		  nonexisting process.
+
+		  If n is omitted, all your shell's currently active
+		  background processes are waited for and the return code is
+		  zero.
+
+		  See the shell variables $?, $/, ${.sh.code},
+		  ${.sh.codename}, ${.sh.pid}, ${.sh.status}, ${.sh.termsig}
+		  in the section Parameter Substitution above.
+
+
+   Job Control (jsh)
+       When the shell is invoked as jsh, when the shell is invoked as
+       interactive shell or after set -m was called, Job Control is enabled in
+       addition to all of the functionality described previously for sh.
+       Typically, Job Control is enabled for the interactive shell only. Non-
+       interactive shells typically do not benefit from the added
+       functionality of Job Control.
+
+
+       With Job Control enabled, every command or pipeline the user enters at
+       the terminal is called a job.  All jobs exist in one of the following
+       states: foreground, background, or stopped. These terms are defined as
+       follows:
+
+	   1.	  A job in the foreground has read and write access to the
+		  controlling terminal.
+
+	   2.	  A job in the background is denied read access and has
+		  conditional write access to the controlling terminal (see
+		  stty(1)).
+
+	   3.	  A stopped job is a job that has been placed in a suspended
+		  state, usually as a result of a SIGTSTP signal (see
+		  signal.h(3HEAD)).
+
+
+       Every job that the shell starts is assigned a positive integer, called
+       a job number which is tracked by the shell and is used as an identifier
+       to indicate a specific job. Additionally, the shell keeps track of the
+       current and previous jobs. The current job is the most recent job to be
+       started or restarted. The previous job is the first non-current job.
+
+
+       The acceptable syntax for a Job Identifier is of the form:
+
+
+       %jobid
+
+
+       where jobid can be specified in any of the following formats:
+
+       % or +	    For the current job.
+
+
+       -	    For the previous job.
+
+
+       ?<string>    Specify the job for which the command line uniquely
+		    contains string.
+
+
+       n	    For job number n.
+
+
+       pref	    Where pref is a unique prefix of the command name. For
+		    example, if the command ls -l name were running in the
+		    background, it could be referred to as %ls.	 pref cannot
+		    contain blanks unless it is quoted.
+
+
+
+       When Job Control is enabled, the following commands are added to the
+       user's environment to manipulate jobs:
+
+       bg [%jobid ...]
+
+	   Resumes the execution of a stopped job in the background. If %jobid
+	   is omitted the current job is assumed.
+
+
+       fg [%jobid ...]
+
+	   Resumes the execution of a stopped job in the foreground, also
+	   moves an executing background job into the foreground. If %jobid is
+	   omitted the current job is assumed.
+
+
+       jobs [-p|-l] [%jobid ...]
+       jobs -x command [arguments]
+
+	   Reports all jobs that are stopped or executing in the background.
+	   If %jobid is omitted, all jobs that are stopped or running in the
+	   background is reported. The following options modify/enhance the
+	   output of jobs:
+
+	   -l	 Report the process group ID and working directory of the
+		 jobs.
+
+
+	   -p	 Report only the process group ID of the jobs.
+
+
+	   -x	 Replace any jobid found in command or arguments with the
+		 corresponding process group ID, and then execute command
+		 passing it arguments.
+
+
+       kill [ -signal | -s signal ] %jobid
+
+	   Builtin version of kill to provide the functionality of the kill
+	   command for processes identified with a jobid.
+
+
+       killpg [ -signal | -s signal ] %jobid
+
+	   Builtin version of killpg to provide the functionality of the
+	   killpg command for processes groups identified with a jobid.
+
+
+       pgrp [%jobid ...]
+
+	   Print process group id's for jobs.
+
+
+       stop %jobid ...
+
+	   Stops the execution of a background job(s).
+
+
+       suspend
+
+	   Stops the execution of the current shell (but not if it is the
+	   login shell).
+
+
+       wait [%jobid ...]
+
+	   wait builtin accepts a job identifier. If %jobid is omitted wait
+	   behaves as described above under Special Commands.
+
+
+   Command History Editing
+       If compiled with -DINTERACTIVE, the Bourne Shell includes a command
+       line history and a command line editor.
+
+       The behavior of the command line editor was defined with a prototype
+       implementation in 1982 and has unique characteristics compared to other
+       implementations. The basic editing functions have been inspired by the
+       behavior of the editor ved(1).  The command history editor in the
+       Bourne Shell is using the same code that was introduced in 1984 with
+       bsh(1).
+
+       The history is implemented as limited ring buffer.  The last recently
+       used command line is always moved from it's previous position in the
+       history list to the most recent entry.  The size of the ring buffer is
+       in HISTORY.  If HISTORY is unset or set to 0, the current command line
+       history is lost and command line editing is only supported on the
+       current line and this line is not kept in the history.  Command line
+       editing may be turned off completely by issuing the command `set +o
+       ved'.  The existing history is not affected by turning off the command
+       line editor.
+
+       Command lines from the existing history may be retrieved with the
+       cursor keys (Cursor up and Cursor down).	 Typing <CR> or <LF> executes
+       the command on the line with the cursor.
+
+       Each new command is appended to the end of the history.	If the maximum
+       size of the history is reached, the oldest command is removed.
+       Identical commands are avoided as far as possible.  If an command is
+       entered that is already in the history, it is moved to the end of the
+       history.
+
+   History Editing Commands
+       The following commands allow to edit a command line:
+
+       ^A	 Move the cursor to the beginning of the current command line.
+
+       ^C	 Interrupt command line reading and parsing.  The current
+		 command line is discarded and the next prompt is displayed.
+		 This helps to escape from the parser when it is in an unknown
+		 state.
+
+       ^D	 Erase the character under the cursor and then move the cursor
+		 to the next character.
+
+       DEL	 Erase one character to the left of the cursor.
+
+       ^E	 Move the cursor to the end of the current command line.
+
+       ^F	 Move cursor one character to the right.
+
+       ^H	 Move cursor one character to the left.
+
+		 Warning: On terminals that offer a large backspace key for
+		 deleting characters, ^H does not work directly as it is
+		 mapped to DEL.	 Use the Cursor left key instead in such a
+		 case.
+
+       ^N	 Move cursor to the next history line.	See below for history
+		 navigation.
+
+       ^P	 Move cursor to the previous history line.  See below for
+		 history navigation.
+
+       ^U	 Erase the whole line.
+
+       ^V	 Literal next, the next typed character is inserted into the
+		 command line without special meaning.
+
+       ^^	 Get next character, convert it into a control character and
+		 insert it into the command line.
+
+       CR	 Finish current line and execute it.
+
+       NL	 Finish current line and execute it.
+
+       TAB	 Do file name completion for the word to the left side of the
+		 cursor.  If more than one file matches the current partial
+		 filename, a BEEP is generated.	 Typing a second TAB displays
+		 a list of matching names.
+
+       ESC- ^D	 Erase the word to the right starting with the character under
+		 the cursor.
+
+       ESC- DEL	 Erase the word to the left of the cursor.
+
+       ESC- ^F	 Move cursor one word to the right.
+
+       ESC- ^H	 Move cursor one word to the left.
+
+       The following commands are available to navigate within the history:
+
+       ^N	 Move cursor to the next history line.	When the cursor has
+		 been on the last line of the history, move the cursor to the
+		 first line of the history.
+
+       ^P	 Move cursor to the previous history line.  When the cursor
+		 has been on the first line of the history, move the cursor to
+		 the last line of the history.
+
+       ESC- ^N	 Search forwards in the history.  The user is prompted for a
+		 search pattern.  The previous search string is kept and may
+		 be edited.  To enter a new search string, first type ^U.
+
+       ESC- ^P	 Search backwards in the history.  The user is prompted for a
+		 search pattern.  The previous search string is kept and may
+		 be edited.  To enter a new search string, first type ^U.
+
+       ESC- p	 Search backwards in the history.  Clear the old search
+		 pattern first.
+
+       ESC- n	 Search forwards in the history.  Clear the old search pattern
+		 first.
+
+       ESC- CR	 Return to the history line that was in use before the last
+		 search command.
+
+       Other characters are inserted into the command line text.  Characters
+       that are listed above as being edit command characters need to be
+       quoted using the quote character ^^.  If a line is entered via CR or
+       NL, the current position of the cursor is irrelevant.
+
+       The command line editor remembers the cursor position for each command
+       line in the history during the lifetime of the shell process.
+
+   History Editing Input Mappings
+       The command line history editor maps input from the terminal into
+       mapped text before it is interpreted by the editor. If a match is found
+       on the input from the terminal, the related input text is directly
+       replaced by it's replacement string.  A mapping may be prevented by
+       typing the map quote character which is the nul character (^@),
+       directly before the matching text is entered.  If this text is usually
+       interpreted by the history editor, you first need to type the history
+       editing quoting character ^^.  To be sure that you are able to
+       literally enter some text, type ^^^@ (control up-arrow followed by Nul
+       and the text).
+
+
+       At startup (directly before the first shell command prompt is shown),
+       the command line history editor first tries to initialize the terminal
+       setup using the variables HOME, TERM, TERMCAP and TERMPATH.
+
+       If TERM is not set, the mapper establishes standard mappings for the
+       cursor keys assuming an ANSI-compatible terminal.
+
+       TERM is set, the mapper establishes mappings for the following termcap
+       capabilities:
+
+       ku     Key cursor up, mapped to ^P.
+	      The previous command line from the history is displayed.
+
+       kd     Key cursor down, mapped to ^N.
+	      The next command line from the history is displayed.
+
+       kr     Key cursor forward (right), mapped to ^F.
+	      Move cursor one character to the right.
+
+       kl     Key cursor left, mapped to ^H.
+	      Move cursor one character to the left.
+
+       kh     Key cursor -> Home, mapped to ^A.
+	      The Cursor is moved to the beginning of the current command
+	      line.
+
+       @7     Key cursor -> End, mapped to ^E.
+	      The Cursor is moved to the end of the current command line.
+
+       kD     Key Delete Character, mapped to \177 (DEL).
+	      Erase one character to the left of the cursor.
+
+       kb     Key Backspace, mapped to \177 (DEL).
+	      Erase one character to the left of the cursor.
+
+	      Note that the Backspace Key is the larger key that is just above
+	      the Carriage Return Key.	In former times, this key was called
+	      Delete and send the \177 (DEL) character.	 Since companies
+	      followed the design of the IBM PC keyboard layout, the related
+	      key usually sends \010.  If you like to literally enter a
+	      backspace into the command line, type ^^^@^H (control up-arrow
+	      followed by Nul followed by ^H).
+
+
+       After the mappings from the termcap entry for the current terminal type
+       have been established, the shell tries to read the file $HOME/.bshmap
+       to retrieve additional mappings.
+
+       Each line in the file $HOME/.bshmap has the following structure:
+
+	 map_from:map_to:comment
+
+       map_from	 is the string that is going to be replaced in the input.
+
+       map_to	 is the string replacement.
+
+       comment	 is optional comment that is not used for mapping itself.
+
+       If both map_from and map_to are empty, the related line is ignored by
+       the mapper, so a line may contain:
+
+	 ::comment
+
+       A nul character in either map_from or map_to is currently not
+       supported, but an empty map_to is interpreted as a nul character.
+
+       If a line has an empty map_to and the comment field starts with a *
+       like this:
+
+	 map_from::*comment
+
+       an existing mapping is removed. This permits to avoid unwanted mappings
+       that have been set up from the TERMCAP entry.  A typical use case for
+       this feature is to avoid the mapping:
+
+	 ^H:^?:Key Backspace -> Delete Char
+
+       that is caused by the TERMCAP capability kb for terminals that create a
+       backspace with the delete key.
+
+       Since the file $HOME/.bshmap is read in a sequential way, a later line
+       with the same map_from may establish a different mapping.
+
+       The maximum length of map_from is 16 bytes, the maximum length of
+       map_to is 128 bytes.  The maximum total line length is 8192 bytes.
+       Each entry takes exactly one line in the file.
+
+       Control characters may be written using the same escape sequences as
+       permitted with TERMCAP.
+
+       The builtin map command may be used to enter additional maps at
+       runtime.
+
+       As the nul character is the quote character of the mapper, enter two
+       nul characters to get one nul character in the edit input.  To enter a
+       mapped string (such as cursor key output), first enter the quote
+       character of the command line history editor control ^ (^^) octal 036,
+       then enter a nul character and finally the otherwise mapped text.
+
+
+   Termcap
+       The termcap data base is used to make the command history editor
+       independent from the terminal capabilities. Cursor key output is
+       retrieved from the data base and mapped to the cursor movement commands
+       of the history editor.
+
+       The following variables are used by termcap:
+
+       HOME	 To find the private files like $HOME/.termcap.
+
+       TERM	 A name representing the type of the current terminal.
+
+       TERMCAP	 This environment variable holds either a precompiled termcap
+		 entry or the pathname to be used to find a termcap database
+		 file.	If it holds a precompiled entry that does not match
+		 the TERM environment, the termcap database is parsed as if
+		 the TERMCAP environment is not set.  See section Parameter
+		 Substitution above for more information.
+
+       TERMPATH	 If TERMCAP is empty or not set, then the TERMPATH environment
+		 is scanned for pathnames of files that contain a termcap
+		 database. It holds a list of filenames separated by colons or
+		 spaces (i.e., ":" or " ").  See section Parameter
+		 Substitution above for more information.
+
+       The following escape sequences are understood by the termcap
+       implementation used by sh:
+
+       \\      The literal character \.
+       \E      The ESC character (ASCII 033).
+       \e      The ESC character (ASCII 033).
+       \^      The literal character ^.
+       \:      The literal character :.
+       \,      The literal character ,.
+       \b      The BACKSPACE character (ASCII 010).
+       \f      The FORMFEED character (ASCII 014).
+       \l      The LINEFEED character (ASCII 012).
+       \n      The NEWLINE character (ASCII 012).
+       \r      The CR character (ASCII 015).
+       \s      The SPACE character (ASCII 040).
+       \t      The TAB character (ASCII 007).
+       \v      The VERTICAL TAB character (ASCII 013).
+       ^c      Maps to control(c) for any appropriate c.
+       ^?      The DEL character (ASCII 0177).
+       \nnn    Maps to a character with the octal representation nnn with 1..3
+	       octal digits.
+       \0      Maps to ASCII 0200.
+       ^@      Maps to ASCII 00.
+
+       Mapping \0 to ASCII 0200 is required by the termcap documentation.  A
+       real nul character created from (^@) is currently neither supported by
+       the upper layers of termcap, nor by the upper layers of the mapper.
+
+
+   Large File Behavior
+       The Bourne Shell is large file aware.  See largefile(5) for an extended
+       description of the behavior of sh and jsh when encountering files
+       greater than or equal to 2 Gbyte ( 2^31 bytes).
+
+EXIT STATUS
+       Errors detected by the shell, such as syntax errors, cause the shell to
+       return a non-zero exit status. If the shell is being used non-
+       interactively execution of the shell file is abandoned. Otherwise, the
+       shell returns the exit status of the last command executed (see also
+       the exit command above).
+
+   jsh Only
+       If the shell is invoked as jsh and an attempt is made to exit the shell
+       while there are stopped jobs, the shell issues one warning:
+
+
+       There are stopped jobs.
+
+
+       This is the only message. If another exit attempt is made, and there
+       are still stopped jobs they are sent a SIGHUP signal from the kernel
+       and the shell is exited.
+
+FILES
+       /etc/profile   The system initialization file, executed for login
+		      shells.
+       /etc/sh.shrc   The system wide startup file, executed for interactive
+		      shells.
+       $HOME/.profile The personal initialization file, executed for login
+		      shells after /etc/profile.
+       $HOME/.shrc    The personal initialization file, executed after
+		      /etc/sh.shrc, for interactive shells when ENV is not
+		      set.
+       /etc/termcap   The system wide TERMCAP file.
+       $HOME/.termcap The personal TERMCAP file that by default is checked
+		      before /etc/termcap.
+       $HOME/.bshmap  A file with hand-crafted cursor mappings for the history
+		      editor.
+       $HOME/.history File with the saved the history after logout.
+       $HOME/.globals File with persistent global alias definitions.
+       .locals	      File with persistent directory local alias definitions.
+       /tmp/sh*	      Used as temporary files for here documents (<<
+		      redirection).
+       /dev/null      NULL device used as stdin for non job-control background
+		      jobs.
+       /usr/lib/rsh   The location of the restricted Bourne Shell binary.
+
+ATTRIBUTES
+       See attributes(5) for descriptions of the following attributes:
+
+   /usr/bin/sh, /usr/bin/jsh
+
+
+
+       +----------------------------+-----------------------------+
+       |      ATTRIBUTE TYPE	    |	    ATTRIBUTE VALUE	  |
+       +----------------------------+-----------------------------+
+       |Availability		    | SUNWcsu			  |
+       +----------------------------+-----------------------------+
+       |CSI			    | Enabled			  |
+       +----------------------------+-----------------------------+
+
+SEE ALSO
+       Intro(1), bc(1), echo(1), getoptcvt(1), kill(1), bsh(1), ved(1),
+       ksh(1), ksh93(1), login(1), newgrp(1), pfsh(1), pfexec(1),
+       privileges(5), ps(1), pwd(1), set(1), sfind(1), shell_builtins(1),
+       stty(1), test(1), umask(1), wait(1), waitid(2), rsh(1M), su(1M),
+       swap(1M), sysdef(1M), termcap(1), ved(1), dup(2), exec(2), fork(2),
+       pipe(2), ulimit(2), getrlimit(2), setrlimit(2), setlocale(3C),
+       signal.h(3HEAD), passwd(4), profile(4), attributes(5), environ(5),
+       largefile(5), XPG4(5)
+
+WARNINGS
+       The use of setuid shell scripts is strongly discouraged.
+
+NOTES
+       For compatibility with the Thompson shell, ^ is a synonym for | as
+       pipeline separator.  Do not use in new scripts.
+
+       Words used for filenames in input/output redirection are not
+       interpreted for filename generation (see File Name Generation section
+       above). For example, cat file1 >a* creates a file named a*.
+
+       The built-in command . file reads the whole file before any commands
+       are executed.  When a command substitution, a set of commands from
+       eval, dosh, repeat, command, fc, jobs or trap are parsed, the whole set
+       of command are read at once.  alias and unalias commands in the file do
+       not apply to any commands defined in the file or inside a set of
+       commands executed with the named built-ins.
+
+
+       Because commands in pipelines are run as separate processes, variables
+       set in a pipeline have no effect on the parent shell.
+
+
+       If you get the error message, "cannot fork, too many processes", try
+       using the wait(1) command to clean up your background processes. If
+       this doesn't help, the system process table is probably full or you
+       have too many active foreground processes. There is a limit to the
+       number of process ids associated with your login, and to the number the
+       system can keep track of.
+
+
+       Only the last process in a pipeline can be waited for.
+
+
+       If a command is executed, and a command with the same name is installed
+       in a directory in the search path before the directory where the
+       original command was found, the shell continues to exec the original
+       command.	 Use the hash -r command to correct this situation.
+
+
+       The Bourne shell has a limitation on the effective UID for a process.
+       If this UID is less than 100 (and not equal to the real UID of the
+       process), then the UID is reset to the real UID of the process.
+
+
+       If not in job control mode, the shell implements both foreground and
+       background jobs in the same process group and they all receive the same
+       signals, which can lead to unexpected behavior. It is, therefore,
+       recommended to switch on job control mode via set -m in an interactive
+       environment.
+
+       Parameter assignments that precede a special builtin command affect the
+       shell itself.  Parameter assignments that precede the call of a
+       function are ignored.
+
+       When the shell executes a shell script that attempts to execute a non-
+       existent command interpreter, the shell returns an erroneous diagnostic
+       message that the shell script file does not exist.
+
+       If your platform does not provide an /etc/termcap file, or if your
+       termcap database does not contain an entry for the terminal type you
+       are using, the following command may be used to convert a teminfo entry
+       into a termcap entry and to append it to your private termcap database
+
+	   incofmp -C >> $HOME/.termcap
+
+
+COMPATIBILITY
+       This Bourne Shell started with the source state from OpenSolaris build
+       51 from October 2006.  It was later changed to the equivalent state of
+       build 144 from July 2010.  The changes up to build 147 have not been
+       applied because these later versions from Sun reduced the
+       functionality.
+
+       Most changes fixed bugs or added functionality without changing the
+       expected previous behavior.
+
+       The following incompatible changes have been introduced in order to
+       follow the POSIX standard.
+
+       number parameters
+	      This version of the Bourne Shell is more picky when parsing
+	      numbers.	Previous versions of the shell did accept e.g.	0x12
+	      for the number 0 as parsing just stopped at the first non digit.
+
+       parameter assignment
+	      This version of the Bourne Shell fixed the order of evaluation
+	      for parameter assignements to be left to right instead of right
+	      to left (as implemented in previous versions). This may cause
+	      scripts to fail if they expect the old non-standard behavior.
+
+       parameter assignment preceding builtin commands
+	      With this version of the Bourne Shell, parameter assignment
+	      preceding builtin commands only affects the shell itself if this
+	      is related to a special builtin command.	In previous versions,
+	      this affected the shell itself for any builtin command.
+
+       parameter import from the environment
+	      When the shell is on POSIX mode, it sets the export property on
+	      all shell variables imported from the environment.  This makes
+	      all changes in these variables automatically visible to the next
+	      child process. The historic behavior is to pass the imported
+	      values to the childs environment but to use a separate storage
+	      location for the internal shell variable until the export
+	      builtin is explicitly called for a specific variable.
+
+       syntax errors in builtin commands
+	      With this version of the Bourne Shell, only special builtin
+	      commands may terminate the whole shell in case that shell is not
+	      an interactive shell.  In previous versions, all builtin
+	      commands could terminate a non-ineractive shell if a utility
+	      syntax error or a fatal utility error was encountered.
+
+	      The most prominent result of this change is that the builtin cd
+	      command no longer terminates a shell script in case that the cd
+	      command did not work for whatever reason. So be careful and
+	      always check the exit code in shell scripts.
+
+       expanding here documents
+	      With this version of the Bourne Shell, the quoting state is
+	      reset before a here document is expanded and restored
+	      thereafter. This avoids that
+
+		var=you
+		echo "`cat <<EOF
+		Hi $var
+		EOF`"
+
+	      prints ``Hi \y\o\u'' as done by the historical Bourne Shell,
+	      instead of the expected ``Hi you''.
+
+       case   When in POSIX mode, sh no longer implements a fallback to a
+	      simple string compare, in case that an attempt to match the
+	      pattern similar to fnmatch(3) fails.
+
+	      This makes it behave different than the Korn Shell reference
+	      implementation but the undocumented behavior kept from old
+	      Bourne Shell versions may cause unexpected matches, like a match
+	      to the string [0-9] even though a match to decimal digits only
+	      was intended.
+
+       cd     POSIX introduced new options -L and -P and defaults to logical
+	      mode while the historic Burne Shell did implement a physical
+	      mode that operates on normalized directory names.
+
+	      In logical mode, the command argument ../* may refer to
+	      different files than calling cd ..  followed by a command with
+	      the argument *.  In logical and physical mode, the command
+	      argument * may refer to different files than calling cd somedir
+	      followed by a command with the argument ../*.
+
+	      While the latter problem is caused by the existence of a symlink
+	      in the new path, the first problem is caused by the behavior of
+	      cd -L.  This is why the Bourne Shell, when not in POSIX mode
+	      (set -o posix not set), did not change it's default behavior and
+	      assumes cd -P when neither -L nor -P have been specified.
+
+       continue
+	      With SVr2 (1986), a parameter was introduced for continue.
+	      Unfortunately, at the same time a bug was introduced and a big
+	      number did not continue the outermost loop, but rather did break
+	      the outermost loop.  This shell fixes this bug.
+
+       functions
+	      There is now a separate name space for functions and shell
+	      variables.  This is not expected to cause problems.
+
+       getopts
+	      POSIX requires getopts to set OPTARG to the failing option
+	      character in case that optstring starts with a :.	 Previous
+	      versions of the shell did unset OPTARG in case of a failure.
+	      POSIX also requires the shell variable related to the name
+	      argument from getopts to be set to ``?'' when getopts returns a
+	      non-zero exit code.  Previous versions of the shell did set name
+	      to the null string in this case.
+
+       kill   The option parsing of the kill command was modified to be
+	      compatible to the POSIX standard.	 This is not expected to cause
+	      problems as the change only affects marginal cases with negative
+	      process id's that caused problems before as well.
+
+       read
+	      The field splitting required by the POSIX standard does not skip
+	      multiple non-space field separators but rather assigns empty
+	      values to variables in such a case.  This is a significant
+	      change in the behavior, but the historic behavior is not useful
+	      for non-space field separators as this would not allow to e.g.
+	      read the password file via read(1).
+
+       return In the original Bourne Shell, the return command only returns
+	      from inside a function.  This version of the shell implements
+	      return also from inside a dot script as required by POSIX.
+
+	      This change causes an incompatibility in case that a dot script
+	      is read from inside a function and the script is intended to
+	      return from the function.
+
+       retval and Command Substitution
+	      This version of the shell no longer uses a command substitution
+	      as a checkpoint where the exitcode is remembered for $?.	This
+	      affects calls to exit and return without parameter.  If such a
+	      call did not happen after a regular command, but e.g.  after a
+	      parameter assignment with a command substitution, the implicit
+	      return/exit code was the exit code of the last command
+	      substitution and now is the exit code of the last regular
+	      command.
+
+       pipes and words
+	      When in POSIX mode, the ``^'' character is not accepted as an
+	      alternate pipe ``|'' symbol.  This results in different word
+	      delimiting rules, words that contain ``^'' do not need to be
+	      quoted.
+
+       set
+	      The output of the set command with no arguments was modified to
+	      include the quoting required by the POSIX standard.  This is not
+	      expected to cause problems but the new output may be used as
+	      shell.
+
+	      When in full POSIX mode (via set -o posix), functions are not
+	      listed amongst shell variables.  This is expected to cause
+	      problems as POSIX does not include a method to list shell
+	      functions.
+
+	      Calling ``set --'' now causes the positional parameters to be
+	      unset. Previous versions of the shell left the positional
+	      parameters untouched in this case.  A portable method to clear
+	      the positional parameters is to call ``shift $#''.
+
+       set -e and Command Substitution
+	      The historic Bourne Shell did abort the first echo command in
+	      the following exanple:
+
+		sh -c '(set -e; echo ERR `false`; echo ERR); echo OK'
+
+	      and printed only a single line with: OK.
+
+	      POSIX requires to treat `false` as a sub shell, to let the main
+	      shell ignore the exit code from the command substitution and let
+	      it only use the exit code from the echo command. This requires
+	      to print:
+
+		ERR
+		ERR
+		OK
+
+
+       test   The behavior of the builtin test utility was changed by POSIX.
+	      POSIX requires test to select it's behavior from the number of
+	      arguments in case that the number of arguments is in the range
+	      from 0..4.  This results e.g. in ``test -r'' to return a zero
+	      exit code because ``-r'' is a non-empty string, while previous
+	      versions of the shell did return an error because ``-r'' is an
+	      unary operator that misses an argument.  Correctly written
+	      scripts do not suffer from this change.
+
+	      When not in POSIX mode (set -o posix not set), test still
+	      understands test -t without a parameter for compatibility with
+	      UNIX scripts.
+
+       times  The output of the times command was modified to be compatible to
+	      the POSIX standard.  This is not expected to cause problems.
+
+       trap   The output of the trap command was modified to be compatible to
+	      the POSIX standard.  Scripts that depend on the output of the
+	      trap command, when listing existing trap state, should be
+	      converted to be portable by checking whether the output starts
+	      with trap -- and then use a POSIX compliant parser.
+
+       The following other incompatible changes have been introduced:
+
+       pipes  While in the original Bourne Shell none of the commands from a
+	      pipeline command was a child of the original shell, this version
+	      of the Bourne Shell tries to make all simple commands in a
+	      pipeline children from the original shell.  In addition, if a
+	      builtin command is the rightmost command of a pipeline, it will
+	      now be run in the original shell.	 This permits commands like:
+
+	       echo foo | read var
+
+	      to set the variable var in the main shell.
+
+       I/O redirection on compound commands
+	      With the original Bourne Shell, I/O redirection on compound
+	      commands cause the compound commands to be run in a subshell and
+	      variable assignment inside such constructs not to affect the
+	      main shell.  This version of the shell tries to avoid to run
+	      compound commands with I/O redirection in a subshell. Variable
+	      assignment thus works as expected.
+
+	      If the input or the output of a while or until loop was
+	      redirected in the original Bourne Shell, the commands in the
+	      loop have been run in a sub-shell, and variables set or changed
+	      there had no effect on the parent process:
+
+		   lastline=
+		   while read line
+		   do
+
+			   lastline=$line
+		   done < /etc/passwd
+		   echo "lastline=$lastline"	   # lastline is empty!
+
+
+	      In these cases, the input or output could be redirected by using
+	      exec, as in the following example:
+
+		   # Save standard input (file descriptor 0) as file
+		   # descriptor 3, and redirect standard input from the file
+		   /etc/passwd:
+
+		   exec 3<&0		   # save standard input as fd 3
+		   exec </etc/passwd	   # redirect input from file
+
+		   lastline=
+		   while read line
+		   do
+			   lastline=$line
+		   done
+
+		   exec 0<&3		   # restore standard input
+		   exec 3<&-		   # close file descriptor 3
+		   echo "$lastline"	   # lastline
+
+	      This version of the shell works with both variants.
+
+       time   The time token is now a reserved word. This permits to time
+	      pipelines as a whole but may cause problems when people assume
+	      that it is a command.  When in doubt, call "time -p" instead as
+	      the fact that the next word is an option disables the time token
+	      to be recognized as a reserved word.
+
+
+AUTHORS
+       The Bourne Shell was initially written by Stephen Richard Bourne at
+       Bell Labs in 1976.  The SVr4 release was written by various authors at
+       AT&T in 1989.  The Bourne Shell was later maintained by various people
+       at AT&T and Sun Microsystems.  Since 2006, the Bourne Shell is
+       maintained by Joerg Schilling.
+
+       The history editor has been added to the Bourne Shell in 2006.  It was
+       designed and implemented as a prototype in 1982 by Joerg Schilling on
+       UNOS, the first UNIX clone.  The current version of the history editor
+       is compatible to ved(1).	 It was written in August 1984 by Joerg
+       Schilling and P. Teuchert for the shell bsh(1) and is maintained by
+       Joerg Schilling since 1985.
+
+SOURCE DOWNLOAD
+       The source code for the Bourne Shell is included in the schilytools
+       project and may be retrieved from the schilytools project at
+       Sourceforge at:
+
+	   http://sourceforge.net/projects/schilytools/
+
+       The download directory is:
+
+	   http://sourceforge.net/projects/schilytools/files/
+
+       Check for the schily-*.tar.bz2 archives.
+
+       Separate project informations for the Schily Bourne Shell project may
+       be retrieved from:
+
+	   http://schilytools.sourceforge.net/bosh.html
+
+Schily Bourne Shell		  2021/05/29				 sh(1)

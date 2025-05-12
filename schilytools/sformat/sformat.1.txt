@@ -1,0 +1,915 @@
+SFORMAT draft(1L)	    Schily's USER COMMANDS	     SFORMAT draft(1L)
+
+NAME
+       sformat - SCSI disk formatting/partitioning/analysis/repair utility
+
+SYNOPSIS
+       sformat [options] target lun [scsibus]
+       sformat [options]
+
+
+       The first form will select the named disk directly.  Have a look at the
+       chapter about Following The Main Thread for more details.
+
+       The second form will scan all SCSI busses and enter a selection menu.
+       Have a look at the chapter about The SCSI Selection Menu for more
+       details.
+
+       Sformat will never destroy or modify any data unless explicitly
+       confirmed just before the (possibly) destructive action.	 Have a look
+       at the chapter about How To Answer Questions  first.
+
+
+DESCRIPTION
+       Sformat is the first SCSI disk formatting utility that runs under
+       SunOS.  Long before Sun decided that formatting and partitioning a disk
+       from a stand alone program is less convenient than doing this job from
+       a running UNIX, sformat has been available.
+
+       Sformat leads the beginner through a thread menu and allows the
+       experienced user to do more things than he could do with other disk
+       maintenance programs. All partitioning jobs can be done without the
+       need for a desc calculator.
+
+       If you want to do more than simple things, you should carefully read
+       the whole manual. It contains many tips and tricks that will help you
+       to recover disks that would have to be sent back to the manufacturer
+       for repair otherwise.  Sformat includes the competence of more than ten
+       years in disk handling and will be able to repair more disks than other
+       disk maintenance programs.  Sformat offers special maintenance tests to
+       find the reason for complex disk failures.
+
+
+Disk Database Entries
+       Be nice to other users of sformat.  Create database (sformat.dat)
+       entries for disks that are not in the data base using the -Proto flag
+       and mail them to the author.  This helps other users and you too.  See
+       section on Creating Disk Database Entries below.
+
+
+OPTIONS
+       -help, -h	 Print a summary of the most important options for
+			 sformat.
+
+       -xhelp		 Print a summary of less frequently used options for
+			 sformat.
+
+       -version		 Prints the sformat version number string and exists.
+
+       -ask		 Ask again at certain critical sections. This will
+			 currently prompt before modifying the disk when in
+			 repair mode.
+
+       -auto, -a	 autoformat mode (for production systems).  When this
+			 option is in effect, sformat will not ask whether to
+			 modify the format and partition parameters and will
+			 only format disks that are known in the data base.
+			 There will be only one question to answer.  This will
+			 immediately start the formatting process.  The -auto
+			 option enables certain additional verifications that
+			 will guarantee that the disks have a known firmware
+			 release and will inform the user that the disk is bad
+			 if certain quality tests failed.  The disk will not
+			 be formatted if the signature code in the data base
+			 is bad.  This option has not been verified during the
+			 last three years.  If you need this mode ask the
+			 author for additional verification of the code.
+
+       Cveri=#, C=#	 Number of blocks/verify.  Sformat normally will try
+			 to verify 1000 sectors with one SCSI command. Some
+			 old disk firmware may not able to deal with a number
+			 that will imply to read a number of sectors that will
+			 not fit in the local memory of the disk.
+
+       CWveri=#, CW=#	 Number of blocks/write-verify.	 The limitation noted
+			 with the Cveri option applies here again and even on
+			 newer disks.
+
+       data=name	 Name of disk database file (default: 'sformat.dat').
+			 Use this option to force sformat to use a different
+			 disk database than the default.  In any case, sformat
+			 will search in the current directory first.  If no
+			 file of the appropriate name was found in the current
+			 directory, sformat looks in the following path:
+			 /opt schily/etc, /etc, /usr/etc.
+
+       debug=#, -d	 Set the misc debug value to # (with debug=#) or
+			 increment the misc debug level by one (with -d). If
+			 you specify -dd, this equals to debug=2.
+
+       kdebug=#, kd=#	 Tell the scg-driver to modify the kernel debug value
+			 while SCSI commands are running.
+
+       xdebug=#, xd=#	 Set the debug level for the parser of the external
+			 disk database.
+
+       -defmodes	 Get default mode parameters from disk. Normally
+			 sformat retrieves the default modes parameters from
+			 the disk by default when the disk is unformatted or
+			 has no sun label and the current mode parameter if
+			 the disk has a valid sun label.  This option tells
+			 sformat retrieve the default mode parameters in any
+			 case.
+
+       -dmdl		 Do not use manufacturer defect list when formatting a
+			 disk.	This implies that a disk that is formatted
+			 with this option will have bad blocks. However some
+			 disks that may not be formatted because the
+			 manufacturer defect list is broken may become usable
+			 again when this option is in effect.
+
+       ESDI=#		 Pass ESDI command # to the drive and print the
+			 result.  This will only work if an EMULEX MD21
+			 SCSI/ESDI bridge controller is present.
+
+       -force		 Force to continue at certain errors. This will
+			 currently prompt after the format command fails.
+
+       -greassign	 Reassign blocks.  This is the guru mode, don't use
+			 this. Read the description for the -reassign option
+			 for more details.  This option will simply prompt for
+			 block numbers and then reassign them regardless of if
+			 they need to be reassigned or not. On some disks the
+			 block may seem to be defective even after reassigning
+			 it because the old data is copied to the new location
+			 without recomputing the CRC.  On other disk the old
+			 data will be lost. These problems will not arise if
+			 you use the -reassign option instead.
+
+       -ign_not_found	 Ignore record not found errors while verifying the
+			 disk.	This option is useful when trying to repair
+			 disks with many defects (see maxbad option). Some
+			 disk errors may cause the whole track to appear bad.
+			 If the reported error in these cases is record not
+			 found, You should first try to repair as many blocks
+			 as possible with this option in effect and then
+			 repair the remaining blocks without this option.
+
+       -inq		 Retrieve and print SCSI inquiry data for any type of
+			 device. This is useful even on tape drives and
+			 scanners.
+
+       maxbad=#		 When sformat is doing a surface analysis after
+			 formatting the disk, it collects a number of bad
+			 blocks (usually up to 1023), then reassigns them and
+			 then reformats the disk to guarantee that the disk
+			 speed will not be reduced by mapped bad blocks.  Some
+			 disks with many defective blocks will seem to have
+			 more defective blocks than they really have, but
+			 these false defective blocks need not to be
+			 reassigned.  This case may be triggered if a
+			 defective block directly follows the index.  In this
+			 case the whole track seems to be bad.	If you tell
+			 sformat to reformat the disk after repairing one bad
+			 block (maxbad=1), this problem will go away.
+
+       -modes		 Intercative modesense/modeselect.  Each mode page
+			 exists in 4 versions:
+			 default (PROM), current (RAM), saved (DISK) and
+			 changeable (BITMASK).
+			 You may currently view any page if you specify the
+			 page number.  This is currently under construction.
+
+       -noformat	 Force not to format disk even when formatting of the
+			 disk has been confirmed.  This option may be used to
+			 modify mode parameters without formatting the disk.
+
+       -nomap		 Do not map SCSI address to logical disk name.
+			 WARNING: If you use this option, sformat is not able
+			 to check whether the disk has mounted partitions.
+			 This may damage mounted file systems.
+
+       -noparity	 Try to disable parity checking on all SCSI commands
+			 that are sent by sformat.  This may not be possible
+			 in all implementations of the scg-driver.
+
+       -nowait		 Do not wait after formatting the disk. Normally,
+			 sformat will prompt for a modification of the disk
+			 label and partition table before starting to verify
+			 the disk.  If this option is in effect, sformat will
+			 immediately start to verify the disk after
+			 formatting.
+
+       -no_defaults	 Do not set heuristic defaults. If this option is in
+			 effect, all disk parameters must be either
+			 retrievable from disk or, if not available, provided
+			 by the user.
+
+       -prdefect	 Get and print defect data. This may be used to print
+			 the manufacturer and grown defect list that is stored
+			 on the disk.
+
+       -prgeom		 Get and print geometry data. This is an old option
+			 but it is useful to get all mode pages that are
+			 supported by this disk.
+
+       -prcurgeom	 Get and print geometry data. This is basically the
+			 same as -prgeom except that -prgeom will obtain the
+			 default mode pages, -prcurgeom will report the
+			 current values.
+
+       -Proto		 This option will cause sformat to generate a data
+			 base entry for the current disk.  Make sure that this
+			 data base entry will be generated with the correct
+			 format time.  Sformat is able to compute a format
+			 time from the disk geometry, but newer disks seem to
+			 need more time than computed.	If the format time is
+			 too short, the formatting may be aborted and the disk
+			 will not be accessible until formatted again
+			 completely.
+
+       -r		 reformat only mode (gives less messages on label
+			 menu)
+
+       -randv		 The random verify test is a method to find problems
+			 that may be a result of first seeking to a new place
+			 on disk as it is frequently done by the unix file
+			 system.  This is usually caused by an inode or super
+			 block update.	The above problems may be a result of
+			 bad bearings in the disk.  This is a test that is
+			 less harmfull to the disk than the -randrw test that
+			 writes to the disk.
+
+			 The test may be interrupted via ^C.
+       -randrw The random read/write test is a method to find problems that
+       may be a result of first seeking to a new place on disk and then
+       writing data to it as it is frequently done by the unix file system.
+       This is usually caused by an inode or super block update.  The above
+       problems may be a result of bad bearings in the disk.  If the disk does
+       not produce errors while this test is running, there will no harm to
+       the data on disk. However, if you assume that the disk is bad, the data
+       on disk may get corrupted.  To minimize the risk of data loss, the
+       first block containing the disk label (partition) and the last block
+       containing the sinfo data (a sformat specific area) will never be
+       written to.
+
+       The test may be interrupted via ^C.
+       -reassign Reassign a list of blocks sformat will prompt for.  This is
+       the preferred command when trying to repair a block or a list of blocks
+       with already known block addresses.  If you don't know the address of a
+       defective block, use the -repair option.	 Sformat will first try to
+       read the old content of the defective block and then try to refresh the
+       data by writing the old data to the block.  If it fails to write to the
+       block, sformat will reassign the defective block.  If the block does
+       not cause errors after rewriting the data in it, sformat will ask if
+       the block should be reassigned anyway.  NOTE: there are many cases in
+       which a block seems to be defective but actually is not.	 If for any
+       reason, the disk will be powered off during writing or if there is
+       electro magnetic noise the CRC for a block may get corrupted without
+       any physical harm to the magnetic media. These cases can be repaired by
+       writing again to the block.
+
+       -refresh_only	 Sformat will not try to reassign a block that still
+			 fails after rewriting (refreshing) the data in it.
+			 This option is useful in conjunction with the
+			 -reassign and the -repair option.
+
+       -repair		 This is a combination of the -verify and -reassign
+			 option.  Sformat will first verify the disk and then
+			 use the list of bad sectors found to repair the disk.
+
+       RW=#		 Number of random R/W loops that is used with the
+			 -randrw option.  The default is the number of
+			 physical sectors / 100.  This will not last too long
+			 and is enough to cover every cylinder of the disk.
+
+       -scsi_compliant	 Be as SCSI-compliant as possible. This will some old
+			 disk cause to fail in reporting mode pages correctly
+			 and may be used to see if a disk has these problems.
+
+       -seek		 Do random or full stroke seek tests on the disk. This
+			 is done by reading data; trying to do full stroke
+			 seek tests my be impossible because of the cache of
+			 the disk.
+
+       -setmodes	 Do a SCSI modeselect with all parameters, that would
+			 have been necessary for a format, but do not format
+			 the disk.  This allows to modify the mode pages of a
+			 disk without reformatting it.	If the -smp option is
+			 used in conjunction with -setmodes the mode
+			 parameters will not be saved. In this case, the mode
+			 parameters of the disk will return to their old
+			 values if a reset or a power cycle occurs.
+
+       -silent, -s	 Do not print out the status of failed commands.
+
+       -smp		 Do not try to save mode parameters when setting them.
+			 This option is useful if a nearly totally damaged
+			 disk must be reformatted. Some disk controllers, in
+			 this case will reject to format the disk if the area
+			 on disk where this data will be stored is not
+			 accessible before formatting the disk.
+
+       -start		 Send a SCSI START UNIT command to the device. This
+			 will normally spin up the spindle motor of a disk.
+
+       -stop		 Send a SCSI STOP UNIT command to the device. This
+			 will normally spin down the spindle motor of a disk.
+
+       timeout=#	 This option will set the default kernel timeout for
+			 all SCSI commands that are send by sformat to #
+			 seconds. The default value is 20 seconds.  This
+			 option does not affect the timeout for the format
+			 command.
+
+       -tr, -t		 This is an option that is only useful with old
+			 Adaptec SCSI bridge controllers.  These controllers
+			 are not able to deal with logical sector numbers in
+			 some cases. Therefore these numbers have to be
+			 translated to the cylinder/head/bfi form before.
+			 This is done by seeking to the named block and
+			 reading the sector header. It may fail if the block
+			 has a bad sector header.
+
+       VL=#		 Set the number of verify passes that are done after
+			 formatting a disk to #. The default value is 5.  In
+			 write verify mode, this number is doubled because
+			 sformat will alternate write verify and read verify
+			 passes in this case.
+
+       -verbose, -v	 outdated verbose option for SCSI commands.
+
+       -V		 Increment the verbose level in respect of SCSI
+			 command transport by one.  This helps to debug
+			 problems with SCSI commands.  If you get
+			 incomprehensible error messages you should use this
+			 flag to get more detailed output.  -VV will show data
+			 buffer content in addition.  Using -V or -VV slows
+			 down the process and may be the reason for a buffer
+			 underrun.
+
+       -verify		 This options starts sformat in verify disk (surface
+			 analysis) mode.  Verifying a disk is a method that
+			 allows to scan for defects without modifying data on
+			 the disk.  In this mode, the controller will read the
+			 disks without transferring data to the computer while
+			 all error recovery is disabled.
+
+       Vstart=#		 Set the first block for the -verify, -repair, -randrw
+			 or the -seek option to #.  This is recommended when
+			 doing a surface analysis on large disks where is is
+			 known that the bad sector is near the end of the
+			 disk.
+
+       Vend=#		 Set the last block for the -verify, -repair, -randrw
+			 or the -seek option to #.  This is recommended when
+			 doing a surface analysis on large disks where is is
+			 known that the bad sectors are not at the end of the
+			 disk.
+
+       -wrveri		 If this option is used in while formatting a disk, it
+			 tells sformat to write verify the disk instead of
+			 only read verifying it after formatting.  If it is
+			 used in combination with the -verify option, sformat
+			 will write verify the disk without prior formatting.
+			 In both cases, the old data on disk will be damaged.
+			 Write verifying a disk is recommended if the disk is
+			 older than two years or has unusual defects. Usual
+			 defects in this context are recovered read errors and
+			 defects that disappear when simply writing to the
+			 defect sector.
+
+
+How To Answer Questions
+       There are four types of questions.
+
+       o      Questions that can be answered with yes or no.  Yes may be
+	      abbreviated with 'y' or 'Y'.  These questions are always assumed
+	      to be answered with no if you simply enter carriage return.
+	      NOTE: the latter is always a safe answer.	 All questions that
+	      request confirmation for actions that may damage or modify data
+	      on disk are formed in such a way that answering them with no or
+	      carriage return will not harm any data.  All answers to this
+	      type of questions except [y]es or [Y]ES are interpreted as if no
+	      has been entered.
+
+       o      Questions that need a string as input.  If you simply enter
+	      carriage return to this type of question, no modification of the
+	      default string will be done.
+
+       o      Questions that need a word selected from a list of valid words
+	      as input.	 If you enter '?', you will get a list of possible
+	      input to that question.  Each word is on a separate line an (in
+	      some cases) is followed by a explanation how to use it.
+
+       o      Questions that need a number within a certain range.  For this
+	      type of questions, sformat displays the current value and the
+	      valid range in parenthesis.  The default radix for numbers is
+	      ten. If you need to enter a hexadecimal number precede it with
+	      0x if you need to enter an octal number, precede it with 0.
+
+	      ^	     Entering an accent circumflex '^' will set the value to
+		     the smallest possible
+
+	      $	     Entering an dollar sign '$' will set the value to the
+		     greatest possible
+
+	      +	     Entering a plus sign will increment the current value by
+		     one.
+
+	      -	     Entering a minus sign will decrement the current value by
+		     one.
+
+	      <CR>   Entering a carriage return will not modify the current
+		     value.  If the default value is -1, you need to supply a
+		     valid value to be allowed to leave the question menu.
+
+       All questions that do not request a simple string (second type of
+       question) will accept a question mark '?' to display online help.
+
+
+The SCSI Selection Menu
+       When Sformat is started without or with insufficient parameters, the
+       SCSI menu mode is entered.  A typical output in this case looks like:
+
+       sparky joerg > sformat
+       sformat SCSI format/analysis/repair utilities
+       Release 3.1, Copyright J. Schilling
+
+       scg0 at esp0 initiator id 7
+       scg1 at esp1 initiator id 7
+       scsibus0:
+       c0t0d0		0) 'Quantum ' 'XP34300	       ' 'F76D' Disk
+       c0t1d0		1) 'SEAGATE ' 'ST11200N	       ' '8334' Disk
+			2) *
+       c0t3d0		3) 'TOSHIBA ' 'MK537FB/	       ' '6258' Disk
+			4) 'WANGTEK ' '5150ES SCSI-36  ' 'ESB6' Removable Tape
+			5) 'EXABYTE ' 'EXB-8500-85QUE  ' '0428' Removable Tape
+			6) 'TOSHIBA ' 'XM-3401TASUNSLCD' '3593' Removable CD-ROM
+			7) HOST ADAPTOR
+       scsibus1:
+       c1t0d0,c1t0d1   10) 'EMULEX  ' 'MD21/S2	   ESDI' 'D00 ' Disk
+		       11) *
+       c1t2d0	       12) 'Maxoptix' 'T3-1304	       ' '1.1c' Removable Disk
+		       13) *
+		       14) *
+		       15) *
+		       16) *
+		       17) HOST ADAPTOR
+       Select target -1 (0 - 12)/<cr>:
+
+       The line:
+
+       c0t0d0		0) 'Quantum ' 'XP34300	       ' 'F76D' Disk
+
+       shows the canonical logical disk name (in this case c0t0d0), the menu
+       number, the SCSI inquiry string and a description of the device type
+       that was found on this SCSI target.  The menu number is directly
+       related to the SCSI target id of the device and the SCSI bus number.
+       Number 3 is SCSI target # 3 on SCSI bus # 0.  Number 12 is SCSI target
+       # 2 on SCSI bus # 1.  Sformat is currently not able to deal with more
+       than 8 targets on a bus.
+
+       When selecting a target (.e.g. # 0), a logical unit selection menu will
+       be displayed.
+
+       Select target -1 (0 - 6)/<cr>:0
+       scsibus0 target 0:
+       c0t0d0		0) 'Quantum ' 'XP34300	       ' 'F76D' Disk
+			1) 'Quantum ' 'XP34300	       ' 'F76D' unsupported
+			2) 'Quantum ' 'XP34300	       ' 'F76D' unsupported
+			3) 'Quantum ' 'XP34300	       ' 'F76D' unsupported
+			4) 'Quantum ' 'XP34300	       ' 'F76D' unsupported
+			5) 'Quantum ' 'XP34300	       ' 'F76D' unsupported
+			6) 'Quantum ' 'XP34300	       ' 'F76D' unsupported
+			7) 'Quantum ' 'XP34300	       ' 'F76D' unsupported
+       Select lun -1 (0 - 7)/<cr>:
+
+       The logical unit menu has the same structure as the SCSI target menu.
+       If the device description contains the word unsupported, the controller
+       is not able to support a logical unit of this number.  If the device
+       description contains the word unit not present, the controller is able
+       to support a logical unit of this number but there is actually no
+       device connected.
+
+       When selecting a specific logical unit, the main thread is entered as
+       if a complete SCSI target specification has been entered from the
+       command line.
+
+
+Following The Main Thread
+       If the main formatting thread is entered, the following stages are
+       encountered:
+
+       Mapping and checking
+			   The first thing sformat does, is to map the SCSI
+			   target/lun/busid triplet into a logical disk name
+			   and to check if some part of the disk is currently
+			   mounted.  This mapping will be skipped if the
+			   -nomap options is specified.	 If the disk is
+			   mounted, the user will be asked if it is ok to
+			   continue.
+			   Note: this is currently the one and only question.
+
+       Inquiry		   The second action is getting the inquiry data from
+			   the device.	The device type is determined from
+			   this data.
+
+       Test if device is ready
+			   The next action is to test whether the device is
+			   ready and to wait for the device to become ready.
+			   When the device is ready, it is recalibrated.
+
+       Exit for wrong device type
+			   When the device is not a disk, a worm media or
+			   optical memory, sformat terminates.
+
+       Read sinfo data	   When the device is a disk, sformat tries to read
+			   the sinfo data from the disk.  This allows the user
+			   to see if the device has been formatted with
+			   sformat before. If so, sformat will print out the
+			   number of reformats and the date of the first and
+			   last format.	 Sinfo is .B sformat specific data
+			   that is hold on the last block of the disk.
+
+       Process special commands
+			   If options tell sformat to take special actions
+			   (like -start or -prdefect), they are done here.
+			   Sformat terminates after processing them.
+
+       The formatting procedure starts
+			   The next actions are in preparation for formatting
+			   the disk.  Several other things can be done from
+			   this thread.	 Modifying the disk label will be one
+			   example.  You need not to be in fear that following
+			   this thread will modify or harm data on the disk.
+			   There will be extra questions that secure this
+			   case.
+
+       Test whether the disk is formatted
+			   Several procedures differ if the disk is already
+			   formatted and has a valid label.
+
+       The next parts of the main thread will give you some questions to
+       answer.	You may skip most of the questions if you do not want to
+       modify anything.
+
+       If some data that is definitely needed by sformat can not be determined
+       from the disk or the data base, sformat will force you to answer all
+       questions of a group.  Sformat will only ask question for parameters
+       that are definitely needed or may be changed on the current disk. The
+       content of the menus differ from disk to disk.
+
+       Read mode data
+	      Several mode pages of the disk are read.	This data and the
+	      inquiry data is used to search in the disk data base.
+	      Sformat asks:
+	      Ignore database disk parameters from 'sformat.dat'?
+	      If you don't want the data from the data base to be used,
+	      negotiate the appropriate question.  Some disks cannot be
+	      determined from the fetchable data.  This are mainly disks that
+	      are connected to a bridge controller e.g.	 a controller from
+	      ESDI to SCSI.  Sformat is able to detect the right data in the
+	      data base for disks with changeable media e.g. optical disks
+	      that support different media with different capacity and
+	      geometry.	 If there is more than one possible entry for this
+	      disk in the data base,
+	      sformat asks:
+	      Select alternate disk type?
+	      If the disk type menu is entered, all possible data base entries
+	      are displayed.  The current entry is marked with '*', the
+	      default entry is marked with '+' and the entry most similar to
+	      the current disk is marked with '~'.  A matching factor is
+	      displayed in parenthesis. Higher values are indicating a better
+	      match.
+
+       Read in label data
+	      If the disk is already formatted, sformat reads in the label and
+	      ask whether to remember this data.
+	      Sformat asks:
+	      Ignore old disk Label?
+	      I you confirm this question and reformat the disk, the old
+	      partitioning information will be lost.
+
+       Disk Parameters Menu
+	      If you want to modify some disk parameters answer the next
+	      question with 'y'.
+	      Sformat asks:
+	      Modify Disk Geometry Parameters?
+	      This enables to modify basic data on geometry, the interleaving
+	      factor and the defect management system.	If you want to do
+	      spindle synchronization, activate it here.
+
+       Error Recovery
+	      Error recovery parameters include read/write retry count and
+	      similar.
+	      Sformat asks:
+	      Modify Error recovery Parameters?
+
+       Disconnect Parameter
+	      Disconnect parameters are buffer full/empty ratio and bus
+	      inactivity limit.
+	      Sformat asks:
+	      Modify Disconnect Parameters
+
+       Alternate Label
+	      If you want to use an alternate label that may be in the data
+	      base go into the next menu.
+	      Sformat asks:
+	      Select alternate Label?
+	      The current entry is marked with '*', the default entry is
+	      marked with '+'.
+
+       Logical Label Geometry
+	      Sformat uses an abstract geometry in the label. This allows to
+	      have one label for a group of disks. The label geometry menu
+	      allows to modify this abstract geometry.
+	      Sformat asks:
+	      Modify Label Geometry Parameters?
+
+       SCSI Parameters
+	      This menu contains questions about command queuing, defect list
+	      format and similar.  Some disks do not support the default block
+	      defect list format. Specify another format in this case here. If
+	      the disk does not support the SCSI write-verify command, sformat
+	      allows to split this into a SCSI write and a SCSI verify
+	      command.	The data cannot be compared in this case.  If the disk
+	      type is generally flaky a data base entry can be set up to do
+	      write verify as default after formatting.	 If the disk will not
+	      handle 1000 blocks per verify command because of a firmware bug,
+	      a smaller value may be specified here.
+	      Sformat asks:
+	      Modify SCSI Parameters?
+
+       Grown Defect List
+	      If a disk has not been formatted before or has been refurbished,
+	      you should clear the old grown defect list to get a clean start.
+	      If the disk has bad blocks, sformat will find them after
+	      formatting while doing the surface analysis.  If the disk has
+	      known defects you should negotiate the next question to keep the
+	      defect list.
+	      Sformat asks:
+	      Clear old grown defect list?
+
+       Mode pages
+	      If you want to format the disk, you need to set the mode pages
+	      before.
+	      Sformat asks:
+	      Set mode pages (needed for format)?
+	      However, if you do not want to format the disk, you may
+	      negotiate this question and will be lead to the label
+	      modification menu.
+
+       Formatting the disk
+	      The next question is the last one you will be asked before
+	      starting to format the disk.  If formatting has started, you
+	      will see the progress of this process indicated in the used up
+	      percentage of the estimated time.
+	      Sformat asks:
+	      Format Disk destroys all Data. Really?
+	      If you only want to set the mode pages, you may this question
+	      with 'n'.
+
+       Creating and modifying the disk label
+	      After the disk has been formatted or if the formatting has been
+	      denied, the label menu is entered.
+	      Sformat asks:
+	      Print disk label?
+	      If you want to see the current layout of the disk label, enter
+	      'y'.
+	      Sformat asks:
+	      Modify disk label?
+	      If you want to modify the disk label enter 'y'.
+
+       Inside the label modification menu
+	      Sformat asks:
+	      Label: <Quantum XP34300> change ?
+	      If you want to retain the old label name, enter <CR>, else enter
+	      'y'.  Sformat will ask for the new Label name.
+	      Sformat asks:
+	      Enter disk label: Quantum XP34300
+	      You are left in the tty line edit mode and may modify the input
+	      line (see termio(7) manual page).
+	      Sformat asks:
+	      Volume Name: <> change ?
+	      If you want to retain the old label name, enter <CR>, else enter
+	      'y'.  Sformat will ask for the new Volume name.
+	      Sformat asks:
+	      Change partition table?
+	      If you want to change the partition table enter 'y'.
+	      Sformat asks:
+	      Part     Tag Flag	 Cylinders Startsec # of Sec	  Size	  Blocks
+	      0	      root wm	  0 -	30	  0    67580	 32.99MB (31/0/0)
+	      Change ?
+	      If you want to modify this partition enter 'y', otherwise enter
+	      <CR> until sformat asks for the partition you want to change.
+	      Sformat asks:
+	      Enter partition id Tag [root]:
+	      Enter <CR> if the partition tag is ok for this partition,
+	      otherwise enter '?' to get a list of valid partition tags or
+	      enter the new partition tag.
+	      Sformat asks:
+	      Enter partition permission Flags [wm]:
+	      Enter <CR> if the partition flag is ok for this partition,
+	      otherwise enter '?' to get a list of valid partition flags or
+	      enter the new partition flag.
+	      Sformat asks:
+	      Enter starting cylinder 0 (0 - 3851)/<cr>:
+	      Enter <CR> if the starting cylinder is ok for this partition,
+	      otherwise enter '?' to get a list of possible input.  XXX
+	      Sformat asks:
+	      Enter number of blocks 67580, 31/0/0 (0 - 8395180)/<cr>:
+	      Enter <CR> if the size is ok for this partition, otherwise enter
+	      '?' to get a list of possible input.  XXX
+	      Sformat asks:
+	      Part     Tag Flag	 Cylinders Startsec # of Sec	  Size	  Blocks
+	      0	      root wm	  0 -	30	  0    67580	 32.99MB (31/0/0)
+	      Ok ?
+	      Enter <CR> if you still want to modify the partition record.
+	      You then will be asked again for all parameters of this
+	      partition.  Enter 'y' if this partition is now ok.
+
+	      If all partitions are cycled through, sformat will display the
+	      current label.
+	      Sformat asks:
+	      Use this label?
+	      If you enter 'y', sformat will update the label on disk and go
+	      into the verify mode.  Anything else will put you into the label
+	      modification mode again.
+
+       Disk Verification
+	      In disk verification mode, sformat will do a surface analysis.
+	      If a bad block is encountered, sformat will reassign this bad
+	      block.  XXX
+
+
+How To Format A Disk
+       The number of defects that SCSI disks can handle depends on the defect
+       mapping system they use. There are several possible systems:
+
+       The mapping system depends on the # of tracks per zone in the SCSI disk
+       parameters.  Mapping area in this table means spare location.
+
+       1)     One mapping area at the end of the disk. (tpz == 0)
+
+       2)     One mapping area per track.	  (tpz == 1)
+
+       3)     One mapping area per cylinder.	       (tpz == nhead)
+
+       4)     Some mapping areas on on the disk	  (tpz > nhead)
+
+       If all the space in the defect spare locations above is used up, there
+       still may be an additional mapping area at the end of the disk.	This
+       is controlled by the alternate tracks per volume parameter.
+
+       If your disk says no defect spare location, you may be able to get
+       extra space by going into the disk parameter menu of sformat and change
+       a value. Note: some disks tell you that some of the values are
+       changeable (there is a range in parenthesis) but actually ignore the
+       new value. You will have to read the values after formatting to see if
+       the new parameters are in effect.
+
+
+How To Modify A Label
+       Remember, don't panic. You need no desc calculator to create or modify
+       a partition table.
+
+       The alternate cylinders are historic relics. In good old days (1982)
+       when SMD disks that were not able to do defect mapping have been used,
+       these alternates were added to do the defect mapping in the driver.  In
+       these days the space occupied by these spare cylinders really has been
+       used as alternate (spare) space.
+
+       Currently they are only used for some copies of the primary disk label
+       and an outdated copy of the defect list is only able to hold 127
+       defects :-(.
+
+
+       The label geometry cannot be changed in the partition menu. It must be
+       set before from the Label Parameters menu.
+
+       Print disk label?	     If this question is answered with 'y',
+				     the label and partitioning info will be
+				     displayed.
+
+       Modify disk label?	     If this question is answered with 'y',
+				     the label modification menu will be
+				     entered.
+
+       Label: <Toshiba 1015MB> change ?
+				     If this question is answered with 'y',
+				     the name of the label nay be modified.
+
+       Volume Name: <5.3> change ?   If this question is answered with 'y',
+				     the system V volume name may be altered.
+
+       Change partition table?	     If this question is answered with 'y', a
+				     partition menu will be displayed.
+
+       Use this label?
+
+
+Graphical Label Display
+       When printing the label or partition data, sformat uses a simple ASCII
+       graphical display to visualize the layout of the partitions.  The
+       symbols used in this graphic display are described below.
+
+       Example:
+
+       a I--/
+       b    /-----------/
+       c I----------------------------------------------------------------------I
+       d partition not defined
+       e	     <--/
+       f		/--------/
+       g					<-------------------------------I
+       h			 /----------------------------------------------I
+       WARNING:
+       part 'e' has unaligned start.
+       part 'g' has unaligned start.
+
+       Used symbols:
+
+       I	 Used to mark the start end the end of the disk (no error).
+
+       X	 Partition starts before zero or exceeds end of disk.
+
+       /	 Partition has an adjacent start or end with another partition
+		 (no error).
+
+       +	 Two or mode partitions have the start or the end at the same
+		 position on the disk but no other partition connects to this
+		 point.	 This is an error that indicates that there may be
+		 unused space on the disk.
+
+       <	 This partition does not connect to another partition on its
+		 beginning.  This is an error that indicates that there may be
+		 unused space on the disk.
+
+       >	 This partition does not connect to another partition on its
+		 end.  This is an error that indicates that there may be
+		 unused space on the disk.
+
+       *	 Internal error in the check routines (should never happen).
+
+       Errors:
+
+       ends behind lncyl   Partition is bigger than possible.
+
+       One or more parts are not within range of part 'c'!
+			   Partition 'c' (2) should be the whole disk.	This
+			   warning indicates a disk that deviates from this
+			   rule.
+
+       Warnings:
+
+       unaligned start	   The partition starts not in conjunction to another
+			   partition.
+
+       unaligned end	   The partition ends not in conjunction to another
+			   partition.
+
+       space before start  There is no partition that uses the space between
+			   the beginning of the disk and the beginning of this
+			   partition.
+
+       space after end	   There is no partition that uses the space between
+			   the end of this partition and the end of the disk.
+
+
+Creating Disk Database Entries
+EXAMPLES
+FILES
+       /opt/schily/etc/sformat.dat
+			   A database with mode pages and disk partitions for
+			   disks.
+
+SEE ALSO
+DIAGNOSTICS
+NOTES
+BUGS
+       This is a draft of the manual changes may be daily.
+
+AUTHOR
+       sformat has been written in 1986 for SunOS by Joerg Schilling. It was
+       the first disk formatting program that worked under control of the OS.
+       It was needed to speed up production at H. Berthold AG and to make the
+       Siemens MegaFile disk usable that needed a special track skew value
+       that was not supported by the standalone bootable Sun disk formating
+       program.
+
+       After cdrecord has been made portable, sformat could be made portable
+       as well.
+
+       Joerg Schilling
+       D-13353 Berlin
+       Germany
+
+       Mail bugs and suggestions to:
+
+       joerg@schily.net
+
+
+SOURCE DOWNLOAD
+       The source code for sfomat is in the schilytools project and may be
+       retrieved from the schilytools project at Sourceforge at:
+
+	   http://sourceforge.net/projects/schilytools/
+
+       The download directory is:
+
+	   http://sourceforge.net/projects/schilytools/files/
+
+       Check for the schily-*.tar.bz2 archives.
+
+Joerg Schilling			  2020/09/04		     SFORMAT draft(1L)

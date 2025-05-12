@@ -1,0 +1,463 @@
+sccs-delta(1)			 User Commands			 sccs-delta(1)
+
+NAME
+       sccs-delta, delta - make a delta to an SCCS file
+
+SYNOPSIS
+       /usr/ccs/bin/delta [-dfhknopsz] [-g sid-list | -gsid-list]
+	   [-m mr-list | -mmr-list] [-q[nsedelim]] [-r sid | -rsid]
+	   [-y [comment]] [-D diff-file]
+	   [-Xextended-options] [-Nbulk-spec] s.filename...
+
+
+DESCRIPTION
+       The delta utility checks in a record of the line-by-line differences
+       made to a checked-out version of a file under SCCS control. These
+       changes are taken from the writable working copy that was retrieved
+       using the SCCS get command (see sccs-get(1)).  This working copy does
+       not have the `s.' prefix, and is also referred to as a g-file.
+
+
+       If a directory name is used in place of the s.filename argument, the
+       delta command applies to all s.files in that directory. Unreadable
+       s.files produce an error; processing continues with the next file (if
+       any). The use of `-' as the s.filename argument indicates that the
+       names of files are to be read from the standard input, one s.file per
+       line (requires -y, and in some cases, -m).
+
+
+       delta may issue prompts on the standard output depending upon the
+       options specified and the flags that are set in the s.file (see
+       sccs-admin(1), and the -m and -y options below, for details).
+
+
+OPTIONS
+       The following options are supported:
+
+
+       -b	    Use command bdiff(1) instead of fsdiff(1).	This version
+		    of delta(1) by default uses fsdiff(1) that is faster than
+		    bdiff(1) and does not slow down as much with larger file
+		    size.
+
+
+       -d	    Use command diff(1) instead of bdiff(1).  Returns exit
+		    status 2 instead of 1 if the s.filename argument is not
+		    specified.
+
+
+       -f	    In NSE mode, this option allows to enforce a delta even
+		    when no p.file exists.  The new SID is assigned using the
+		    same rules as with get -e.
+
+		    This option is usually used together with the -q and -n
+		    options.
+
+		    This option is an undocumented SUN extension that does not
+		    exist in historic sccs implementations.
+
+
+       -h	    In NSE mode, this option allows to use diffh(1) for large
+		    files.
+
+		    This option is currently defunct.
+
+		    This option is an undocumented SUN extension that does not
+		    exist in historic sccs implementations.
+
+
+       -k	    Suppresses expansion of ID keywords when delta(1) is doing
+		    an implicit get(1) operation because -N+...	 was
+		    specified.
+
+		    This option is a SCHILY extension that does not exist in
+		    historic sccs implementations.
+
+
+       -n	    Retain the edited g-file, which is normally removed at the
+		    completion of processing.
+
+
+       -p	    Display line-by-line differences (in diff(1) format) on
+		    the standard output.
+
+
+       -q[nsedelim] Enable NSE mode.  If NSE mode is enabled, several NSE
+		    related extensions may be used.  In this release, the
+		    value of nsedelim is ignored.
+
+		    In NSE mode, delta behaves as if the -o option was
+		    specified and never issues a warning about missing id
+		    keywords.
+
+		    This option is an undocumented SUN extension that does not
+		    exist in historic sccs implementations.
+
+
+       -s	    Silent.  Do not display warning or confirmation messages.
+		    Do not suppress error messages (which are written to
+		    standard error).
+
+
+       -g sid-list | -gsid-list
+		    Specify a list of deltas to omit when the file is accessed
+		    at the SCCS version ID (SID) created by this delta.	 This
+		    causes the file to be checked out later to differ from the
+		    checked in file unless `get -isid-list' with the same
+		    sid-list is specified during checkout.  sid-list is a
+		    comma-separated list of SIDs.  To specify a range of
+		    deltas, use a `-' separator instead of a comma, between
+		    two SIDs in the list.
+
+
+       -m mr-list | -mmr-list
+		    If the SCCS file has the v flag set (see sccs-admin(1)),
+		    you must supply one or more Modification Request (MR)
+		    numbers for the new delta. When specifying more than one
+		    MR number on the command line, mr-list takes the form of a
+		    quoted, space-separated list. If -m is not used and the
+		    standard input is a terminal, delta prompts with `MRs? '
+		    for the list (before issuing the `comments? ' prompt). If
+		    the v flag in the s.file has a value, it is taken to be
+		    the name of a program to validate the MR numbers. If that
+		    validation program returns a non-zero exit status, delta
+		    terminates without checking in the changes.
+
+
+       -o	    Use the original time of the edited file for the delta
+		    time when applying the delta.  In NSE mode this is the
+		    default behavior.
+
+		    This option is a SCHILY extension that does not exist in
+		    historic sccs implementations.
+
+
+       -r sid | -rsid
+		    When two or more versions are checked out, specify the
+		    version to check in. This SID value can be either the SID
+		    specified on the get command line, or the SID of the new
+		    version to be checked in as reported by get.  A diagnostic
+		    results if the specified SID is ambiguous, or if one is
+		    required but not supplied.
+
+       -y[comment]  Supply a comment for the delta table (version log). A null
+		    comment is accepted, and produces an empty commentary in
+		    the log. If -y is not specified and the standard input is
+		    a terminal, delta prompts with `comments? '.  An unescaped
+		    NEWLINE terminates the comment.
+
+
+       -z	    Enable CMF extensions for MR number handling.
+
+		    This option is an undocumented SUN extension that does not
+		    exist in historic sccs implementations.
+
+
+       -Cdir	    Specify the base directory for the g-file relative to the
+		    current working directory.	By default, the g-file is
+		    searched for in the current directory (independent from
+		    the location of the s.file.
+
+		    This option is a SCHILY extension that does not exist in
+		    historic sccs implementations.
+
+
+       -Ddiff-file  Provide a file with prepared diff output to delta(1).  If
+		    this option is present, delta(1) will not get the previous
+		    file content and call diff(1) on the previous file content
+		    and the current file content, but read the diff-file
+		    instead.
+
+		    This option is a SCHILY extension that does not exist in
+		    historic sccs implementations.
+
+
+
+       -Nbulk-spec  Processes a bulk of SCCS history files.  This option
+		    allows to do an efficient mass processing of SCCS history
+		    files.
+
+		    The bulk-spec parameter is composed from an optional list
+		    of flag parameters followed by an optional path specifier.
+
+		    The following flag types are supported:
+
+		    +	      If bulk-spec is preceded by a `+', delta(1)
+			      removes the original g-files and replaces them
+			      by file content that is retrieved by a get(1)
+			      operation on the related s.file.	This option is
+			      ignored if -n has been specified.
+
+		    space     This is a placeholder dummy flag that allows to
+			      use a prepared string for the -N option and to
+			      replace the space character by one of the
+			      supported flags on demand.
+
+		    The following path specifier types are supported:
+
+		    -N	      The file name parameters to the delta command
+			      are not s.filename files but the names of the g-
+			      files.  The s.filename names are automatically
+			      derived from the g-file names by prepending s.
+			      to the last path name component.	Both,
+			      s.filename and the g-file are in the same
+			      directory.
+
+		    -Ns.      The file name parameters to the delta command
+			      are s.filename files.  The the g-files names are
+			      automatically derived by removing s.  from the
+			      beginning of last path name component of the
+			      s.filename.  Both, s.filename and the g-file are
+			      in the same directory.
+
+		    -Ndir     The file name parameters to the delta command
+			      are not s.filename files but the names of the g-
+			      files.  The s.filename names are put into
+			      directory dir, the names are automatically
+			      derived from the g-file names by prepending
+			      dir/s.  to the last path name component.
+
+		    -Ndir/s.  The file name parameters to the delta command
+			      are s.filename files in directory dir.  The the
+			      g-files names are automatically derived by
+			      removing dir/s.  from the beginning of last path
+			      name component of the s.filename.
+
+		    A typical value for dir is SCCS.
+
+		    In order to overcome the limited number of exec(2)
+		    arguments, it is recommended to use `-' as the file name
+		    parameter for delta(1) and to send a list of path names to
+		    stdin.
+
+		    This option is a SCHILY extension that does not exist in
+		    historic sccs implementations.
+
+
+       -Xextended-options
+		    Specify extended options. The argument extended-options
+		    may be a comma separated list of extended option names.
+
+		    The following extended options are supported, they may be
+		    abbreviated as long as the abbreviation is still unique:
+
+
+		    date=datetime
+			   Allows to overwrite the usual methods to determine
+			   the time stamp used for a new delta. This is needed
+			   to e.g. convert a historic SCCS history into a new
+			   project oriented bundle history.  The format of the
+			   datetime argument is the same as for cutoff times
+			   but nanoseconds and a time zone offset are
+			   permitted in addition.
+
+		    gpath=g-path
+			   Specify a different path to the g-file instead of
+			   deriving the path from the s-file using an
+			   algorithm that may not apply in a specific case.
+			   This option is needed to manage the changeset file.
+
+		    nobulk Disables the -N (bulkmode) filename translations.
+			   This is needed to disable a -N option that is
+			   automatically added by sccs(1) in NewMode and would
+			   otherwise make it impossible to deal with the
+			   changeset file ``.sccs/SCCS/s.changeset''.
+
+		    mail=address
+			   Set address as e-mail address in the delta table
+			   for the SID just created.
+
+		    prepend
+			   Prepend the current content of the g-file to the
+			   previous content of that file.  With this option,
+			   there is no need to unpack the old reference
+			   version and to diff the current version against
+			   that old version. This causes a major performance
+			   win that is used for updating the sccschangeset(4)
+			   file when in project mode.
+
+		    user=name
+			   Use a different user name for the programmer field
+			   in the delta table.	By the default, the logname is
+			   used for this field.	 Using a different name may
+			   however later deny the permission to modify a delta
+			   by programs like cdc(1).
+
+		    0	   When reading filenames from stdin, triggered by a
+			   file name argument `-', the filename separator is a
+			   null byte instead of a newline.  This allows to use
+			   long lists with arbitrary filenames.
+
+		    help   Print a short online help for available options.
+
+		    The -X option is a SCHILY extension that does not exist in
+		    historic sccs implementations.
+
+
+       -V
+       -version
+       --version    Prints the delta version number string and exists.
+
+		    This option is a SCHILY extension that does not exist in
+		    historic sccs implementations.
+
+
+ENVIRONMENT VARIABLES
+       See environ(5) for descriptions of the following environment variables
+       that affect the execution of delta(1): LANG, LC_ALL, LC_COLLATE,
+       LC_CTYPE, LC_MESSAGES, and NLSPATH.
+
+
+       SCCS_NO_HELP
+	      If set, delta(1) will not automatically call help(1) with the
+	      SCCS error code in order to print a more helpful error message.
+	      Scripts that depend on the exact error messages of SCCS commands
+	      should set the environment variable SCCS_NO_HELP and set
+	      LC_ALL=C.
+
+
+STDOUT
+       If the -s option was not specified, delta prints statistics about file
+       activities in the following format:
+
+	      new-sid
+	      nn inserted
+	      nn deleted
+	      nn unchanged
+
+
+EXIT STATUS
+       The following exit values are returned:
+
+
+       0    Successful completion.
+
+
+       1    An error occurred and the -d option had not been specified.
+
+
+       2    An error occurred, the -d option had been specified, and the
+	    s.filename argument was not specified.
+
+
+FILES
+       d.file	   temporary file created by the delta(1) program with the
+		   content of the previous version, used to compute
+		   differences to the current version
+
+
+       e.file	   temporary file to hold an uuencoded version of the g-file
+		   in case of an encoded history file
+
+
+       p.file	   permission (lock) file for checked-out versions.  See
+		   sccs-get(1) for a description of the layout of the p.file.
+
+
+       q.file	   temporary copy of the p.file; renamed to the p.file after
+		   completion
+
+
+       s.file	   SCCS history file, see sccsfile(4).
+
+
+       x.file	   temporary copy of the s.file; renamed to the s.file after
+		   completion
+
+
+       z.file	   temporary lock file contains the binary process id in host
+		   byte order followed by the host name
+
+
+       dump.core   If the file dump.core exists in the current directory and a
+		   fatal signal is received, a coredump is initiated via
+		   abort(3).
+
+
+ATTRIBUTES
+       See attributes(5) for descriptions of the following attributes:
+
+
+
+   /usr/ccs/bin/delta
+
+
+       +----------------------------+-----------------------------+
+       |      ATTRIBUTE TYPE	    |	    ATTRIBUTE VALUE	  |
+       +----------------------------+-----------------------------+
+       |Availability		    | SUNWsprot			  |
+       +----------------------------+-----------------------------+
+
+SEE ALSO
+       sccs(1), sccs-add(1), sccs-admin(1), sccs-branch(1), sccs-cdc(1),
+       sccs-check(1), sccs-clean(1), sccs-comb(1), sccs-commit(1),
+       sccs-create(1), sccs-cvt(1), sccs-deledit(1), sccs-delget(1),
+       sccs-diffs(1), sccs-edit(1), sccs-editor(1), sccs-enter(1),
+       sccs-fix(1), sccs-get(1), sccs-help(1), sccs-histfile(1), sccs-info(1),
+       sccs-init(1), sccs-istext(1), sccs-ldiffs(1), sccs-log(1),
+       sccs-print(1), sccs-prs(1), sccs-prt(1), sccs-rcs2sccs(1),
+       sccs-remove(1), sccs-rename(1), sccs-rmdel(1), sccs-root(1),
+       sccs-sact(1), sccs-sccsdiff(1), sccs-status(1), sccs-tell(1),
+       sccs-unedit(1), sccs-unget(1), sccs-val(1), bdiff(1), diff(1),
+       fsdiff(1), what(1), sccschangeset(4), sccsfile(4), attributes(5),
+       environ(5), standards(5).
+
+
+DIAGNOSTICS
+       Use the SCCS help command for explanations (see sccs-help(1)).
+
+
+WARNINGS
+       Lines beginning with an ASCII SOH character (binary 001) cannot be
+       placed in the SCCS file if the SCCS v4 history file format is used,
+       unless the SOH is escaped. This character has special meaning to SCCS
+       (see sccsfile(4)) and produces an error in SCCS v4 mode.	 SCCS v6
+       automatically escapes such characters and thus allows to use ASCII SOH
+       at any place in a file.
+
+       If delta(1) is used in force mode (using `delta -q -f -n s.file'),
+       using the option -gsid-list in addition will result in unexpected
+       behavior.  This is because the file content used for delta(1), differs
+       from what is extracted using get(1).  As in force delta mode, get(1) is
+       usually not used, the next delta will revert the effect of the `delta
+       -g...' call.
+
+
+BUGS
+       None
+
+
+AUTHORS
+       The SCCS suite was originally written by Marc J. Rochkind at Bell Labs
+       in 1972.	 Release 4.0 of SCCS, introducing new versions of the programs
+       admin(1), get(1), prt(1), and delta(1) was published on February 18,
+       1977; it introduced the new text based SCCS v4 history file format
+       (previous SCCS releases used a binary history file format).  The SCCS
+       suite was later maintained by various people at AT&T and Sun
+       Microsystems.  Since 2006, the SCCS suite is maintained by Joerg
+       Schilling.
+
+
+SOURCE DOWNLOAD
+       A frequently updated source code for the SCCS suite is included in the
+       schilytools project and may be retrieved from the schilytools project
+       at Sourceforge at:
+
+	   http://sourceforge.net/projects/schilytools/
+
+       The download directory is:
+
+	   http://sourceforge.net/projects/schilytools/files/
+
+       Check for the schily-*.tar.bz2 archives.
+
+       Less frequently updated source code for the SCCS suite is at:
+
+	   http://sourceforge.net/projects/sccs/files/
+
+       Separate project informations for the SCCS project may be retrieved
+       from:
+
+	   http://sccs.sf.net
+
+SunOS 5.11			  2020/09/18			 sccs-delta(1)

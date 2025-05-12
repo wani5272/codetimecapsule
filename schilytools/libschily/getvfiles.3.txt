@@ -1,0 +1,7 @@
+()									    ()
+
+
+See the file man3/getfiles.3.
+
+
+									    ()

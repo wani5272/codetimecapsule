@@ -1,0 +1,306 @@
+ISOINFO(8)		    System Manager's Manual		    ISOINFO(8)
+
+NAME
+       devdump, isoinfo, isovfy, isodump - Utility programs for dumping and
+       verifying iso9660 images.
+
+SYNOPSIS
+       devdump isoimage
+
+       isodump isoimage
+
+       isoinfo [ options ] [ find [ find expression ]]
+
+       isovfy isoimage
+
+DESCRIPTION
+       devdump is a crude utility to interactively display the contents of
+       device or filesystem images.  The initial screen is a display of the
+       first 256 bytes of the first 2048 byte sector.  The commands are the
+       same as with isodump.
+
+       isodump is a crude utility to interactively display the contents of
+       iso9660 images in order to verify directory integrity.  The initial
+       screen is a display of the first part of the root directory, and the
+       prompt shows you the extent number and offset in the extent.
+
+	      You can use the 'a' and 'b' commands to move backwards and
+	      forwards within the image. The 'g' command allows you to goto an
+	      arbitrary extent, and the 'f' command specifies a search string
+	      to be used. The '+' command searches forward for the next
+	      instance of the search string, and the 'q' command exits devdump
+	      or isodump.
+
+       isoinfo is a utility to perform directory like listings of iso9660
+       images.
+
+       isovfy is a utility to verify the integrity of an iso9660 image. Most
+       of the tests in isovfy were added after bugs were discovered in early
+       versions of mkisofs.  It isn't all that clear how useful this is
+       anymore, but it doesn't hurt to have this around.
+
+
+OPTIONS
+       The options common to all programs are -help,-h,-version,
+       i=name,dev=name.	 The isoinfo program has additional command line
+       options. The options are:
+
+       -help
+
+       -h     print a summary of all options.
+
+       -d     Print information from the primary volume descriptor (PVD) of
+	      the iso9660 image. This includes information about Rock Ridge,
+	      Joliet extensions and Eltorito boot information if present.
+
+       -f     generate output as if a 'find . -print' command had been run on
+	      the iso9660 image. You should not use the -l image with the -f
+	      option.  The same output is created by calling isoinfo with
+	      -find -print
+
+       -find find expression
+	      This option acts a separator. If it is used, all isoinfo options
+	      must be to the left of the -find option. To the right of the
+	      -find option, mkisofs accepts the find command line syntax only.
+	      If the find expression includes a -print or -ls promary, the -l
+	      to isoinfo is ignored.  If the find expression evaluates as
+	      true, the selected action (e.g.  list the ISO-9660 directory) is
+	      performed.
+
+       -i iso_image
+	      Specifies the path of the iso9660 image that we wish to examine.
+	      The options -i and dev=target are mutual exclusive.
+
+       -ignore-error
+	      Ignore errors.  The commands by default aborts on several
+	      errors, such as read errors. With this option in effect, the
+	      commands try to continue.	 Use with care.
+
+       dev=target
+	      Sets the SCSI target for the drive, see notes above.  A typical
+	      device specification is dev=6,0 .	 If a filename must be
+	      provided together with the numerical target specification, the
+	      filename is implementation specific.  The correct filename in
+	      this case can be found in the system specific manuals of the
+	      target operating system.	On a FreeBSD system without CAM
+	      support, you need to use the control device (e.g.
+	      /dev/rcd0.ctl).  A correct device specification in this case may
+	      be dev=/dev/rcd0.ctl:@ .
+
+	      On Linux, drives connected to a parallel port adapter are mapped
+	      to a virtual SCSI bus. Different adapters are mapped to
+	      different targets on this virtual SCSI bus.
+
+	      If no dev option is present, the program will try to get the
+	      device from the CDR_DEVICE environment.
+
+	      If the argument to the dev= option does not contain the
+	      characters ',', '/', '@' or ':', it is interpreted as an label
+	      name that may be found in the file /etc/default/cdrecord (see
+	      FILES section).
+
+	      The options -i and dev=target are mutual exclusive.
+
+       -debug Print additional debug information. This enables e.g. printing
+	      of all directory entries if a file has more than one directory
+	      entry and printing of more information from the primary volume
+	      descriptor.
+
+	      In debug mode, Rock Ridge information is parsed with -R even if
+	      it is not standard compliant.
+
+       -l     generate output as if a 'ls -lR' command had been run on the
+	      iso9660 image.  You should not use the -f image with the -l
+	      option.
+
+	      The numbers in square brackets are the starting sector number as
+	      decimal number (based on 2048 bytes per sector) and the iso9660
+	      directory flags as hexadecimal number as follows:
+
+	      0x00   A plain file (not really a flag).
+
+	      0x01   Hide the file name from directory listings.
+
+	      0x02   A directory.
+
+	      0x04   An accociated file (e.g. an Apple resource fork).
+
+	      0x08   Record format in extended attributes is used.
+
+	      0x10   No read/execute permission in extended attributes.
+
+	      0x20   reserved
+
+	      0x40   reserved
+
+	      0x80   Not the final entry of a multi extent file.
+
+       -N sector
+	      Quick hack to help examine single session disc files that are to
+	      be written to a multi-session disc. The sector number specified
+	      is the sector number at which the iso9660 image should be
+	      written when send to the cd-writer. Not used for the first
+	      session on the disc.
+
+       -p     Print path table information.
+
+       -R     Extract information from Rock Ridge extensions (if present) for
+	      permissions, file names and ownerships.
+
+       -s     Print file size infos in multiples of sector size (2048 bytes).
+
+       -J     Extract information from Joliet extensions (if present) for file
+	      names.
+
+       -j charset
+	      Convert Joliet file names (if present) to the supplied charset.
+	      See mkisofs(8) for details.
+
+       -T sector
+	      Quick hack to help examine multi-session images that have
+	      already been burned to a multi-session disc. The sector number
+	      specified is the sector number for the start of the session we
+	      wish to display.
+
+       -X     Extract files from the image and put them into the filesystem.
+	      If the -find option is not used, all files are extracted.
+
+	      The isoinfo program supports to extract all files, even multi
+	      extent files (files > 4 GB).
+
+	      Before extracting files using the -X option, it is recommended
+	      to change the current directory to an empty directory in order
+	      to prevent to clobber existing files.
+
+       -x pathname
+	      Extract specified file to stdout.	 The pathname needs to start
+	      with a shlash ('/') and in case of iso9660 names, must match the
+	      full pathname of the file inluding the version number (usually
+	      ';1').  If the option -R has been specified and the filesystem
+	      carries Rock Ridge attributes, the pathname must match the full
+	      Rock Ridge pathname of the file.
+
+
+ENVIRONMENT
+       CDR_DEVICE
+	      This may either hold a device identifier that is suitable to the
+	      open call of the SCSI transport library or a label in the file
+	      /etc/default/cdrecord.
+
+       RSH    If the RSH environment is present, the remote connection will
+	      not be created via rcmd(3) but by calling the program pointed to
+	      by RSH.  Use e.g.	 RSH=/usr/bin/ssh to create a secure shell
+	      connection.
+
+	      Note that this forces the program to create a pipe to the rsh(1)
+	      program and disallows the program to directly access the network
+	      socket to the remote server.  This makes it impossible to set up
+	      performance parameters and slows down the connection compared to
+	      a root initiated rcmd(3) connection.
+
+       RSCSI  If the RSCSI environment is present, the remote SCSI server will
+	      not be the program /opt/schily/sbin/rscsi but the program
+	      pointed to by RSCSI.  Note that the remote SCSI server program
+	      name will be ignored if you log in using an account that has
+	      been created with a remote SCSI server program as login shell.
+
+
+FILES
+       /etc/default/cdrecord
+	      Default values can be set for the following options in
+	      /etc/default/cdrecord.
+
+	      CDR_DEVICE
+		     This may either hold a device identifier that is suitable
+		     to the open call of the SCSI transport library or a label
+		     in the file /etc/default/cdrecord that allows to identify
+		     a specific drive on the system.
+
+	      Any other label
+		     is an identifier for a specific drive on the system.
+		     Such an identifier may not contain the characters ',',
+		     '/', '@' or ':'.
+
+		     Each line that follows a label contains a TAB separated
+		     list of items.  Currently, four items are recognized: the
+		     SCSI ID of the drive, the default speed that should be
+		     used for this drive, the default FIFO size that should be
+		     used for this drive and drive specific options. The
+		     values for speed and fifosize may be set to -1 to tell
+		     the program to use the global defaults.  The value for
+		     driveropts may be set to "" if no driveropts are used.  A
+		     typical line may look this way:
+
+		     teac1= 0,5,0   4	 8m   ""
+
+		     yamaha= 1,6,0  -1	 -1   burnfree
+
+		     This tells the program that a drive named teac1 is at
+		     scsibus 0, target 5, lun 0 and should be used with speed
+		     4 and a FIFO size of 8 MB.	 A second drive may be found
+		     at scsibus 1, target 6, lun 0 and uses the default speed
+		     and the default FIFO size.
+
+
+SEE ALSO
+       mkisofs(8), cdrecord(1), readcd(1), scg(7), rcmd(3), ssh(1).
+
+
+BUGS
+       The user interface really sucks.
+
+
+AUTHOR
+       The author of the original sources (1993 ... 1998) is Eric Youngdale
+       <ericy@gnu.ai.mit.edu> or <eric@andante.jic.com> is to blame for these
+       shoddy hacks.
+
+       Joerg Schilling wrote the SCSI transport library and its adaptation
+       layer to the programs and newer parts (starting from 1999) of the
+       utilities, this makes them Copyright (C) 1999-2018 Joerg Schilling.
+       Patches to improve general usability would be gladly accepted.
+
+FUTURE IMPROVEMENTS
+       These utilities are really quick hacks, which are very useful for
+       debugging problems in mkisofs or in an iso9660 filesystem. In the long
+       run, it would be nice to have a daemon that would NFS export a iso9660
+       image.
+
+       The isoinfo program is probably the program that is of the most use to
+       the general user.
+
+SOURCE DOWNLOAD
+       A frequently updated source code for the cdrtools is included in the
+       schilytools project and may be retrieved from the schilytools project
+       at Sourceforge at:
+
+	   http://sourceforge.net/projects/schilytools/
+
+       The download directory is:
+
+	   http://sourceforge.net/projects/schilytools/files/
+
+       Check for the schily-*.tar.bz2 archives.
+
+       Less frequently updated source code for the cdrtools is at:
+
+	   http://sourceforge.net/projects/cdrtools/files/
+
+       and
+	   http://sourceforge.net/projects/cdrtools/files/alpha
+
+       Despite the name, the software is not beta.
+
+       Separate project informations for the cdrtools project may be retrieved
+       from:
+
+	   http://cdrecord.org
+
+INTERFACE STABILITY
+       The interfaces provided by readcd are designed for long term stability.
+       As readcd depends on interfaces provided by the underlying operating
+       system, the stability of the interfaces offered by readcd depends on
+       the interface stability of the OS interfaces.  Modified interfaces in
+       the OS may enforce modified interfaces in readcd.
+
+Version 3.02			  2018/05/24			    ISOINFO(8)

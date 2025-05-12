@@ -1,0 +1,1198 @@
+SFIND(1L)		    Schily's USER COMMANDS		     SFIND(1L)
+
+NAME
+       sfind - find files
+
+SYNOPSIS
+       sfind [ options ] [ path ...  ] [ operand_expression ]
+
+DESCRIPTION
+       The sfind utility recursively descends the directory hierarchy from
+       each file specified by path, evaluating a Boolean expression composed
+       of the primaries described in the OPERANDS section for each file
+       encountered.
+
+       The sfind utility is able to descend to arbitrary depths in a file
+       hierarchy and does not fail due to path length limitations (unless a
+       path operand specified by the application exceeds PATH_MAX
+       requirements).
+
+       The sfind utility detects infinite loops; that is, entering a
+       previously visited directory that is an ancestor of the last file
+       encountered. When it detects an infinite loop, sfind does not write a
+       diagnostic message to standard error (the POSIX standards likes find to
+       write this message) and either recovers its position in the hierarchy
+       or terminates.
+
+OPTIONS
+       The sfind utility conforms to the Base Definitions volume of IEEE Std
+       1003.1-2001, Section 12.2, Utility Syntax Guidelines.
+
+       The IEEE Std 1003.1-2001 standard requires the options -H and -L to be
+       supported. All other sfind options are local extensions.
+
+       -H     Cause the file information and file type evaluated for each
+	      symbolic link encountered on the command line to be those of the
+	      file referenced by the link, and not the link itself. If the
+	      referenced file does not exist, the file information and type is
+	      for the link itself. File information for all symbolic links not
+	      on the command line is that of the link itself.
+
+       -L     Cause the file information and file type evaluated for each
+	      symbolic link to be those of the file referenced by the link,
+	      and not the link itself.
+
+       -P     Cause the file information and file type evaluated for each
+	      symbolic link to be those of the link itself.  The sfind utility
+	      will not follow symbolic links at any part of the file
+	      hierarchy.  This is the default.
+
+       Specifying more than one of the mutually-exclusive options -H, -L and
+       -P is not considered an error. The last option specified determines the
+       behavior of the utility.
+
+       -help  Prints a short summary of the sfind options and exists.
+
+       -version
+	      Prints the sfind version number string and exists.
+
+
+OPERANDS
+       The following operands are supported:
+
+       path	 The path operand is a pathname of a starting point in the
+		 directory hierarchy.
+
+       operand_expression
+		 The first argument that starts with a '-', or is a '!' or a
+		 '(', and all subsequent arguments are interpreted as an
+		 expression made up of the following primaries and operators.
+		 In the descriptions, wherever n is used as a primary
+		 argument, it is interpreted as a decimal integer optionally
+		 preceded by a plus ('+') or minus ('-') sign, as follows:
+
+		 +n	More than n.
+
+		  n	Exactly n.
+
+		 -n	Less than n.
+
+       The following logical operators are supported:
+
+       ( )    Group an expression
+
+       !      Logical NOT
+
+       -a     Logical AND
+
+       -o     Logical OR
+
+       The following primaries are supported:
+
+       -acl   The primary evaluates as true if the file has additional ACLs
+	      defined.	On platforms that do not support ACLs or where sfind
+	      does not yet support ACLs, the primary always evaluates as
+	      false.  Currently only Solaris, Linux and FreeBSD is supported.
+
+	      This primary is not mentioned in the POSIX standard.
+
+       -amin n
+	      The parameter n must be a simple number that is evaluated as
+	      minutes for the file access time relatively to the start time of
+	      sfind.
+
+	      This primary is deprecated and only exists for command line
+	      compatibility with other find implementations. Please use the
+	      more flexible -atime instead.
+
+	      This primary is not mentioned in the POSIX standard.
+
+       -atime n
+	      If n is a simple number, the primary evaluates as true if the
+	      file access time subtracted from the initialization time,
+	      divided by 86400 (with any remainder discarded), is n.
+
+	      If n is a number like 3h10m then it is representing an absolute
+	      number in seconds that is evaluated against the start time of
+	      sfind.  The letters that are recognised in the time spec are
+	      taken from smhdwy.
+
+       -call command [argument ...] \;
+       -calldir command [argument ...] \;
+	      These primaries are similar to -exec and -execdir but the
+	      command is called by a callback into the caller of the library
+	      and not by creating a new process.
+
+	      In the Bourne Shell, the command is evaluated similar to the
+	      eval(1) command in case it does not contain a shell variable
+	      reference and similar to sh -c command call argument...  in case
+	      there is a variable reference.
+
+	      This primary is only available in the library version of
+	      sfind(1) (libfind).
+
+	      This primary is not mentioned in the POSIX standard.
+
+       -chatime timespec
+	      This primary modifies the time of last access of a file in
+	      struct stat.  This primary always evaluates to true.  See
+	      -newerXY below for a description of timespec.
+
+	      This primary is not mentioned in the POSIX standard.
+
+       -chctime timespec
+	      This primary modifies the time of last status change of a file
+	      in struct stat.  This primary always evaluates to true.  See
+	      -newerXY below for a description of timespec.
+
+	      This primary is not mentioned in the POSIX standard.
+
+       -chmtime timespec
+	      This primary modifies the time of last modification of a file in
+	      struct stat.  This primary always evaluates to true.  See
+	      -newerXY below for a description of timespec.
+
+	      This primary is not mentioned in the POSIX standard.
+
+       -chown uname
+       -chown uid
+	      This primary modifies the owner of a file in struct stat.	 This
+	      primary always evaluates to true.
+
+	      This primary is not mentioned in the POSIX standard.
+
+       -chgrp gname
+       -chgrp gid
+	      This primary modifies the group of a file in struct stat.	 This
+	      primary always evaluates to true.
+
+	      This primary is not mentioned in the POSIX standard.
+
+       -chmod mode
+	      This primary modifies the permissions of a file in struct stat.
+	      The mode parameter may use the same syntax as in the chmod(1)
+	      command.	This primary always evaluates to true.
+
+	      This primary is not mentioned in the POSIX standard.
+
+       -chfile
+	      If a previous primary -chatime, -chctime, -chmtime, -chown,
+	      -chgrp or -chmod modified elements in struct stat, the modified
+	      values are set on the file.
+
+	      On platforms where chmod(2) is not possible on symbolic links,
+	      symbolic links are skipped.  On platforms where is not possible
+	      to set time stamps on symbolic links, symbolic links are
+	      skipped.
+
+	      If setting the new values does not work, this primary evaluates
+	      to false.
+
+	      This primary is not mentioned in the POSIX standard.
+
+       -cmin n
+	      The parameter n must be a simple number that is evaluated as
+	      minutes for the last change of file status information
+	      relatively to the start time of sfind.
+
+	      This primary is deprecated and only exists for command line
+	      compatibility with other find implementations. Please use the
+	      more flexible -ctime instead.
+
+	      This primary is not mentioned in the POSIX standard.
+
+       -ctime n
+	      If n is a simple number, the primary evaluates as true if the
+	      time of last change of file status information subtracted from
+	      the initialization time, divided by 86400 (with any remainder
+	      discarded), is n.
+
+	      If n is a number like 3h10m then it is representing an absolute
+	      number in seconds that is evaluated against the start time of
+	      sfind.  The letters that are recognised in the time spec are
+	      taken from smhdwy.
+
+       -depth The primary always evaluates as true; it causes the descent of
+	      the directory hierarchy to be done so that all entries in a
+	      directory are acted on before the directory itself. If a -depth
+	      primary is not specified, all entries in a directory are acted
+	      on after the directory itself. If any -depth primary is
+	      specified, it applies to the entire expression even if the
+	      -depth primary would not normally be evaluated.
+
+       -dostat
+	      Call stat(2) or lstat(2) for every file, do not try to do
+	      stat(2) optimization.
+
+	      By default, sfind tries to avoid stat(2) calls in case that the
+	      expression does not need to reference fields from struct stat
+	      and the file system is known to behave like classical UNIX
+	      filesystems.  Stat(2) optimization is done by assuming that the
+	      number of subdirectories is st_nlink - 2 and gives a significant
+	      increase in search speed in case that only filename related
+	      expressions are used.
+
+	      This primary is not mentioned in the POSIX standard.
+
+       -empty This primary evaluates true if the current file is a readable
+	      empty directory or an empty plain file.
+
+	      This primary is not mentioned in the POSIX standard.
+
+       -exec utility_name [argument ...] \;
+
+       -exec utility_name [argument ...] {} +
+	      The end of the primary expression must be punctuated by a
+	      semicolon or by a plus sign. Only a plus sign that follows an
+	      argument containing the two characters "{}" punctuates the end
+	      of the primary expression. Other uses of the plus sign are not
+	      treated as special.
+
+	      If the primary expression is punctuated by a semicolon, the
+	      utility utility_name is be invoked once for each pathname and
+	      the primary evaluates as true if the utility returns a zero
+	      value as exit status. A utility_name or argument containing only
+	      the two characters "{}" is replaced by the current pathname.
+
+	      If the primary expression is punctuated by a plus sign, the
+	      primary always evaluates as true, and the pathnames for which
+	      the primary is evaluated is aggregated into sets.	 The utility
+	      utility_name is invoked once for each set of aggregated
+	      pathnames. Each invocation begins after the last pathname in the
+	      set is aggregated, and is completed before the sfind utility
+	      exits and before the first pathname in the next set (if any) is
+	      aggregated for this primary, but it is otherwise unspecified
+	      whether the invocation occurs before, during, or after the
+	      evaluations of other primaries. If any invocation returns a non-
+	      zero value as exit status, the sfind utility returns a non-zero
+	      exit status. An argument containing only the two characters "{}"
+	      is replaced by the set of aggregated pathnames, with each
+	      pathname passed as a separate argument to the invoked utility in
+	      the same order that it was aggregated. The size of any set of
+	      two or more pathnames is limited such that execution of the
+	      utility does not cause the system's ARG_MAX limit to be
+	      exceeded.	 The sfind utility reserves LINE_MAX in the execution
+	      environment for the called utility to allow this utility to
+	      modify its environment and call further programs recursively.
+	      This results in a maximum argument space of ARG_MAX-LINE_MAX
+	      that is used by sfind.  If more than one argument containing
+	      only the two characters "{}" is present, the behavior is
+	      unspecified.  The sfind implementation only expands the last
+	      "{}" argument that directly prepends the '+' argument.
+
+	      If a utility_name or argument string contains the two characters
+	      "{}" , but not just the two characters "{}" , it is
+	      implementation-defined whether find replaces those two
+	      characters or uses the string without change.  The sfind
+	      implementation only expands arguments that are exactly the two
+	      characters "{}".	The current directory for the invocation of
+	      utility_name is the same as the current directory when the sfind
+	      utility was started. If the utility_name names any of the
+	      special built-in utilities (see Special Built-In Utilities ),
+	      the results are undefined.
+
+       -execdir utility_name [argument ...] \;
+	      Similar to -exec but the utility is run inside the directory
+	      where the file is found and the file parameter is provided as a
+	      short file name.
+
+	      This primary is not mentioned in the POSIX standard.
+
+       -executable
+	      This primary evaluates as true if the file is executable by the
+	      real user id of the sfind process.  The test is done by calling
+	      access(2).
+
+	      This primary is not mentioned in the POSIX standard.
+
+       -false This primary always evaluates to false.
+
+	      This primary is not mentioned in the POSIX standard.
+
+       -fls file
+	      This primary is similar to -ls but it writes the output into
+	      file, similar to -fprint.
+
+	      This primary is not mentioned in the POSIX standard.
+
+       -follow
+	      The primary always evaluates as true; it causes sfind to follow
+	      all symbolic links.  While symbolic links that do not point to
+	      valid files, are evaluated as symbolic links when -H or -L is
+	      used, using -follow causes sfind to write a diagnostic message
+	      and to skip the symbolic link in this case.
+
+	      This primary is not mentioned in the POSIX standard.
+
+       -fprint file
+	      This primary is similar to -print but it writes the output into
+	      file.  If file does not exist, it is created, if it already
+	      exists, it is truncated.	The file is written to in append mode.
+	      it is always created, even if the primary was never called.
+
+	      This primary is not mentioned in the POSIX standard.
+
+       -fprint0 file
+	      This primary is similar to -print0 but it writes the output into
+	      file, similar to -fprint.
+
+	      This primary is not mentioned in the POSIX standard.
+
+       -fprintnnl file
+	      This primary is similar to -printnnl but it writes the output
+	      into file, similar to -fprint.
+
+	      This primary is not mentioned in the POSIX standard.
+
+       -fstype type
+	      The primary evaluates as true if the file belongs to a
+	      filesystem of type type.	This is currently done by comparing
+	      st_fstype with type.
+
+	      This primary is not mentioned in the POSIX standard.
+
+       -group gname
+       -group gid
+	      The primary evaluates as true if the file belongs to the group
+	      gname.  If gname is a decimal integer and the getgrnam() (or
+	      equivalent) function does not return a valid group name, gname
+	      is interpreted as a group ID.
+
+
+
+
+
+
+       -ilname glob
+	      Similar to -lname, but the match is case insensitive.
+
+	      This primary is not mentioned in the POSIX standard.
+
+
+
+
+
+
+       -ilpat pattern
+	      Similar to -lpat, but the match is case insensitive.
+
+	      This primary is not mentioned in the POSIX standard.
+
+
+
+
+
+
+       -iname glob
+	      Similar to -name, but the match is case insensitive.
+
+	      This primary is not mentioned in the POSIX standard.
+
+
+
+
+
+
+       -inum #
+	      The primary evaluates as true if the file's inode number
+	      (st_ino) matches #.
+
+	      This primary is not mentioned in the POSIX standard.
+
+       -ipat pattern
+	      Similar to -pat, but the match is case insensitive.
+
+	      This primary is not mentioned in the POSIX standard.
+
+       -ipath glob
+	      Similar to -path, but the match is case insensitive.
+
+	      This primary is not mentioned in the POSIX standard.
+
+       -ippat pattern
+	      Similar to -ppat, but the match is case insensitive.
+
+	      This primary is not mentioned in the POSIX standard.
+
+       -linkedto path
+	      The primary evaluates as true if the file is liked to path (i.e.
+	      evaluates to the same physical file).  This primary is similar
+	      to the -inum primary, but it evaluates st_dev and st_ino and
+	      thus correctly detects hard linked files even when multiple file
+	      systems are searched.
+
+	      This primary is not mentioned in the POSIX standard.
+
+       -links #
+	      The primary evaluates as true if the file has # links.
+
+       -lname glob
+	      The primary evaluates as true if the symbolic link target name
+	      of the filename being examined matches glob using the pattern
+	      matching notation described in Pattern Matching Notation (see
+	      fnmatch(2) for more information).
+
+	      This primary is not mentioned in the POSIX standard.
+
+       -local The primary evaluates as true if st_fstype does not match remote
+	      fs types.
+
+	      This primary is not mentioned in the POSIX standard.
+
+       -lpat pattern
+	      The primary evaluates as true if the symbolic link target name
+	      of the filename being examined matches pattern using the pattern
+	      matching notation described in patcompile(3), patmatch(3) and
+	      match(1).
+
+	      This primary is not mentioned in the POSIX standard.
+
+       -ls    This primary always evaluates to true.  It causes sfind to list
+	      information for the current file to standard output: its inode
+	      number, size in 1024-byte blocks, file permissions, number of
+	      hard links, owner, group, size in bytes, last modification time,
+	      and pathname. If the file is a block or character special file,
+	      the major and minor numbers will be displayed instead of the
+	      size in bytes. If the file is a symbolic link, the pathname of
+	      the linked-to file will be displayed preceded by ``->''. The
+	      format is identical to that produced by 'ls -ilds'.
+
+	      This primary is not mentioned in the POSIX standard.
+
+       -maxdepth #
+	      The primary always evaluates as true; descend at most #
+	      directory levels below the command line arguments.  If any
+	      -maxdepth primary is specified, it applies to the entire
+	      expression even if it would not normally be evaluated.
+	      -maxdepth 0 limits the whole search to the command line
+	      arguments.
+
+	      This primary is not mentioned in the POSIX standard.
+
+       -mindepth #
+	      The primary always evaluates as true; do not apply any tests or
+	      actions at levels less than #.  If any -mindepth primary is
+	      specified, it applies to the entire expression even if it would
+	      not normally be evaluated.  -mindepth 1 processes all but the
+	      command line arguments.
+
+	      This primary is not mentioned in the POSIX standard.
+
+       -mount The primary always evaluates as true; it causes sfind not to
+	      report files and not to descent into directories that have a
+	      different device ID (st_dev, see the stat() function defined in
+	      the System Interfaces volume of IEEE Std 1003.1-2001). If any
+	      -mount primary is specified, it applies to the entire expression
+	      even if the -mount primary would not normally be evaluated.
+
+	      The -mount primary exists for backwards compatibility with old
+	      UNIX find(1) versions and has been added to POSIX with issue 8.
+
+	      If both -mount and -mount+ or -xdev have been specified, -mount
+	      wins.
+
+       -mount+
+	      The primary always evaluates as true; it causes sfind to report
+	      directories but not to continue descending past directories that
+	      have a different device ID (st_dev, see the stat() function
+	      defined in the System Interfaces volume of IEEE Std
+	      1003.1-2001). If any -mount+ primary is specified, it applies to
+	      the entire expression even if the -mount+ primary would not
+	      normally be evaluated.
+
+	      This primary is not mentioned in the POSIX standard, but the
+	      POSIX -xdev primary is an alias to -mount+.
+
+       -mmin n
+	      The parameter n must be a simple number that is evaluated as
+	      minutes for the file modification time relatively to the start
+	      time of sfind.
+
+	      This primary is deprecated and only exists for command line
+	      compatibility with other find implementations. Please use the
+	      more flexible -mtime instead.
+
+	      This primary is not mentioned in the POSIX standard.
+
+       -mtime n
+	      If n is a simple number, the primary evaluates as true if the
+	      file modification time subtracted from the initialization time,
+	      divided by 86400 (with any remainder discarded), is n.
+
+	      If n is a number like 3h10m then it is representing an absolute
+	      number in seconds that is evaluated against the start time of
+	      sfind.  The letters that are recognised in the time spec are
+	      taken from smhdwy with the following meaning for time units:
+
+	      s	     seconds
+
+	      m	     minutes (60 seconds)
+
+	      h	     hours (60 minutes)
+
+	      d	     days (24 hours)
+
+	      w	     weeks (7 days)
+
+	      y	     years (365 days - a non-leap year)
+
+       -name glob
+	      The primary evaluates as true if the basename of the filename
+	      being examined matches glob using the pattern matching notation
+	      described in Pattern Matching Notation (see fnmatch(2) for more
+	      information).
+
+       -newer file
+	      The primary evaluates as true if the modification time of the
+	      current file is more recent than the modification time of the
+	      file named by the pathname file.
+
+       -newerXY file
+	      The primary evaluates as true if the time referred to by X of
+	      the current file is more recent than the time referred to by Y
+	      of the file named by the pathname file.  The time type
+	      indicators X and Y may be one of:
+
+	      a	     The last access time (st_atime)
+
+	      c	     the last inode change time (st_ctime)
+
+	      m	     the modification time (st_mtime)
+
+	      Y may also be:
+
+	      t	     a time description that is used instead of the file
+		     argument
+
+	      The time argument to -newer[acm]t is expected to be similar to
+	      ISO 8601 in the form
+
+		  yyyy-mm-ddThh:mm:ss.nnnnnnnnn+zzzz
+
+	      for a time with timezone or
+
+		  yyyy-mm-ddThh:mm:ss.nnnnnnnnnZ
+
+	      for GMT based time or
+
+		  yyyy-mm-ddThh:mm:ss.nnnnnnnnn
+
+	      for local time.
+
+	      If the time specification is shortened from the right, the
+	      latest possible time is assumed for the missing values.  If the
+	      time specification is shortened from the left, the missing
+	      values are replaced by the current time. The maximal shortened
+	      time specification results in a T that refers to the end of the
+	      current day.
+
+	      The string now refers to the current time.
+
+	      The primary -newermm is equivalent to -newer.  The expression
+	      -neweram path evaluates as true if the last read access time of
+	      the current file is more recent than the time of the last
+	      modification of path.
+
+	      This primary is not mentioned in the POSIX standard.
+
+       -nogroup
+	      The primary evaluates as true if the file belongs to a group ID
+	      for which the getgrgid() function defined in the System
+	      Interfaces volume of IEEE Std 1003.1-2001 (or equivalent)
+	      returns NULL.
+
+       -nouser
+	      The primary evaluates as true if the file belongs to a user ID
+	      for which the getpwuid() function defined in the System
+	      Interfaces volume of IEEE Std 1003.1-2001 (or equivalent)
+	      returns NULL.
+
+       -ok utility_name [argument ...] \;
+	      The -ok primary is equivalent to -exec, except that the use of a
+	      plus sign to punctuate the end of the primary expression need
+	      not be supported (in fact, sfind does not support it), and sfind
+	      will request affirmation of the invocation of utility_name using
+	      the current file as an argument by writing to standard error as
+	      described in the STDERR section. If the response on standard
+	      input is affirmative, the utility is invoked.  Otherwise, the
+	      command is not invoked and the value of the -ok operand is
+	      false.
+
+       -okdir utility_name [argument ...] \;
+	      Similar to -ok but the utility is run inside the directory where
+	      the file is found and the file parameter is provided as a short
+	      file name.
+
+	      This primary is not mentioned in the POSIX standard.
+
+       -pat pattern
+	      The primary evaluates as true if the basename of the filename
+	      being examined matches pattern using the pattern matching
+	      notation described in patcompile(3), patmatch(3) and match(1).
+
+	      This primary is not mentioned in the POSIX standard.
+
+       -path glob
+	      The primary evaluates as true if the full path name of the
+	      filename being examined matches glob using the pattern matching
+	      notation described in Pattern Matching Notation (see fnmatch(2)
+	      for more information).
+
+	      This primary is not mentioned in the POSIX standard.
+
+       -perm [-]mode
+	      The mode argument is used to represent file mode bits. It is
+	      identical in format to the symbolic_mode operand described in
+	      chmod(), and is interpreted as follows.  To start, a template is
+	      assumed with all file mode bits cleared. An op symbol of '+'
+	      sets the appropriate mode bits in the template; '-' clears the
+	      appropriate bits; '=' sets the appropriate mode bits, without
+	      regard to the contents of process' file mode creation mask. The
+	      op symbol of '-' cannot be the first character of mode; this
+	      avoids ambiguity with the optional leading hyphen. Since the
+	      initial mode is all bits off, there are not any symbolic modes
+	      that need to use '-' as the first character.
+
+	      If the hyphen is omitted, the primary evaluates as true when the
+	      file permission bits exactly match the value of the resulting
+	      template.
+
+	      Otherwise, if mode is prefixed by a hyphen, the primary
+	      evaluates as true if at least all the bits in the resulting
+	      template are set in the file permission bits.
+
+       -perm +mode
+	      This usage of the primary -perm evaluates as true if any of the
+	      permission bits mode are set for the file.  The specific
+	      interpretation when testing whether any of the mode bits are set
+	      for the file applies only to those symbolic mode strings that
+	      cannot have a leading '+' in a POSIX compliant way. This is the
+	      case when the '+' is directly preceding the character: 'a'.
+	      Because of this limitation, the otherwise correct symbolic mode
+	      +x could be written as a+x and then preceded by '+' resulting in
+	      +a+x.  This is required because the mode string ++x is still
+	      POSIXly correct syntax and there is no way to detect that the
+	      first '+' is indicating a usage specific to the sfind -perm
+	      primary.	The strings '+u', '+g', '+o' indicate a so called
+	      permcopy operation and as a result, most legal symbolic mode
+	      strings do not become illegal by prefixing them with a '+'.
+
+	      Since the start value used by the permission parser for the
+	      find(1) -perm primary is always zero, any POSIXly valid symbolic
+	      mode string may be prefixed by 'a+,' without changing the
+	      resulting value, prefixing any mode string with '+a+,' makes it
+	      a recognized value for this usage of the -perm primary.
+
+	      Note that libfind versions before 1.7 permitted the mode string
+	      to start with 'u', 'g', 'o' for the -perm +mode feature and thus
+	      might have been in conflict with POSIX.
+
+	      This usage of the primary -perm is not mentioned in the POSIX
+	      standard.
+
+       -perm /mode
+	      This is an alias for -perm +mode but since '/' is not part of
+	      the POSIX standard for the symbolic mode, there is no need to
+	      prefix the symbolic mode with 'a+,' to make it work in case the
+	      symbolic notation does not start with 'a'.
+
+	      This usage of the primary -perm is not mentioned in the POSIX
+	      standard.
+
+       -perm [-]onum
+	      If the hyphen is omitted, the primary evaluates as true when the
+	      file permission bits exactly match the value of the octal number
+	      onum and only the bits corresponding to the octal mask 07777 is
+	      compared. (See the description of the octal mode in chmod() .)
+	      Otherwise, if onum is prefixed by a hyphen, the primary
+	      evaluates as true if at least all of the bits specified in onum
+	      that are also set in the octal mask 07777 are set.
+
+       -perm +onum
+	      This usage of the primary -perm evaluates as true if any of the
+	      mode bits in the octal notation onum are set for the file.
+
+	      This usage of the primary -perm is not mentioned in the POSIX
+	      standard.
+
+       -perm /onum
+	      This is an alias for -perm +onum and supported for compatibility
+	      reasons.
+
+	      This usage of the primary -perm is not mentioned in the POSIX
+	      standard.
+
+       -ppat pattern
+	      The primary evaluates as true if the full path name of the
+	      filename being examined matches pattern using the pattern
+	      matching notation described in patcompile(3), patmatch(3) and
+	      match(1).
+
+	      This primary is not mentioned in the POSIX standard.
+
+       -print The primary always evaluates as true; it causes the current
+	      pathname (new line separated) to be written to standard output.
+
+       -print0
+	      The primary always evaluates as true; it causes the current
+	      pathname (nul separated) to be written to standard output.
+
+	      This primary is not mentioned in the POSIX standard.
+
+       -printnnl
+	      The primary always evaluates as true; it causes the current
+	      pathname (space separated) to be written to standard output.
+
+	      This primary is not mentioned in the POSIX standard.
+
+       -prune The primary always evaluates as true; it causes sfind not to
+	      descend the current pathname if it is a directory. If the -depth
+	      primary is specified, the -prune primary has no effect.
+
+       -readable
+	      This primary evaluates as true if the file is readable by the
+	      real user id of the sfind process.  The test is done by calling
+	      access(2).
+
+	      This primary is not mentioned in the POSIX standard.
+
+       -sparse
+	      The primary evaluates as true if the file appears to be sparse,
+	      this is when st_size > (st_blocks * DEV_BSIZE + DEV_BSIZE).
+
+	      This primary is not mentioned in the POSIX standard.
+
+       -size n[c]
+	      The primary evaluates as true if the file size in bytes, divided
+	      by 512 and rounded up to the next integer, is n.	If n is
+	      followed by the character 'c', the size counts in bytes.	If n
+	      is a size expression in the form used by sdd(1) (e.g.  -size 10m
+	      or -size 7x8k) the the size also counts in bytes.
+
+       -true  This primary always evaluates to true.
+
+	      This primary is not mentioned in the POSIX standard.
+
+       -time #
+	      An alias for -mtime, try to avoid. This exists only for
+	      backwards compatibility with old sfind versions.
+
+	      This primary is not mentioned in the POSIX standard.
+
+       -type c
+	      The primary evaluates as true if the type of the file is c,
+	      where c is 'b', 'c', 'd', 'l', 'p', 'f', or 's' for block
+	      special file, character special file, directory, symbolic link,
+	      FIFO, regular file, or socket, respectively.  The sfind
+	      implementation in addition supports 'D', 'e' and 'P' for the
+	      file types door, eventcount and event port.
+
+       -user uname
+       -user uid
+	      The primary evaluates as true if the file belongs to the user
+	      uname.  If uname is a decimal integer and the getpwnam() (or
+	      equivalent) function does not return a valid user name, uname is
+	      interpreted as a user ID.
+
+       -writable
+	      This primary evaluates as true if the file is writable by the
+	      real user id of the sfind process.  The test is done by calling
+	      access(2).
+
+	      This primary is not mentioned in the POSIX standard.
+
+       -xattr The primary evaluates as true if the file extended attributes.
+	      On platforms that do not support extended attributes or where
+	      sfind does not yet support extended attributes, the primary
+	      always evaluates as false.  Currently only Solaris is supported.
+
+	      This primary is not mentioned in the POSIX standard.
+
+       -xdev  The primary always evaluates as true; with older releases of
+	      libfind it was an alias to -mount for compatibility to AT&T UNIX
+	      implementations but it has become an alias to -mount+ after a
+	      POSIX standard bug fix in September 2018.
+
+	      Note that the POSIX standard was aligned with the BSD/SunOS
+	      behavior from 1985 and differs from the AT&T UNIX behavior from
+	      1988 for -xdev that was aligned with the behavior of nftw(3)
+	      with FTW_MOUNT that does not incude mount points in the output.
+
+	      Since the original implementation for -xdev from BSD/SunOS from
+	      1985 and the POSIX standard from 1992 require to report the
+	      directory type mount points, this has been finally set up for
+	      -xdev and libfind now follows the POSIX/BSD/SunOS wording.
+
+
+       The primaries can be combined using the following operators (in order
+       of decreasing precedence):
+
+       ( expression )
+	      True if expression is true.
+
+       ! expression
+	      Negation of a primary; the unary NOT operator.
+
+       expression [-a] expression
+	      Conjunction of primaries; the AND operator is implied by the
+	      juxtaposition of two primaries or made explicit by the optional
+	      -a operator. The second expression is not evaluated if the first
+	      expression is false.
+
+       expression -o expression
+	      Alternation of primaries; the OR operator. The second expression
+	      is not evaluated if the first expression is true.
+
+       If no expression is present at all, -print is used as the default
+       expression. Otherwise, if the given expression does not contain any of
+       the primaries -exec, -ok, or -print, the given expression is
+       effectively replaced by:
+
+       ( given_expression ) -print
+
+       The -user, -group, and -newer primaries each evaluate their respective
+       arguments only once.
+
+
+EXAMPLES
+       1. The following commands are equivalent:
+
+       sfind
+       sfind .
+       sfind . -print
+
+       They all write out the entire directory hierarchy from the current
+       directory.
+
+       2. The following command:
+
+       sfind / \( -name tmp -o -name '*.xx' \) \
+	    -atime +7 -exec rm {} \;
+
+       removes all files named tmp or ending in .xx that have not been
+       accessed for seven or more 24-hour periods.
+
+       3. The following command:
+
+       sfind . -perm -o+w,+s
+
+       prints (-print is assumed) the names of all files in or below the
+       current directory, with all of the file permission bits S_ISUID,
+       S_ISGID, and S_IWOTH set.
+
+       4. The following command:
+
+       sfind . -name SCCS -prune -o -print
+
+       recursively prints pathnames of all files in the current directory and
+       below, but skips directories named SCCS and files in them.
+
+       5. The following command:
+
+       sfind . -print -name SCCS -prune
+
+       behaves as in the previous example, but prints the names of the SCCS
+       directories.
+
+       6. The following command is roughly equivalent to the -nt extension to
+       test(1):
+
+       if [ -n `sfind file1 -prune -newer file2` ]; then
+	   printf %s\\n "file1 is newer than file2"
+       fi
+
+       7. The descriptions of -atime, -ctime, and -mtime use the terminology n
+       "86400 second periods (days)". For example, a file accessed at 23:59 is
+       selected by:
+
+       sfind . -atime -1 -print
+
+       at 00:01 the next day (less than 24 hours later, not more than one day
+       ago); the midnight boundary between days has no effect on the 24-hour
+       calculation.
+
+EXAMPLES USING POSIX EXTENSIONS
+       The following command:
+
+       sfind / -mtime -1h15m -ls
+
+       lists all files that have been modified within less than 75 minutes
+       from the start time of the sfind program.
+
+RATIONALE
+       The -a operator was retained as an optional operator for compatibility
+       with historical shell scripts, even though it is redundant with
+       expression concatenation.
+
+       The descriptions of the '-' modifier on the mode and onum arguments to
+       the -perm primary agree with historical practice on BSD and System V
+       implementations. System V and BSD documentation both describe it in
+       terms of checking additional bits; in fact, it uses the same bits, but
+       checks for having at least all of the matching bits set instead of
+       having exactly the matching bits set.
+
+       The exact format of the interactive prompts is unspecified. Only the
+       general nature of the contents of prompts are specified because:
+
+       o      Implementations may desire more descriptive prompts than those
+	      used on historical implementations.
+
+       o      Since the historical prompt strings do not terminate with
+	      <newline>s, there is no portable way for another program to
+	      interact with the prompts of this utility via pipes.
+
+       Therefore, an application using this prompting option relies on the
+       system to provide the most suitable dialog directly with the user,
+       based on the general guidelines specified.
+
+       The -name file operand was changed to use the shell pattern matching
+       notation so that find is consistent with other utilities using pattern
+       matching.
+
+       The -size operand refers to the size of a file, rather than the number
+       of blocks it may occupy in the file system. The intent is that the
+       st_size field defined in the System Interfaces volume of IEEE Std
+       1003.1-2001 should be used, not the st_blocks found in historical
+       implementations. There are at least two reasons for this:
+
+       1.     In both System V and BSD, find only uses st_size in size
+	      calculations for the operands specified by this volume of IEEE
+	      Std 1003.1-2001. (BSD uses st_blocks only when processing the
+	      -ls primary.)
+
+       2.     Users usually think of file size in terms of bytes, which is
+	      also the unit used by the ls utility for the output from the -l
+	      option. (In both System V and BSD, ls uses st_size for the -l
+	      option size field and uses st_blocks for the ls -s calculations.
+	      This volume of IEEE Std 1003.1-2001 does not specify ls -s.)
+
+       The descriptions of -atime, -ctime, and -mtime were changed from the
+       SVID description of n "days'' to n being the result of the integer
+       division of the time difference in seconds by 86400. The description is
+       also different in terms of the exact timeframe for the n case (versus
+       the +n or -n), but it matches all known historical implementations. It
+       refers to one 86400 second period in the past, not any time from the
+       beginning of that period to the current time. For example, -atime 2 is
+       true if the file was accessed any time in the period from 72 hours to
+       48 hours ago.
+
+       Historical implementations do not modify "{}" when it appears as a
+       substring of an -exec or -ok utility_name or argument string.  There
+       have been numerous user requests for this extension, so this volume of
+       IEEE Std 1003.1-2001 allows the desired behavior. At least one recent
+       implementation does support this feature, but encountered several
+       problems in managing memory allocation and dealing with multiple
+       occurrences of "{}" in a string while it was being developed, so it is
+       not yet required behavior.
+
+       The sfind implementation does not modify "{}" when it appears as a
+       substring as there is no problem to handle related issues by writing
+       shell scripts or macros.
+
+       Assuming the presence of -print was added to correct a historical
+       pitfall that plagues novice users, it is entirely upwards-compatible
+       from the historical System V find utility. In its simplest form (find
+       directory), it could be confused with the historical BSD fast find.
+       The BSD developers agreed that adding -print as a default expression
+       was the correct decision and have added the fast find functionality
+       within a new utility called locate.
+
+       The sfind implementation in addition allows to be run without
+       parameters. This results in the same output as if sfind . -print has
+       been called.  Do not use this extension in shell scripts for
+       portability reasons.
+
+       Historically, the -L option was implemented using the primary -follow.
+       The -H and -L options were added for two reasons. First, they offer a
+       finer granularity of control and consistency with other programs that
+       walk file hierarchies. Second, the -follow primary always evaluated to
+       true. As they were historically really global variables that took
+       effect before the traversal began, some valid expressions had
+       unexpected results. An example is the expression -print -o -follow.
+       Because -print always evaluates to true, the standard order of
+       evaluation implies that -follow would never be evaluated. This was
+       never the case. Historical practice for the -follow primary, however,
+       is not consistent. Some implementations always follow symbolic links on
+       the command line whether -follow is specified or not. Others follow
+       symbolic links on the command line only if -follow is specified. Both
+       behaviors are provided by the -H and -L options, but scripts using the
+       current -follow primary would be broken if the -follow option is
+       specified to work either way.
+
+       The sfind implementation always evaluates -follow.  The difference
+       between -follow and -L is that sfind writes a diagnostic message when a
+       symbolic link does not point to a valid file if called with -follow
+       while the symbolic link itself will be used with -L.
+
+       Since the -L option resolves all symbolic links and the -type l primary
+       is true for symbolic links that still exist after symbolic links have
+       been resolved, the command:
+
+       sfind -L . -type l
+
+       prints a list of symbolic links reachable from the current directory
+       that do not resolve to accessible files.
+
+       A feature of SVR4's find utility was the -exec primary's + terminator.
+       This allowed filenames containing special characters (especially
+       <newline>s) to be grouped together without the problems that occur if
+       such filenames are piped to xargs. Other implementations have added
+       other ways to get around this problem, notably a -print0 primary that
+       wrote filenames with a null byte terminator. This was considered here,
+       but not adopted. Using a null terminator meant that any utility that
+       was going to process find's -print0 output had to add a new option to
+       parse the null terminators it would now be reading.
+
+       The "-exec ... {} +" syntax adopted was a result of IEEE PASC
+       Interpretation 1003.2 #210. It should be noted that this is an
+       incompatible change to the ISO/IEC 9899:1999 standard. For example, the
+       following command prints all files with a '-' after their name if they
+       are regular files, and a '+' otherwise:
+
+       sfind / -type f -exec echo {} - ';' -o -exec echo {} + ';'
+
+       The change invalidates usage like this. Even though the previous
+       standard stated that this usage would work, in practice many did not
+       support it and the standard developers felt it better to now state that
+       this was not allowable.
+
+
+ENVIRONMENT
+       The following environment variables affect the execution of sfind:
+
+       LANG   Provide a default value for the internationalization variables
+	      that are unset or null. (See the Base Definitions volume of IEEE
+	      Std 1003.1-2001, Section 8.2, Internationalization Variables for
+	      the precedence of internationalization variables used to
+	      determine the values of locale categories.)
+
+       LC_ALL If set to a non-empty string value, override the values of all
+	      the other internationalization variables.
+
+       LC_COLLATE
+	      Determine the locale for the behavior of ranges, equivalence
+	      classes, and multi-character collating elements used in the
+	      pattern matching notation for the -n option and in the extended
+	      regular expression defined for the yesexpr locale keyword in the
+	      LC_MESSAGES category.
+
+       LC_CTYPE
+	      This variable determines the locale for the interpretation of
+	      sequences of bytes of text data as characters (for example,
+	      single-byte as opposed to multi-byte characters in arguments),
+	      the behavior of character classes within the pattern matching
+	      notation used for the -n option, and the behavior of character
+	      classes within regular expressions used in the extended regular
+	      expression defined for the yesexpr locale keyword in the
+	      LC_MESSAGES category.
+
+       LC_MESSAGES
+	      Determine the locale for the processing of affirmative responses
+	      that should be used to affect the format and contents of
+	      diagnostic messages written to standard error.
+
+       NLSPATH
+	      [XSI] Determine the location of message catalogs for the
+	      processing of LC_MESSAGES.
+
+       PATH   Determine the location of the utility_name for the -exec and -ok
+	      primaries, as described in the Base Definitions volume of IEEE
+	      Std 1003.1-2001, Chapter 8, Environment Variables.
+
+EXIT STATUS
+       The following exit values are returned:
+
+       0      All path operands were traversed successfully.
+
+       >0     An error occurred.
+
+
+STDIN
+       If the -ok primary is used, the response is read from the standard
+       input. An entire line is read as the response.  Otherwise, the standard
+       input is not used.
+
+INPUT FILES
+       None.
+
+STDOUT
+       The -print primary causes the current pathnames to be written to
+       standard output. The format is:
+
+	    "%s\n", <path>
+
+STDERR
+       The -ok primary writes a prompt to standard error containing the
+       utility_name to be invoked and the current pathname.  In the POSIX
+       locale, the last non- <blank> in the prompt is '?'.  The exact format
+       used is unspecified.
+
+       Otherwise, the standard error is used only for diagnostic messages.
+
+OUTPUT FILES
+       None.
+
+SEE ALSO
+       chmod(1), cpio(1), ls(1), match(1), sh(1), star(1), test(1), acl(2),
+       stat(2), umask(2), fnmatch(3), patcompile(3), patmatch(3).
+
+
+DIAGNOSTICS
+NOTES
+       When used in operands, pattern matching notation, semicolons, opening
+       parentheses, and closing parentheses are special to the shell and must
+       be quoted (see Quoting).
+
+       The bit that is traditionally used for sticky (historically 01000) is
+       specified in the -perm primary using the octal number argument form.
+       Since this bit is not defined by IEEE Std 1003.1-2001, applications
+       must not assume that it actually refers to the traditional sticky bit.
+
+       At least one find implementation tries to speed up operation by
+       avoiding to call stat(2) from making the assumption that a directory
+       with a link count of st_nlink has st_nlink - 2 subdirectories.  The
+       IEEE Std 1003.1-2001 defines st_nlink to be undefined with directories.
+       The rule above definitely does not apply for many file systems and even
+       with traditional UNIX file systems, the assumption is not always true
+       if there are hard links to directories.	For this reason, the command:
+
+       find . -print
+
+       is fast but gives completely unpredictable results if a find
+       implementation depends on this assumption.  The sfind implementation
+       has been made by preferring correct behavior before introducing dubious
+       speed optimizations.
+
+
+       The Institute of Electrical and Electronics Engineers and The Open
+       Group, have given us permission to reprint portions of their
+       documentation. In the following statement, the phrase ``this text''
+       refers to portions of the system documentation.
+
+       Portions of this text are reprinted and reproduced in electronic form
+       in the sfind manual, from IEEE Std 1003.1, 2004 Edition, Standard for
+       Information Technology -- Portable Operating System Interface (POSIX),
+       The Open Group Base Specifications Issue 6, Copyright (C) 2001-2004 by
+       the Institute of Electrical and Electronics Engineers, Inc and The Open
+       Group. In the event of any discrepancy between these versions and the
+       original IEEE and The Open Group Standard, the original IEEE and The
+       Open Group Standard is the referee document. The original Standard can
+       be obtained online at http://www.opengroup.org/unix/online.html.
+
+BUGS
+       None known.
+
+
+AUTHOR
+       sfind(1) and libfind have been initially written by Joerg Schilling in
+       2004 and are still maintained by Joerg Schilling.
+
+       Joerg Schilling
+       D-13353 Berlin
+       Germany
+
+       Mail bugs and suggestions to:
+
+       joerg@schily.net
+
+Joerg Schilling			  2020/09/04			     SFIND(1L)

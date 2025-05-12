@@ -1,0 +1,32 @@
+MOUNTCD(1)		    Schily's USER COMMANDS		    MOUNTCD(1)
+
+NAME
+       mountcd - shows where two files differ
+
+SYNOPSIS
+       mountcd [ options ] device path ...
+
+DESCRIPTION
+       mountcd mounts a ISO-9660 CD or DVD from a list of device paths.	 The
+       medium is mounted to the directory /.cdrom that is created if it does
+       not yet exist.
+
+       If no path list is specified, the directory /dev/dsk/ is scanned for
+       possible target paths.
+
+OPTIONS
+       -debug print debug information while selecting the right device path.
+
+       -help  Prints a short summary of the mountcd options and exists.
+
+       -version
+	      Prints the mountcd version number string and exists.
+
+       V=volume-ID
+	      The ISO-9660 volume ID to look for. If no V= option has been
+	      specified, the first device path is mounted.
+
+NOTES
+       Only works on Solaris.
+
+Joerg Schilling			   10/05/11			    MOUNTCD(1)

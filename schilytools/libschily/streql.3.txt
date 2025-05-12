@@ -1,0 +1,21 @@
+STREQL(3)		  Schily's LIBRARY FUNCTIONS		     STREQL(3)
+
+NAME
+       streql() - compares two strings for equality
+
+SYNOPSIS
+       BOOL streql(s1,s2)
+       char *s1, *s2;
+
+DESCRIPTION
+       streql() checks two strings for equality.
+
+RETURNS
+       Returns TRUE if the string s1 is the same length and has the same
+       characters as s2. Otherwise, returns FALSE.
+
+NOTES
+       When comparing two strings, the strings are not considered equal if one
+       has padding (extra spaces).
+
+Joerg Schilling			 15. Juli 1988			     STREQL(3)

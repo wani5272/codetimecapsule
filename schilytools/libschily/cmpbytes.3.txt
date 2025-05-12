@@ -1,0 +1,31 @@
+CMPBYTES(3)		  Schily's LIBRARY FUNCTIONS		   CMPBYTES(3)
+
+NAME
+       cmpbytes() - compare data
+
+SYNOPSIS
+       ssize_t cmpbytes(from, to, cnt)
+	    const void *from;
+	    const void *to;
+	    ssize_t cnt;
+
+DESCRIPTION
+       cmpbytes() compares size bytes from from to to.
+
+RETURN VALUE
+       cnt	   Both memory chunks are equal
+
+       0..cnt-1	   The offset of the first differing character in the chunks.
+
+ERRORS
+       No errors are defined
+
+EXAMPLES
+SEE ALSO
+       cmpmbytes(3), cmpnullbytes(3), fillbytes(3), findbytes(3),
+       movebytes(3), movecbytes(3), swapbytes(3), zerobytes(3)
+
+NOTES
+       This routine correctly handles overlapping buffers.
+
+Joerg Schilling			  2020/02/09			   CMPBYTES(3)

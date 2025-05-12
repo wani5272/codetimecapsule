@@ -1,0 +1,121 @@
+cstyle(1)		    General Commands Manual		     cstyle(1)
+
+NAME
+       cstyle - check for some common stylistic errors in C source files
+
+SYNOPSIS
+       cstyle [-chpvCPbKB] [-o constructs] [-l #] [file...]
+
+DESCRIPTION
+       cstyle inspects C source files (*.c and *.h) for common stylistic
+       errors.	It attempts to check for the cstyle documented in
+       /shared/ON/general_docs/cstyle.ms.pdf.  Note that there is much in that
+       document that cannot be checked for; just because your code is
+       cstyle(1) clean does not mean that you've followed Sun's C style.
+       Caveat emptor.
+
+OPTIONS
+       The following options are supported:
+
+       -b  Do not check for white space after the cpp directive '#'.  This
+	   allows to have indented cpp directives that give better readability
+	   in special for portable software.
+
+       -B  Allow boxed comments. This are comments that start with /*-------.
+
+       -c  Check continuation line indentation inside of functions.  Sun's C
+	   style states that all statements must be indented to an appropriate
+	   tab stop, and any continuation lines after them must be indented
+	   exactly four spaces from the start line.  This option enables a
+	   series of checks designed to find contination line problems within
+	   functions only.  The checks have some limitations;  see
+	   CONTINUATION CHECKING, below.
+
+       -h  Performs heuristic checks that are sometimes wrong.	Not generally
+	   used.
+
+       -K  Do not check for white space at /* */ comment bounds.  This allows
+	   to tolerate code that was commented out by editor macros.
+
+       -l #
+	   Set the maximum line length to #. The default line length is 80
+	   characters.	It is recommended not to use a maximum line length
+	   above 132 characters.
+
+       -p  Performs some of the more picky checks.  Includes ANSI #else and
+	   #endif rules, and tries to detect spaces after casts.  Used as part
+	   of the putback checks.
+
+       -v  Verbose output;  includes the text of the line of error, and, for
+	   -c, the first statement in the current continuation block.
+
+       -C  Ignore errors in header comments (i.e. block comments starting in
+	   the first column).  Not generally used.
+
+       -P  Check for use of non-POSIX types.  Historically, types like "u_int"
+	   and "u_long" were used, but they are now deprecated in favor of the
+	   POSIX types uint_t, ulong_t, etc.  This detects any use of the
+	   deprecated types.  Used as part of the putback checks.
+
+       -o constructs
+	   Allow a comma-seperated list of additional constructs.  Available
+	   constructs include:
+
+       doxygen	 Allow doxygen-style block comments (/** and /*!)
+
+       splint	 Allow splint-style lint comments (/*@...@*/)
+
+NOTES
+       The cstyle rule for the OS/Net consolidation is that all new files must
+       be -pP clean.  For existing files, the following invocations are run
+       against both the old and new files:
+
+       cstyle file
+
+       cstyle -p file
+
+       cstyle -pP file
+
+       If the old file gave no errors for one of the invocations, the new file
+       must also give no errors.  This way, files can only become more clean.
+
+CONTINUATION CHECKING
+       The continuation checker is a resonably simple state machine that knows
+       something about how C is layed out, and can match parenthesis, etc.
+       over multiple lines.  It does have some limitations:
+
+       1.  Preprocessor macros which cause unmatched parenthesis will confuse
+	   the checker for that line.  To fix this, you'll need to make sure
+	   that each branch of the #if statement has balanced parenthesis.
+
+       2.  Some cpp macros do not require ;s after them.  Any such macros
+	   *must* be ALL_CAPS; any lower case letters will cause bad output.
+
+       The bad output will generally be corrected after the next ;, {, or }.
+
+       Some continuation error messages deserve some additional explanation
+
+       multiple statements continued over multiple lines
+	   A multi-line statement which is not broken at statement boundries.
+	   For example:
+
+	   if (this_is_a_long_variable == another_variable) a =
+	       b + c;
+
+	   Will trigger this error.  Instead, do:
+
+	   if (this_is_a_long_variable == another_variable)
+		   a = b + c;
+
+       empty if/for/while body not on its own line
+	   For visibility, empty bodies for if, for, and while statements
+	   should be on their own line.	 For example:
+
+	   while (do_something(&x) == 0);
+
+	   Will trigger this error.  Instead, do:
+
+	   while (do_something(&x) == 0)
+		   ;
+
+				  2017/02/08			     cstyle(1)

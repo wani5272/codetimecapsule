@@ -1,0 +1,40 @@
+FINDLINE(3)		  Schily's LIBRARY FUNCTIONS		   FINDLINE(3)
+
+NAME
+       findline() - finds a line that has a matching field
+
+SYNOPSIS
+       int findline(fname,delim,string,field,array,arraysize)
+	    char *fname;   /* file name */
+	    char delim;	   /* field delimiter */
+	    char *string;  /* string to match */
+	    int field;	   /* field number to match, 0-n */
+	    char *array[]; /* array to fill pointers in */
+	    int arraysize; /* number of entries in the arrays */
+
+DESCRIPTION
+       findline() retrieves specific fields from the first line of the file
+       fname.
+
+       findline() fills in array with pointers to strings that make up the
+       fields on the line. The strings are allocated new storage.  The field
+       delimiter, delim, is used to break up each line of the file into
+       fields. string is the string to match. fieldno is the field number to
+       match. Fields are numbered 0..n. array is an array of pointers to fill
+       in. arraysize is the number of elements in the array.
+
+RETURNS
+       +1     match.
+
+       -1     no match.
+
+       -2     arg error.
+
+       -3     cannot open file.
+
+       -4     not enough memory to allocate space for fields.
+
+NOTES
+       Each line of the file must be less than 512 characters long.
+
+Joerg Schilling			 15. Juli 1988			   FINDLINE(3)

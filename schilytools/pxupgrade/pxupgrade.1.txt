@@ -1,0 +1,143 @@
+PXUPGRADE(1)		    Schily's USER COMMANDS		  PXUPGRADE(1)
+
+NAME
+       pxupgrade - upgrade firmware in Plextor CD/DVD writers
+
+SYNOPSIS
+       pxupgrade [ options ] [ dev=device ] firmware_file
+
+DESCRIPTION
+       Pxupgrade is used to update the firmware in Plextor CD and DVD writers
+       as well as in the PX-40 CD-ROM drive.
+
+       See OPTIONS and EXAMPLES section to lean about possible usage.
+
+   Device naming
+       Most users do not need to care about device naming at all, as pxupgrade
+       implements auto target support and automagically finds Plextor drives.
+
+       The device refers to scsibus/target/lun of the CD/DVD-Recorder.
+       Communication on SunOS is done with the SCSI general driver scg.	 Other
+       operating systems are using a library simulation of this driver.
+       Possible syntax is: dev= scsibus,target,lun or dev= target,lun.	In the
+       latter case, the CD/DVD-Recorder has to be connected to the default
+       SCSI bus of the machine.	 Scsibus, target and lun are integer numbers.
+       Some operating systems or SCSI transport implementations may require to
+       specify a filename in addition.	In this case the correct syntax for
+       the device is: dev= devicename:scsibus,target,lun or dev=
+       devicename:target,lun.  If the name of the device node that has been
+       specified on such a system refers to exactly one SCSI device, a
+       shorthand in the form dev= devicename:@ or dev= devicename:@,lun may be
+       used instead of dev= devicename:scsibus,target,lun.
+
+
+       To access remote SCSI devices, you need to prepend the SCSI device name
+       by a remote device indicator. The remote device indicator is either
+       REMOTE:user@host: or REMOTE:host:
+       A valid remote SCSI device name may be: REMOTE:user@host: to allow
+       remote SCSI bus scanning or REMOTE:user@host:1,0,0 to access the SCSI
+       device at host connected to SCSI bus # 1,target 0 lun 0.
+
+
+       Pxupgrade is completely based on SCSI commands but this is no problem
+       as all CD/DVD writers ever made use SCSI commands for the
+       communication. Even ATAPI drives are just SCSI drives that inherently
+       use the ATA packet interface as SCSI command transport layer build into
+       the IDE (ATA) transport.	 You may need to specify an alternate
+       transport layer on the command  line if your OS does not implement a
+       fully integrated kernel driver subsystem that allows to access any
+       drive using SCSI commands via a single unique user interface.
+
+
+       To access SCSI devices via alternate transport layers, you need to
+       prepend the SCSI device name by a transport layer indicator.  The
+       transport layer indicator may be something like USCSI: or ATAPI:.  To
+       get a list of supported transport layers for your platform, use dev=
+       HELP:
+
+
+
+       To make pxupgrade portable to all UNIX platforms, the syntax dev=
+       devicename:scsibus,target,lun is preferred as it hides OS specific
+       knowledge about device names from the user.  A specific OS may not
+       necessarily support a way to specify a real device file name nor a way
+       to specify scsibus,target,lun.
+
+
+       Scsibus 0 is the default SCSI bus on the machine. Watch the boot
+       messages for more information or look into /var/adm/messages for more
+       information about the SCSI configuration of your machine.  If you have
+       problems to figure out what values for scsibus,target,lun should be
+       used, try the -scanbus option of cdrecord described below.
+
+
+OPTIONS
+       -all   Upgrade all drives which may be upgraded using the specified
+	      upgrade file.
+
+       dev=target
+	      Sets the SCSI target for the CD/DVD-Recorder, see notes above.
+	      A typical device specification is dev=6,0 .  If a filename must
+	      be provided together with the numerical target specification,
+	      the filename is implementation specific.	The correct filename
+	      in this case can be found in the system specific manuals of the
+	      target operating system.	On a FreeBSD system without CAM
+	      support, you need to use the control device (e.g.
+	      /dev/rcd0.ctl).  A correct device specification in this case may
+	      be dev=/dev/rcd0.ctl:@ .
+
+	      On Linux, drives connected to a parallel port adapter are mapped
+	      to a virtual SCSI bus. Different adapters are mapped to
+	      different targets on this virtual SCSI bus.
+
+       -l     List all Plextor drives with their current firmware version.
+	      This works only if the current OS platform allows SCSI bus
+	      scanning for user programs.
+
+       -help  Prints a short summary of the pxupgrade options and exists.
+
+       -version
+	      Prints the pxupgrade version number string and exists.
+
+
+EXAMPLES
+       Use
+
+	  pxupgrade -all    r412c106.bin
+
+       to upgrade all Plextor PX-W412 drives that may be found using the SCSI
+       scan bus function of the OS.
+
+       Use
+
+	  pxupgrade dev=3,0 r412c106.bin
+
+       to upgrade the Plextor PX-W412 drive at target 3 lun 0.
+
+       Use
+
+	  pxupgrade -l
+
+       to list all Plextor drives with their firmware if the OS supports SCSU
+       bus scanning.
+
+       Use
+
+	 pxupgrade dev=USCSI -l
+
+       to list all Plextor drives with their firmware using the alternate SCSU
+       transport method USCSI.
+
+       Use
+
+	  pxupgrade dev=IOCompactDiscServices -l
+
+       On MacOS X to list the first CD-ROM drive in the system.
+
+
+NOTES
+       If the update is done with an ATAPI drive and DMA is active, it is
+       likely that the drive will hang after the firmware update as this
+       operation puts the drive in PIO mode.
+
+Joerg Schilling		      16. September 2009		  PXUPGRADE(1)

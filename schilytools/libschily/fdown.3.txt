@@ -1,0 +1,23 @@
+FDOWN(3)		  Schily's LIBRARY FUNCTIONS		      FDOWN(3)
+
+NAME
+       fdown() - returns a logical unit number
+
+SYNOPSIS
+       int fdown(f)
+       FILE *f;
+
+DESCRIPTION
+       fdown(), given a standard I/O FILE *f, returns the file number. A file
+       number is usually a small number like 2 which is not a unique number
+       system-wide but is peculiar to the specified process.  fdown() can be
+       used to implement additional functions not provided for in the standard
+       I/O library. It verifies that the file was opened via fileopen().
+
+RETURNS
+       Returns the actual system file number.
+
+NOTES
+       Since this call is system dependent, it should be used carefully.
+
+Joerg Schilling			 15. Juli 1988			      FDOWN(3)

@@ -1,0 +1,36 @@
+FILEOPEN(3)		  Schily's LIBRARY FUNCTIONS		   FILEOPEN(3)
+
+NAME
+       fileopen() - opens or creates files
+
+SYNOPSIS
+       FILE *fileopen(filename,modes)
+       char *filename;
+       char *modes;
+
+DESCRIPTION
+       fileopen() opens filename. The mode is specified by the characters from
+       the following set:
+
+       a      seek to end-of-file after opening
+
+       c      create file if necessary
+
+       r      allow read access
+
+       t      truncate file after opening if it already exists
+
+       u      unbuffered all read/writes directly to system
+
+       w      allow write access
+
+RETURNS
+       NULL open failed.  other value should be used in other I/O calls and is
+       of the type FILE.
+
+NOTES
+       The file is opened with rw rw access.  If there is not enough room to
+       allocate a buffer, the file is opened in an unbuffered mode. There is a
+       limit to the number of open files.
+
+Joerg Schilling			 15. Juli 1988			   FILEOPEN(3)

@@ -1,0 +1,45 @@
+APPLE_DRIVER(8)		    System Manager's Manual	       APPLE_DRIVER(8)
+
+NAME
+       apple_driver - extract Macintosh partition label, maps and boot driver
+
+SYNOPSIS
+       apple_driver CDROM_device > HFS_driver_file
+
+DESCRIPTION
+       Apple_driver extracts the information from an Apple (or compatible) CD-
+       ROM required for the -hfs-boot-file option to mkhybrid(1).
+
+       The CDROM_device is the device name used by the CD-ROM (e.g.
+       /dev/cdrom).
+
+       The format of the HFS driver file is:
+
+       HFS CD Label Block			     512 bytes
+       Driver Partition Map (for 2048 byte blocks)   512 bytes
+       Driver Partition Map (for 512 byte blocks)    512 bytes
+       Empty					     512 bytes
+       Driver Partition				     N x 2048 bytes
+       HFS Partition Boot Block			     1024 bytes
+
+       The Perl script hdisk.pl can be used to give a listing of what's on a
+       Mac CD. hdisk.pl is part of hfsutils.
+
+NOTE
+       By using a driver from an Apple CD and copying Apple software to your
+       CD, you become liable to obey Apple Computer, Inc. Software License
+       Agreements.
+
+
+SEE ALSO
+       mkhybrid(1)
+
+PROGRAMMER
+       James Pearson (j.pearson@ge.ucl.ac.uk) 18/5/98
+
+       The driver code (both extracting the driver and creating partitions
+       etc.  is based on code from mkisofs 1.05 PLUS by Andy Polyakov
+       <appro@fy.chalmers.se> (see
+       http://fy.chalmers.se/~appro/mkisofs_plus.html)
+
+Version 1.0			  18 May 1998		       APPLE_DRIVER(8)

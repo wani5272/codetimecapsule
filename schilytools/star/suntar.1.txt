@@ -1,0 +1,135 @@
+STUNAR(1)		    Schily's USER COMMANDS		     STUNAR(1)
+
+NAME
+       suntar - create tape archives and add or extract files
+
+SYNOPSIS
+       suntar  command [ options ] file1 ... filen
+
+DESCRIPTION
+       This manual page documents an emulation of the Sun version of tar.  It
+       has been implemented on top of the star program.
+
+       For a description of the Sun tar program check the Sun tar manual page.
+
+OPTIONS
+       Star supports the Sun tar options.
+
+
+EXTENDED OPTIONS
+       The extended options are options taken from star.
+
+       --help Prints a summary of the most important options for suntar(1) and
+	      exits.
+
+       --xhelp
+	      Prints a summary of the less important options for suntar(1) and
+	      exits.
+
+       --version
+	      Prints the suntar version number string and exists.
+
+       --debug
+	      print additional debug messages
+
+       xdebug=#
+
+       xd=#   set extended debug level
+
+       artype=headertype
+	      Generate a tape archive in headertype format.  For more
+	      information, see star(1).
+
+       -/     don't strip leading '/'s from file names
+
+       --..   don't skip filenames that contain '..' in non-interactive
+	      extract
+
+       --7z   run the input or output through a p7zip pipe - see option -z
+	      below.
+
+	      Note that the p7zip program currently does not operate on a pipe
+	      but on a /tmp file copy and thus limits the maximum archive
+	      size.
+
+       --secure-links
+	      don't extract links that start with '/' or contain '..'
+
+       --no-secure-links
+	      extract links that start with '/' or contain '..'
+
+       --acl  handle access control lists
+
+       --xfflags
+	      handle extended file flags
+
+       bs=#   set (output) block size to #
+
+       fs=#   set fifo size to #
+
+       --no-fsync
+	      do not call fsync() for each extracted file (may be dangerous).
+
+       --do-fsync
+	      call fsync() for each extracted file.
+
+       --time
+	       print timing info
+
+       --no-statistics
+	      do not print statistics
+
+       --do-statistics
+	      rint statistics
+
+       --fifostats
+	      print fifo statistics
+
+       --no-fifo
+	      don't use a fifo to optimize data flow from/to tape
+
+       --numeric
+	      don't use user/group name from tape
+
+       --lzo  pipe input/output through lzop, does not work on tapes
+
+       --lzip pipe input/output through lzip, does not work on tapes
+
+       -z     pipe input/output through gzip, does not work on tapes
+
+       --bz   pipe input/output through bzip2, does not work on tapes
+
+       --zstd pipe input/output through zstd, does not work on tapes
+
+       The options above are not defined by Sun tar.
+
+       For a complete documentation of the star based options check star(1).
+
+
+EXAMPLES
+ENVIRONMENT
+FILES
+SEE ALSO
+       spax(1), suntar(1), scpio(1), tar(1), cpio(1), pax(1), rcp(1), mt(1),
+       rmt(1), match(1), dd(1), sdd(1), rsh(1), ssh(1), star(1), star(4),
+       rcmd(3), fssnap(1m)
+
+DIAGNOSTICS
+NOTES
+       This suntar implementation is based on the star implementation and does
+       not implement all features of the original Sun tar program.
+
+       Suntar -x is equivalent to star -xU -force-remove -remove-first
+       -keep-nonempty-dirs
+
+BUGS
+AUTHOR
+       Joerg Schilling
+       D-13353 Berlin
+       Germany
+
+       Mail bugs and suggestions to:
+
+       joerg@schily.net
+
+Joerg Schilling			  2020/09/04			     STUNAR(1)

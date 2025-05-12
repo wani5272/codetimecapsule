@@ -1,0 +1,151 @@
+HDUMP(1)		    Schily's USER COMMANDS		      HDUMP(1)
+
+NAME
+       hdump, od - displays (dumps) binary contents of a file
+
+SYNOPSIS
+       hdump [options] [file [starting_address[.][b|B] [count]]]
+
+       hdump [options] [file...]
+
+       od [options] [file [starting_address[.][b|B]]]
+
+       od [options] [file...]
+
+       xpg4/bin/od [options] [file [starting_address[.][b|B]]]
+
+       xpg4/bin/od [options] [file...]
+
+
+DESCRIPTION
+       Hdump displays the contents of a file in 16-bit words unless otherwise
+       specified (see options below). It dumps the data in hexadecimal unless
+       otherwise specified (see options below).
+
+       Hdump assumes the starting_address and the count are in decimal unless
+       there is a leading 0--interpreted as octal, or a leading
+       0x--interpreted as hexadecimal (as in C).  If the starting_address is
+       followed by a 'b', the number is multiplied by 512, if the
+       starting_address is followed by a 'B', the number is multiplied by 512.
+
+
+       The output radix of the label is hexadecimal by default and may be
+       modified by the radix of the starting_address.  If the starting_address
+       is specified in hexadecimal, the label will be displayed in hexadecimal
+       too, if the starting_address is specified in octal, the label will be
+       displayed in octal.  A decimal radix of the label will be displayed if
+       the starting_address is followed by a dot.
+
+       If the starting address is odd, it is rounded down to the next even
+       value.
+
+       The default size of displayed objects is short unless otherwise
+       mentioned.
+
+       For the od(1) features see the od(1) man page.
+
+
+OPTIONS
+       -A radix	 Select the radix used for address labels. The folowing values
+		 are supported:
+
+		 d	Use a decimal radix for address labels.
+
+		 o	Use an octal radix for address labels.
+
+		 n	Do not print address labels.
+
+		 x	Use a hexadecimal radix for address labels.
+
+       -a	 Display content also as printable characters, set the object
+		 size to bytes.
+
+       -b	 Display content in bytes.
+
+       -c	 Display content in quoted characters, set the object size to
+		 bytes.
+
+       -C	 Display bytes as single-byte or multi-byte characters
+		 according to the current setting of the LC_CTYPE locale
+		 category.  Printable multibyte characters are written in the
+		 area corresponding to the first byte of the character.	 The
+		 two-character sequence ** is written in the area
+		 corresponding to each remaining byte in the character, as an
+		 indication that the character is continued.
+
+       -d	 Display content in decimal
+
+       -f	 Display content longs as floats
+
+       -F	 Display content double longs as doubles
+
+       -j skip	 Seek or skip skip bytes before starting to dump.  The same
+		 syntax as with sdd(1) is supported.
+
+       -l	 Display content as longs instead of using the default size
+		 short.
+
+       -N count	 Stop after dumping count bytes.  The same syntax as with
+		 sdd(1) is supported.
+
+       -o	 Display content in octal instead of using the default
+		 hexadecimal radix.
+
+       -O	 Interprets long words in unsigned octal.  This is equivalent
+		 to -t o4.
+
+       -s	 Interprets words in signed decimal.  This is equivalent to -t
+		 d2.
+
+       -S	 Interprets long words in signed decimal.  This is equivalent
+		 to -t d4.
+
+       -t format
+
+		 a	Print bytes as 7 bit named ASCII characters.
+
+		 c	Print bytes as quoted characters.
+
+		 d	Print signed decimal numbers.
+
+		 f	Print floating point numbers
+
+		 o	Print octal numbers.
+
+		 u	Print unsigned decimal numbers.
+
+		 x	Print hexadecimal numbers.
+
+		 The type specification characters d, f, o, u, and x can be
+		 followed by an optional size specifier.  For the types d, o,
+		 u, and x, this may be one of: 1, 2, 4, 8, C, S, I, and L.
+		 For the type f, this may be one of: F, D, and L.
+
+		 A -t option may have multiple type arguments and there may be
+		 multiple -t options on the command line.
+
+       -u	 Display content as unsigned numbers.
+
+       -v	 Show all data even if it is identical.
+
+       -x	 Interprets words in hex.  This is equivalent to -t x2.
+
+       -X	 Interprets long words in hex.	This is equivalent to -t x4.
+
+       -help	 Prints a short summary of the hdump options and exists.
+
+       -version	 Prints the hdump version number string and exists.
+
+
+       Address label radix depends on starting address radix (decimal if ends
+       with .) 'b' or 'B' after starting address multiplies with 512.
+
+
+SEE ALSO
+       od(1).
+
+
+NOTES
+       none
+
+Joerg Schilling			      %E%			      HDUMP(1)

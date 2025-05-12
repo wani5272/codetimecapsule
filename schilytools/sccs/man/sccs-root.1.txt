@@ -1,0 +1,95 @@
+sccs-root(1)		    Schily's USER COMMANDS		  sccs-root(1)
+
+NAME
+       sccs-root - list information about the SCCS project set home directory
+
+SYNOPSIS
+       sccs root [options] [directory]
+
+DESCRIPTION
+       The root subcommand lists informations about the SCCS project set home
+       for the given directory.	 If no directory argument is given, the
+       current working directory is used.
+
+       This subcommand is a project extension that does not exist in historic
+       sccs implementations.
+
+OPTIONS
+       -v     Be verbose and give all informations.  Without -v only the name
+	      of the proect set home directory is given.
+
+
+EXAMPLES
+       To list the SCCS proect set home for the current directory call:
+
+	      sccs root
+
+ENVIRONMENT VARIABLES
+       See environ(5) for descriptions of the following environment variables
+       that affect the execution of val(1): LANG, LC_ALL, LC_CTYPE,
+       LC_MESSAGES, and NLSPATH.
+
+
+       SCCS_NO_HELP
+	      If set, sccs init will not automatically call help(1) with the
+	      SCCS error code in order to print a more helpful error message.
+	      Scripts that depend on the exact error messages of SCCS commands
+	      should set the environment variable SCCS_NO_HELP and set
+	      LC_ALL=C.
+
+FILES
+ATTRIBUTES
+       See attributes(5) for descriptions of the following attributes:
+
+       +----------------------------+-----------------------------+
+       |      ATTRIBUTE TYPE	    |	    ATTRIBUTE VALUE	  |
+       +----------------------------+-----------------------------+
+       |Availability		    | SCHILYdeveloper-build-sccs  |
+       +----------------------------+-----------------------------+
+       |Interface Stability	    | Evolving			  |
+       +----------------------------+-----------------------------+
+
+SEE ALSO
+       sccs(1), sccs-add(1), sccs-admin(1), sccs-branch(1), sccs-cdc(1),
+       sccs-check(1), sccs-clean(1), sccs-comb(1), sccs-commit(1),
+       sccs-create(1), sccs-cvt(1), sccs-deledit(1), sccs-delget(1),
+       sccs-delta(1), sccs-diffs(1), sccs-edit(1), sccs-editor(1),
+       sccs-enter(1), sccs-fix(1), sccs-get(1), sccs-help(1),
+       sccs-histfile(1), sccs-info(1), sccs-init(1), sccs-istext(1),
+       sccs-ldiffs(1), sccs-log(1), sccs-print(1), sccs-prs(1), sccs-prt(1),
+       sccs-rcs2sccs(1), sccs-remove(1), sccs-rename(1), sccs-rmdel(1),
+       sccs-sact(1), sccs-sccsdiff(1), sccs-status(1), sccs-tell(1),
+       sccs-unedit(1), sccs-unget(1), sccs-val(1), what(1), sccschangeset(4),
+       sccsfile(4).
+
+DIAGNOSTICS
+NOTES
+BUGS
+AUTHOR
+       sccs init was originally written by Joerg Schilling in 2015 and is
+       still maintained by Joerg Schilling.
+
+
+SOURCE DOWNLOAD
+       A frequently updated source code for the SCCS suite is included in the
+       schilytools project and may be retrieved from the schilytools project
+       at Sourceforge at:
+
+	   http://sourceforge.net/projects/schilytools/
+
+       The download directory is:
+
+	   http://sourceforge.net/projects/schilytools/files/
+
+       Check for the schily-*.tar.bz2 archives.
+
+       Less frequently updated source code for the SCCS suite is at:
+
+	   http://sourceforge.net/projects/sccs/files/
+
+       Separate project informations for the SCCS project may be retrieved
+       from:
+
+	   http://sccs.sf.net
+
+Joerg Schilling			  2020/06/28			  sccs-root(1)

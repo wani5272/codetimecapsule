@@ -1,0 +1,135 @@
+sccs-delget(1)		    Schily's USER COMMANDS		sccs-delget(1)
+
+NAME
+       sccs-delget, sccs-deledit - perform a delta and get new version
+
+SYNOPSIS
+       sccs delget [options] file ...
+       sccs deledit [options] file ...
+
+DESCRIPTION
+       sccs delget performs an `sccs delta' on the named files and then an
+       `sccs get' to check in a delta and to retrieve new version.  The new
+       versions will have id keywords expanded, and will not be editable.
+       sccs performs a delta on all the files specified in the argument list,
+       and then a get on all the files. If an error occurs during the delta,
+       the get is not performed.  The -m, -o, -p, -r, -f, -q, -s, and -y flags
+       will be passed to delta, and the -b, -c, -e, -i, -k, -l, -s, and -x
+       flags will be passed to get.
+
+
+
+       sccs deledit is equivalent to sccs delget except that the get phase
+       includes the -e flag.  This is equivalent to an `sccs delta' and then
+       an `sccs edit'.	deledit checks in a delta, and checks the file back
+       out again, but leaves the current working copy of the file intact.
+       This option is useful for making a ``checkpoint'' of your current
+       editing phase.  The same flags will be passed to delta as described
+       above, and all the flags listed for get above except -e and -k are
+       passed to edit.
+
+OPTIONS
+       -o	   Retrieves the file under the original time of the requested
+		   version.
+
+		   Use this option with care, as it may be in conflict with
+		   make(1) rules. Using `get -o' thus may cause make to
+		   perform an automatic retrieval of the latest version as the
+		   s.file is newer than the gotten file, or cause make to skip
+		   the compilation as the compilation result is already newer
+		   than the gotten file.
+
+       -s	   Suppresses all output normally written on the standard
+		   output. However, fatal error messages (which always go to
+		   the standard error) remain unaffected.
+
+       -f	   In NSE mode, force to create a delta even when no p.	 file
+		   is present.
+
+       -q	   Switch on NSE mode.
+
+
+       -y[comment] Supply a comment for the delta commentary.  If -y is
+		   omitted, delta prompts for a comment.  A null comment
+		   results in an empty comment field for the delta.
+
+       The options -f and -q are SCHILY extensions that do not exist in
+       historic sccs implementations.
+
+
+EXAMPLES
+       To check in a new delta for the file xec.c in the current directory
+       call:
+
+	      sccs delget xec.c
+
+ENVIRONMENT VARIABLES
+       See environ(5) for descriptions of the following environment variables
+       that affect the execution of sccs-delget(1) and sccs-deledit(1): LANG,
+       LC_ALL, LC_CTYPE, LC_MESSAGES, and NLSPATH.
+
+
+       SCCS_NO_HELP
+	      If set, sccs delget end sccs deledit will not automatically call
+	      help(1) with the SCCS error code in order to print a more
+	      helpful error message. Scripts that depend on the exact error
+	      messages of SCCS commands should set the environment variable
+	      SCCS_NO_HELP and set LC_ALL=C.
+
+FILES
+ATTRIBUTES
+       See attributes(5) for descriptions of the following attributes:
+
+       +----------------------------+-----------------------------+
+       |      ATTRIBUTE TYPE	    |	    ATTRIBUTE VALUE	  |
+       +----------------------------+-----------------------------+
+       |Availability		    | SCHILYdeveloper-build-sccs  |
+       +----------------------------+-----------------------------+
+       |Interface Stability	    | Committed			  |
+       +----------------------------+-----------------------------+
+
+SEE ALSO
+       sccs(1), sccs-add(1), sccs-admin(1), sccs-branch(1), sccs-cdc(1),
+       sccs-check(1), sccs-clean(1), sccs-comb(1), sccs-commit(1),
+       sccs-create(1), sccs-cvt(1), sccs-delta(1), sccs-diffs(1),
+       sccs-edit(1), sccs-editor(1), sccs-enter(1), sccs-fix(1), sccs-get(1),
+       sccs-help(1), sccs-histfile(1), sccs-info(1), sccs-init(1),
+       sccs-istext(1), sccs-ldiffs(1), sccs-log(1), sccs-print(1),
+       sccs-prs(1), sccs-prt(1), sccs-rcs2sccs(1), sccs-remove(1),
+       sccs-rename(1), sccs-rmdel(1), sccs-root(1), sccs-sact(1),
+       sccs-sccsdiff(1), sccs-status(1), sccs-tell(1), sccs-unedit(1),
+       sccs-unget(1), sccs-val(1), what(1), sccschangeset(4), sccsfile(4).
+
+DIAGNOSTICS
+NOTES
+BUGS
+AUTHOR
+       sccs delget and sccs deledit have been originally written by Eric
+       Allman at UCB in 1980. They have been later maintained by various
+       people at AT&T and Sun Microsystems.  Since 2006, they are maintained
+       by Joerg Schilling.
+
+
+SOURCE DOWNLOAD
+       A frequently updated source code for the SCCS suite is included in the
+       schilytools project and may be retrieved from the schilytools project
+       at Sourceforge at:
+
+	   http://sourceforge.net/projects/schilytools/
+
+       The download directory is:
+
+	   http://sourceforge.net/projects/schilytools/files/
+
+       Check for the schily-*.tar.bz2 archives.
+
+       Less frequently updated source code for the SCCS suite is at:
+
+	   http://sourceforge.net/projects/sccs/files/
+
+       Separate project informations for the SCCS project may be retrieved
+       from:
+
+	   http://sccs.sf.net
+
+Joerg Schilling			  2020/06/29			sccs-delget(1)

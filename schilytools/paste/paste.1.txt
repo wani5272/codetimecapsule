@@ -1,0 +1,50 @@
+PASTE(1)		    Schily's USER COMMANDS		      PASTE(1)
+
+NAME
+       paste - pastes fields in files together
+
+SYNOPSIS
+       paste [ d=list ] [ options ] [ file1 ... filen ]
+
+       spaste [ d=list ] [ options ] [ file1 ... filen ]
+
+DESCRIPTION
+       Paste joins separate files by fields. It is the opposite of the program
+       cut.
+
+       Paste joins corresponding lines of files creating a single line of text
+       with a single character delimiter separating each field.	 The result is
+       displayed on standard output.
+
+OPTIONS
+       d=list Where list specifies the list of field delimiters used to
+	      separate the fields on output.  The fields from the list are
+	      used in a cyclic way.  The first element in the list is always
+	      used for the delimiter after the first file.  If the list
+	      includes a backslash (\), the next character is used with a
+	      special meaning:
+
+	      \n     A newline is used as the delimiter.
+
+	      \t     A TAB is used as the delimiter.
+
+	      \\     A backslash is used as the delimiter.
+
+	      \0     No delimiter is inserted.
+
+	      The default delimiter is a single TAB.
+
+       -e     Do not output empty lines.
+
+       -s     Do not paste lines from all files but paste all lines from a
+	      single file.  Start with the first entry from the delimiter list
+	      with the beginning of a new file.
+
+       width=#,w=#
+	      Set the maximum output linewidth (default is to allow an
+	      "infinite" output line width).
+
+NOTES
+       The maximum number of files that you can join together is 253.
+
+Joerg Schilling			  2015/06/09			      PASTE(1)

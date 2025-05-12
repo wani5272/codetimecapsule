@@ -1,0 +1,40 @@
+RAISECOND(3)		  Schily's LIBRARY FUNCTIONS		  RAISECOND(3)
+
+NAME
+       raisecond() - raises a condition
+
+SYNOPSIS
+       #include <schily/sigblk.h>
+
+       void
+       raisecond(signame, arg2)
+       char *signame;
+       long arg2;
+
+DESCRIPTION
+       raisecond() causes the condition signame to be signalled on the stack,
+       in each frame in order from the most recent (top of stack) to the
+       oldest. Each frame is checked for a condition handler for signame or,
+       if one is not found in the frame, for any_other. If a handler is found,
+       it is called with signame and with arg1, established in the call to
+       handlecond(), and arg2, from this call.	If a handler is not found, the
+       process is repeated in the next older stack frame. If raise() reaches
+       the end of the stack without finding a handler, it prints "Condition
+       not caught: condition_name" on stderr and the process is suspended via
+       abort().
+
+       If the handler returns TRUE, raisecond() returns. Otherwise it
+       continues just as if it had not found the handler.
+
+RETURNS
+       none
+
+NOTES
+       handlecond() and raisecond() are frequently used with the subroutines
+       longjmp() and setjmp().
+
+       Routines that call raisecond() can choose to ignore the result;
+       however, they should anticipate the condition in order to ensure a
+       reasonable outcome to the program.
+
+Joerg Schilling			  2020/02/09			  RAISECOND(3)

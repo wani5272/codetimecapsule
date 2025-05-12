@@ -1,0 +1,717 @@
+sccs-get(1)			 User Commands			   sccs-get(1)
+
+NAME
+       sccs-get, get - retrieve a version of an SCCS file
+
+SYNOPSIS
+       /usr/ccs/bin/get [-beFgkmnopst] [-l [p]] [-asequence]
+	   [-c date-time | -cdate-time] [-Gg-file] [-w%W%-string]
+	   [-i sid-list | -isid-list] [-q[nsedelim]] [-r [sid]]
+	   [-x sid-list | -xsid-list] [-z[cmr]]
+	   [-Xextended-options] [-Nbulk-spec] s.filename...
+
+
+       /usr/xpg4/bin/get [-beFgkmnopst] [-l [p]] [-asequence]
+	   [-c date-time | -cdate-time] [-Gg-file] [-w%W%-string]
+	   [-i sid-list | -isid-list] [-q[nsedelim]] [-r sid | -rsid]
+	   [-x sid-list | -xsid-list] [-z[cmr]]
+	   [-Xextended-options] [-Nbulk-spec] s.filename...
+
+
+DESCRIPTION
+       The get utility retrieves a working copy from the SCCS history file,
+       according to the specified options.
+
+
+       For each s.filename argument, get displays the  SCCS delta ID (SID) and
+       number of lines retrieved.
+
+
+       If a directory name is used in place of the s.filename argument, the
+       get command applies to all s.files in that directory. Unreadable
+       s.files produce an error; processing continues with the next file (if
+       any). The use of `-' as the s.filename argument indicates that the
+       names of files are to be read from the standard input, one s.file per
+       line.
+
+
+       The retrieved file normally has the same filename base as the s.file,
+       less the prefix, and is	referred to as the g-file.
+
+
+       For each file processed, get responds (on the standard output) with the
+       SID being accessed, and with the number of lines retrieved from the
+       s.file.
+
+
+OPTIONS
+       The following options are supported:
+
+
+       -A	    Annotates the output. Precedes each line with the
+		    programmer who last changed that line and the related
+		    date. This option may be combined with the options -m and
+		    -n.	 When combined with other annotate options, the text
+		    related to -A is inserted last.  Future versions of get(1)
+		    may add support for a parameter to this option that
+		    implements some of the prs -d data specs.
+
+		    This option is a SCHILY extension that does not exist in
+		    historic sccs implementations.
+
+
+       -asequence   Retrieves the version corresponding to the indicated delta
+		    sequence number.  This option is used primarily by the
+		    SCCS comb command (see sccs-comb(1)).  For users, -r is an
+		    easier way to specify a version. The -a option supersedes
+		    the -r option when both are used.
+
+
+       -b	    Creates a new branch. Used with the -e option to indicate
+		    that the new delta should have a SID in a new branch.
+		    Instead of incrementing the level for version to be
+		    checked in, get indicates in the p.file that the delta to
+		    be checked in should either initialize a new branch and
+		    sequence (if there is no existing branch at the current
+		    level), or increment the branch component of the SID.  If
+		    the b flag is not set in the s.file, this option is
+		    ignored.
+
+
+       -c date-time
+
+       -cdate-time  Retrieves the latest version checked in prior to the date
+		    and time indicated by the date-time argument.  date-time
+		    takes the form:
+
+
+		     yy[mm[dd[ hh[mm[ss]]]]]
+
+
+		    Units omitted from the indicated date and time default to
+		    their maximum possible values; that is -c7502 is
+		    equivalent to -c750228235959.  Values of yy in the range
+		    69-99 refer to the twentieth century. Values in the range
+		    00-68 refer to the twenty-first century.  Any number of
+		    non-numeric characters may separate the various 2 digit
+		    components. If white-space characters occur, the date-time
+		    specification must be quoted.
+
+		    A date-time specification in the form:
+
+		     yyyy/[mm[dd[hh[mm[ss]]]]]
+
+		    refers to a 4-digit year and allows to specify a year
+		    outside the range 1969-2068.
+
+
+       -e	    Retrieves a version for editing. With this option, get
+		    places a lock on the s.file, so that no one else can check
+		    in changes to the version you have checked out. If the j
+		    flag is set in the s.file, the lock is advisory: get
+		    issues a warning message. Concurrent use of `get -e' for
+		    different SIDs is allowed. However, get will not check out
+		    a version of the file if a writable version is present in
+		    the directory. All SCCS file protections stored in the
+		    s.file, including the release ceiling, floor, and
+		    authorized user list, are honored by `get -e'.
+
+
+       -F	    Enforce to retrieve the g.file even if a SID specific
+		    checksum mismatch has been detected.
+
+		    This option is a SCHILY extension that does not exist in
+		    historic sccs implementations.
+
+
+       -g	    Gets the SCCS version ID, without retrieving the version
+		    itself. Used to verify the existence of a particular SID.
+
+
+       -Gnewname    Uses newname as the name of the retrieved version.
+
+
+       -i sid-list
+
+       -isid-list   Specifies a list of deltas to include in the retrieved
+		    version. The included deltas are noted in the standard
+		    output message.  sid-list is a comma-separated list of
+		    SIDs.  To specify a range of deltas, use a `-' separator
+		    instead of a comma, between two SIDs in the list.
+
+
+       -k	    Suppresses expansion of ID keywords.  -k is implied by the
+		    -e.
+
+		    Note that keywords in SCCS history files that are uu-
+		    encoded are never expanded; also note that SCCsv6 history
+		    files that hold binary data by default have keyword
+		    expansion disabled (see ``admin -fy'').
+
+
+       -l[p]	    Retrieves a summary of the delta table (version log) and
+		    write it to a listing file, with the `l.' prefix (called
+		    `l.file').	When -lp is used, write the summary onto the
+		    standard output.
+
+
+       -L	    Treated as if -lp was given.
+
+
+       -m	    Precedes each retrieved line with the SID of the delta in
+		    which it was added to the file. The SID is separated from
+		    the line with a TAB.
+
+
+
+       -Nbulk-spec  Processes a bulk of SCCS history files.  This option
+		    allows to do an efficient mass processing of SCCS history
+		    files.
+
+		    The bulk-spec parameter is composed from an optional list
+		    of flag parameters followed by an optional path specifier.
+
+		    The following flag types are supported:
+
+		    ++	      If bulk-spec is preceded by a `++', get(1)
+			      expects to process filenames that are prepended
+			      by a plus sign, the related SID and another plus
+			      sign following the form:
+
+				  +sid+filename
+
+			      This permits each file to be retrieved with an
+			      individual SID.
+
+		    space     This is a placeholder dummy flag that allows to
+			      use a prepared string for the -N option and to
+			      replace the space character by one of the
+			      supported flags on demand.
+
+		    The following path specifier types are supported:
+
+		    -N	      The file name parameters to the get command are
+			      not s.filename files but the names of the g-
+			      files.  The s.filename names are automatically
+			      derived from the g-file names by prepending s.
+			      to the last path name component.	Both,
+			      s.filename and the g-file are in the same
+			      directory.
+
+		    -Ns.      The file name parameters to the get command are
+			      s.filename files.	 The the g-files names are
+			      automatically derived by removing s.  from the
+			      beginning of last path name component of the
+			      s.filename.  Both, s.filename and the g-file are
+			      in the same directory.
+
+		    -Ndir     The file name parameters to the get command are
+			      not s.filename files but the names of the g-
+			      files.  The s.filename names are put into
+			      directory dir, the names are automatically
+			      derived from the g-file names by prepending
+			      dir/s.  to the last path name component.
+
+		    -Ndir/s.  The file name parameters to the get command are
+			      s.filename files in directory dir.  The the g-
+			      files names are automatically derived by
+			      removing dir/s.  from the beginning of last path
+			      name component of the s.filename.
+
+		    A typical value for dir is SCCS.
+
+		    In order to overcome the limited number of exec(2)
+		    arguments, it is recommended to use `-' as the file name
+		    parameter for get(1) and to send a list of path names to
+		    stdin.
+
+		    This option is a SCHILY extension that does not exist in
+		    historic sccs implementations.
+
+
+       -n	    Precedes each line with the %M% ID keyword and a TAB. When
+		    both the -m and -n options are used, the ID keyword
+		    precedes the SID, and the line of text.
+
+
+       -o	    Retrieves the file under the original time of the
+		    requested version.
+
+		    Use this option with care, as it may be in conflict with
+		    make(1) rules. Using `get -o' thus may cause make to
+		    perform an automatic retrieval of the latest version as
+		    the s.file is newer than the gotten file, or cause make to
+		    skip the compilation as the compilation result is already
+		    newer than the gotten file.
+
+		    This option is a SCHILY extension that does not exist in
+		    historic sccs implementations.
+
+
+       -p	    Writes the text of the retrieved version to the standard
+		    output. All messages that normally go to the standard
+		    output are written to the standard error instead.
+
+
+       -q[nsedelim] Enable NSE mode.  If NSE mode is enabled, several NSE
+		    related extensions may be used.  In this release, the
+		    value of nsedelim is ignored.
+
+		    In NSE mode, get never issues a warning about missing id
+		    keywords.
+
+		    This option is an undocumented SUN extension that does not
+		    exist in historic sccs implementations.
+
+
+       -s	    Suppresses all output normally written on the standard
+		    output. However, fatal error messages (which always go to
+		    the standard error) remain unaffected.
+
+
+       -t	    Retrieves the most recently created (top) delta in a given
+		    release (for example: -r1).
+
+
+       -w%W%-string The %W%-string is used as a replacement for the %W%
+		    keyword.  If -w was not specified, %W% is expanded to
+		    %Z%%M%  %I%, otherwise the argument from -w is used.
+
+		    This option is an undocumented SUN extension that does not
+		    exist in historic sccs implementations.
+
+
+       -Xextended-options
+		    Specify extended options. The argument extended-options
+		    may be a comma separated list of extended option names.
+
+		    The following extended options are supported, they may be
+		    abbreviated as long ad the abbreviation is still unique.
+		    Options with parameter may not be abbreviated.
+
+
+		    0	   When reading filenames from stdin, triggered by a
+			   file name argument `-', the filename separator is a
+			   null byte instead of a newline.  This allows to use
+			   long lists with arbitrary filenames.
+
+		    help   Print a short online help for available options.
+
+		    The -X option is a SCHILY extension that does not exist in
+		    historic sccs implementations.
+
+
+       -z[cmr]	    Append MR number to CMR list for CMF extensions.
+
+		    This option is an undocumented SUN extension that does not
+		    exist in historic sccs implementations.
+
+
+       -Cdir	    Specify the base directory for the g-file relative to the
+		    current working directory.	By default, the g-file is
+		    created in the current directory (independent from the
+		    location of the s.file.
+
+		    This option is a SCHILY extension that does not exist in
+		    historic sccs implementations.
+
+
+       -V
+       -version
+       --version    Prints the get version number string and exists.
+
+		    This option is a SCHILY extension that does not exist in
+		    historic sccs implementations.
+
+
+   /usr/ccs/bin/get
+       -d	    Do not print the number of gotten lines.
+
+		    This option is an undocumented SUN extension that does not
+		    exist in historic sccs implementations.
+
+
+       -r[sid]	    Retrieves the version corresponding to the indicated SID
+		    (delta).
+
+		    The SID for a given delta is a number, in Dewey decimal
+		    format, composed of two or four fields: the release and
+		    level fields, and for branch deltas, the branch and
+		    sequence fields.  For instance, if 1.2 is the SID, 1 is
+		    the release, and 2 is the level number.  If 1.2.3.4 is the
+		    SID, 3 is the branch and 4 is the sequence number.
+
+		    You need not specify the entire SID to retrieve a version
+		    with get.  When you omit -r altogether, or when you omit
+		    both release and level, get normally retrieves the highest
+		    release and level.	If the d flag is set to an SID in the
+		    s.file and you omit the SID, get retrieves the default
+		    version indicated by that flag.
+
+		    When you specify a release but omit the level, get
+		    retrieves the highest level in that release. If that
+		    release does not exist, get retrieves highest level from
+		    the next-highest existing release.
+
+		    Similarly with branches, if you specify a release, level
+		    and branch, get retrieves the highest sequence in that
+		    branch.
+
+
+       -x sid-list
+
+       -x[sid-list] Excludes the indicated deltas from the retrieved version.
+		    The excluded deltas are noted in the standard output
+		    message.  sid-list is a comma-separated list of SIDs.  To
+		    specify a range of deltas, use a `-' separator instead of
+		    a comma, between two SIDs in the list.
+
+
+   /usr/xpg4/bin/get
+       -r sid
+
+       -rsid	    Same as for /usr/ccs/bin/get except that SID is mandatory.
+
+
+       -x sid-list
+
+       -xsid-list   Same as for /usr/ccs/bin/get except that sid-list is
+		    mandatory.
+
+
+OUTPUT
+   /usr/ccs/bin/get
+       The output format for /usr/ccs/bin/get is as follows:
+
+
+	 "%s\n%d lines\n", <SID>, <number of lines>
+
+       The text lines may appear in the language of the current locale.
+
+
+   /usr/xpg4/bin/get
+       The output format for /usr/xpg4/bin/get is as follows:
+
+
+	 "%s\n%d lines\n", <SID>, <number of lines>
+
+       The text lines is always in English.
+
+
+USAGE
+       Usage guidelines are as follows:
+
+
+   ID Keywords
+       In the absence of -e or -k, get expands the following ID keywords by
+       replacing them with the indicated values in the text of the retrieved
+       source.
+
+
+
+
+       +---------+-------------------------------------------------+
+       |Keyword	 |			Value			   |
+       +---------+-------------------------------------------------+
+       |%A%	 | Shorthand notation for an ID line with  data	   |
+       |	 | for	what(1): %Z%%Y%	 %M%  %I%%Z%		   |
+       +---------+-------------------------------------------------+
+       |%B%	 | SID branch component				   |
+       +---------+-------------------------------------------------+
+       |%C%	 | Current line number. Intended for identifying   |
+       |	 | messages output by the program such as ``this   |
+       |	 | shouldn't have happened'' type errors.  It is   |
+       |	 | not intended to be used on every line to	   |
+       |	 | provide sequence numbers.			   |
+       +---------+-------------------------------------------------+
+       |%D%	 | Current date: yy/mm/dd			   |
+       +---------+-------------------------------------------------+
+       |%d%	 | Current date: yyyy/mm/dd			   |
+       +---------+-------------------------------------------------+
+       |%E%	 | Date newest applied delta was created: yy/mm/dd |
+       +---------+-------------------------------------------------+
+       |%e%	 | Date newest applied delta was created:	   |
+       |	 | yyyy/mm/dd					   |
+       +---------+-------------------------------------------------+
+       |%F%	 | SCCS s.file name				   |
+       +---------+-------------------------------------------------+
+       |%G%	 | Date newest applied delta was created: mm/dd/yy |
+       +---------+-------------------------------------------------+
+       |%g%	 | Date newest applied delta was created:	   |
+       |	 | mm/dd/yyyy					   |
+       +---------+-------------------------------------------------+
+       |%H%	 | Current date: mm/dd/yy			   |
+       +---------+-------------------------------------------------+
+       |%h%	 | Current date: mm/dd/yyyy			   |
+       +---------+-------------------------------------------------+
+       |%I%	 | SID of the retrieved version: %R%.%L%.%B%.%S%   |
+       +---------+-------------------------------------------------+
+       |%L%	 | SID level component				   |
+       +---------+-------------------------------------------------+
+       |%M%	 | Module name: either the value of the m flag in  |
+       |	 | the s.file (see  sccs-admin(1)), or the name of |
+       |	 | the s.file less the prefix			   |
+       +---------+-------------------------------------------------+
+       |%P%	 | Fully qualified s.file name			   |
+       +---------+-------------------------------------------------+
+       |%Q%	 | Value of the q flag in the s.file		   |
+       +---------+-------------------------------------------------+
+       |%R%	 | SID Release component			   |
+       +---------+-------------------------------------------------+
+       |%S%	 | SID Sequence component			   |
+       +---------+-------------------------------------------------+
+       |%T%	 | Current time: hh:mm:ss			   |
+       +---------+-------------------------------------------------+
+       |%U%	 | Time the newest applied delta was created:	   |
+       |	 | hh:mm:ss					   |
+       +---------+-------------------------------------------------+
+       |%W%	 | Shorthand notation for an ID line with data for |
+       |	 | what: %Z%%M%	 %I% or get -w argument		   |
+       +---------+-------------------------------------------------+
+       |%Y%	 | Module type: value of the t flag in the s.file  |
+       +---------+-------------------------------------------------+
+       |%Z%	 | 4-character string: `@(#)', recognized by what  |
+       +---------+-------------------------------------------------+
+       A line with a string in the form %sccs.include.filename% is replaced by
+       the content of the file filename.  The file is searched for in the path
+       list found in the environment variable SCCS_INCLUDEPATH.
+
+       The keywords %d%, %e%, %g% and %h% are only expanded if either the `x'
+       flag has been set by the admin(1) command or if the expansion for a
+       specific keyword has been enabled via the `y' flag.
+
+
+   ID String
+       The table below explains how the	 SCCS identification string is
+       determined for retrieving and creating deltas.
+
+
+
+
+       +----------------------------------------------------------------------+
+       |	     Determination of SCCS Identification String	      |
+       +----------+-----------+------------------+-----------+----------------+
+       | SID (1)  | -b Option |	     Other	 |    SID    |	SID of Delta  |
+       |Specified | Used (2)  |	   Conditions	 | Retrieved | to be Created  |
+       +----------+-----------+------------------+-----------+----------------+
+       |none (3)  | no	      | R defaults to mR | mR.mL     | mR.(mL+1)      |
+       |none (3)  | yes	      | R defaults to mR | mR.mL     | mR.mL.(mB+1).1 |
+       |R	  | no	      | R > mR		 | mR.mL     | R.1 (4)	      |
+       |R	  | no	      | R = mR		 | mR.mL     | mR.(mL+1)      |
+       |R	  | yes	      | R > mR		 | mR.mL     | mR.mL.(mB+1).1 |
+       |R	  | yes	      | R = mR		 | mR.mL     | mR.mL.(mB+1).1 |
+       |R	  | -	      | R < mR and R	 | hR.mL (5) | hR.mL.(mB+1).1 |
+       |	  |	      | does not exist	 |	     |		      |
+       |R	  | -	      | Trunk succ. (6)	 | R.mL	     | R.mL.(mB+1).1  |
+       |	  |	      | in release > R	 |	     |		      |
+       |	  |	      | and R exists	 |	     |		      |
+       |R.L	  | no	      | No trunk succ.	 | R.L	     | R.(L+1)	      |
+       |R.L	  | yes	      | No trunk succ.	 | R.L	     | R.L.(mB+1).1   |
+       |R.L	  | -	      | Trunk succ. in	 | R.L	     | R.L.(mB+1).1   |
+       |	  |	      | release >= R	 |	     |		      |
+       |R.L.B	  | no	      | No branch succ.	 | R.L.B.mS  | R.L.B.(mS+1)   |
+       |R.L.B	  | yes	      | No branch succ.	 | R.L.B.mS  | R.L.(mB+1).1   |
+       |R.L.B.S	  | no	      | No branch succ.	 | R.L.B.S   | R.L.B.(S+1)    |
+       |R.L.B.S	  | yes	      | No branch succ.	 | R.L.B.S   | R.L.(mB+1).1   |
+       |R.L.B.S	  | -	      | Branch succ.	 | R.L.B.S   | R.L.(mB+1).1   |
+       +----------+-----------+------------------+-----------+----------------+
+
+       (1)  `R', `L', `B', and `S' are the `release', `level', `branch', and
+	    `sequence' components of the SID, respectively; `m' means
+	    `maximum'. Thus, for example, `R.mL' means `the maximum level
+	    number within release R'; `R.L.(mB+1).1' means `the first sequence
+	    number on the new branch (that is, maximum branch number plus one)
+	    of level L within release R'.  Note: If the SID specified is of
+	    the form `R.L', `R.L.B', or `R.L.B.S', each of the specified
+	    components must exist.
+
+
+       (2)  The -b option is effective only if the b flag is present in the
+	    file. An entry of `-' means `irrelevant'.
+
+
+       (3)  This case applies if the d (default SID) flag is not present in
+	    the file.  If the d flag is present in the file, the SID obtained
+	    from the d flag is interpreted as if it had been specified on the
+	    command line. Thus, one of the other cases in this table applies.
+
+
+       (4)  Forces creation of the first delta in a new release.
+
+
+       (5)  `hR' is the highest existing release that is lower than the
+	    specified, nonexistent, release R.
+
+
+       (6)  Successor.
+
+
+ENVIRONMENT VARIABLES
+       See environ(5) for descriptions of the following environment variables
+       that affect the execution of get(1): LANG, LC_ALL, LC_COLLATE,
+       LC_CTYPE, LC_MESSAGES, and NLSPATH.
+
+
+       SCCS_INCLUDEPATH
+	      A colon separated list of directories where to look for include
+	      files for a %sccs.include.filename% replacement.	If the
+	      environment SCCS_INCLUDEPATH does not exist, the include files
+	      are looked for in /usr/ccs/include/.
+
+
+       SCCS_NO_HELP
+	      If set, get(1) will not automatically call help(1) with the SCCS
+	      error code in order to print a more helpful error message.
+	      Scripts that depend on the exact error messages of SCCS commands
+	      should set the environment variable SCCS_NO_HELP and set
+	      LC_ALL=C.
+
+
+EXIT STATUS
+       The following exit values are returned:
+
+
+       0    Successful completion.
+
+
+       1    An error occurred.
+
+
+FILES
+       ``g-file''  version retrieved by get
+
+
+       l.file	   file containing extracted delta table info
+
+
+       p.file	   permissions (lock) file for checked-out versions.  The
+		   p.file has an arbitrary number of lines, each is related to
+		   a get -e call. Each line has the following structure:
+
+		      old-sid new-sid username date time \
+		      [ -ii-arg ][ -xx-arg ][ -zz-arg ]
+
+		   The old-sid is the SID that was checked out with get -e,
+		   the new-sid is the SID that will be used for the new
+		   version when delta is called. The username is the user-name
+		   corresponding to the real user ID at the time get -e was
+		   called. The date and time fields are in the same format as
+		   used in the delta table of the s.file as described in
+		   sccsfile(4) for SCCS v4.  In order to grant POSIX
+		   compatibility, a two digit year is used between 1969 and
+		   2068. For years outside that range, a four digit year is
+		   used.  The following fields are only present when one or
+		   more of the -i -x or -z options have been specified on the
+		   command line, they refer to the list of included and
+		   excluded deltas or to the CMR list from the NSE
+		   enhancements.
+
+
+       q.file	   temporary copy of the p.file; renamed to the p.file after
+		   completion
+
+
+       s.file	   SCCS history file, see sccsfile(4).
+
+
+       z.file	   temporary lock file contains the binary process id in host
+		   byte order followed by the host name
+
+
+       dump.core   If the file dump.core exists in the current directory and a
+		   fatal signal is received, a coredump is initiated via
+		   abort(3).
+
+
+       /usr/ccs/include/
+		   If the environment SCCS_INCLUDEPATH does not exist, include
+		   files for the %sccs.include.filename% keyword directive are
+		   searched in this directory.
+
+
+ATTRIBUTES
+       See attributes(5) for descriptions of the following attributes:
+
+
+
+   /usr/ccs/bin/get
+
+
+       +----------------------------+-----------------------------+
+       |      ATTRIBUTE TYPE	    |	    ATTRIBUTE VALUE	  |
+       +----------------------------+-----------------------------+
+       |Availability		    | SCHILYdeveloper-build-sccs  |
+       |Availability		    | SUNWsprot			  |
+       +----------------------------+-----------------------------+
+
+   /usr/xpg4/bin/get
+
+
+       +----------------------------+---------------------------------+
+       |      ATTRIBUTE TYPE	    |	      ATTRIBUTE VALUE	      |
+       +----------------------------+---------------------------------+
+       |Availability		    | SCHILYdeveloper-build-sccs-xcu4 |
+       |Availability		    | SUNWxcu4t			      |
+       +----------------------------+---------------------------------+
+       |Interface Stability	    | Standard			      |
+       +----------------------------+---------------------------------+
+
+SEE ALSO
+       sccs(1), sccs-add(1), sccs-admin(1), sccs-branch(1), sccs-cdc(1),
+       sccs-check(1), sccs-clean(1), sccs-comb(1), sccs-commit(1),
+       sccs-create(1), sccs-cvt(1), sccs-deledit(1), sccs-delget(1),
+       sccs-delta(1), sccs-diffs(1), sccs-edit(1), sccs-editor(1),
+       sccs-enter(1), sccs-fix(1), sccs-help(1), sccs-histfile(1),
+       sccs-info(1), sccs-init(1), sccs-istext(1), sccs-ldiffs(1),
+       sccs-log(1), sccs-print(1), sccs-prs(1), sccs-prt(1), sccs-rcs2sccs(1),
+       sccs-remove(1), sccs-rename(1), sccs-rmdel(1), sccs-root(1),
+       sccs-sact(1), sccs-sccsdiff(1), sccs-status(1), sccs-tell(1),
+       sccs-unedit(1), sccs-unget(1), sccs-val(1), bdiff(1), diff(1), what(1),
+       sccschangeset(4), sccsfile(4), attributes(5), environ(5), standards(5).
+
+
+DIAGNOSTICS
+       Use the SCCS help command for explanations (see sccs-help(1)).
+
+
+
+BUGS
+       If the effective user has write permission (either explicitly or
+       implicitly) in the directory containing the SCCS files, but the real
+       user does not, only one file may be named when using -e.
+
+
+AUTHORS
+       The SCCS suite was originally written by Marc J. Rochkind at Bell Labs
+       in 1972.	 Release 4.0 of SCCS, introducing new versions of the programs
+       admin(1), get(1), prt(1), and delta(1) was published on February 18,
+       1977; it introduced the new text based SCCS v4 history file format
+       (previous SCCS releases used a binary history file format).  The SCCS
+       suite was later maintained by various people at AT&T and Sun
+       Microsystems.  Since 2006, the SCCS suite is maintained by Joerg
+       Schilling.
+
+
+SOURCE DOWNLOAD
+       A frequently updated source code for the SCCS suite is included in the
+       schilytools project and may be retrieved from the schilytools project
+       at Sourceforge at:
+
+	   http://sourceforge.net/projects/schilytools/
+
+       The download directory is:
+
+	   http://sourceforge.net/projects/schilytools/files/
+
+       Check for the schily-*.tar.bz2 archives.
+
+       Less frequently updated source code for the SCCS suite is at:
+
+	   http://sourceforge.net/projects/sccs/files/
+
+       Separate project informations for the SCCS project may be retrieved
+       from:
+
+	   http://sccs.sf.net
+
+SunOS 5.11			  2020/09/17			   sccs-get(1)

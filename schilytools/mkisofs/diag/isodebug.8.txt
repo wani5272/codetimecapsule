@@ -1,0 +1,95 @@
+ISODEBUG(1L)		    Schily's USER COMMANDS		  ISODEBUG(1L)
+
+NAME
+       isodebug - print mkisofs debug info from ISO-9660 image
+
+SYNOPSIS
+       isodebug [ options ] [ file ]
+
+DESCRIPTION
+       Isodebug reads the debug info written by mkisofs(8) from within a
+       ISO-9660 file system image and prints them.
+
+OPTIONS
+       -help  Prints a short summary of the isodebug options and exists.
+
+       -version
+	      Prints the isodebug version number string and exists.
+
+       -i filename
+	      Filename to read ISO-9660 image from.
+
+       -ignore-error
+	      Ignore errors.  isodebug by default aborts on several errors,
+	      such as read errors. With this option in effect, isodebug tries
+	      to continue.  Use with care.
+
+       dev=target
+	      SCSI target to use as CD/DVD-Recorder.  See cdrecord(1) for more
+	      information on now to use this option.
+
+EXAMPLES
+ENVIRONMENT
+FILES
+SEE ALSO
+       cdrecord(1), scg(7), mkisofs(8).
+
+DIAGNOSTICS
+NOTES
+BUGS
+AUTHOR
+       Joerg Schilling
+       D-13353 Berlin
+       Germany
+
+       Additional information can be found on:
+       http://cdrecord.org/private/cdrecord.html
+
+       If you have support questions, send them to:
+
+       cdrtools-support@lists.sourceforge.net
+
+
+       If you have definitely found a bug, send a mail to:
+
+       cdrtools-developers@lists.sourceforge.net
+       or joerg@schily.net
+
+       To subscribe, use:
+
+       https://lists.sourceforge.net/lists/listinfo/cdrtools-developers
+       or https://lists.sourceforge.net/lists/listinfo/cdrtools-support
+
+SOURCE DOWNLOAD
+       A frequently updated source code for the cdrtools is included in the
+       schilytools project and may be retrieved from the schilytools project
+       at Sourceforge at:
+
+	   http://sourceforge.net/projects/schilytools/
+
+       The download directory is:
+
+	   http://sourceforge.net/projects/schilytools/files/
+
+       Check for the schily-*.tar.bz2 archives.
+
+       Less frequently updated source code for the cdrtools is at:
+
+	   http://sourceforge.net/projects/cdrtools/files/
+
+       and
+	   http://sourceforge.net/projects/cdrtools/files/alpha
+
+       Separate project informations for the cdrtools project may be retrieved
+       from:
+
+	   http://cdrecord.org
+
+INTERFACE STABILITY
+       The interfaces provided by readcd are designed for long term stability.
+       As readcd depends on interfaces provided by the underlying operating
+       system, the stability of the interfaces offered by readcd depends on
+       the interface stability of the OS interfaces.  Modified interfaces in
+       the OS may enforce modified interfaces in readcd.
+
+Joerg Schilling		    Version 3.02 2020/09/04		  ISODEBUG(1L)

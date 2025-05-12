@@ -1,0 +1,47 @@
+GETARGERROR(3)		  Schily's LIBRARY FUNCTIONS		GETARGERROR(3)
+
+NAME
+       getargerror() - convert arg parsing error code to a string
+
+SYNOPSIS
+       #include <schily/getargs.h>
+
+       char *getargerror(val)
+	    int val;	    /* error code */
+
+DESCRIPTION
+       getargerror() returns a string that matches the return code of the
+       argument parsing routines.
+
+
+RETURNS
+       A string that matches the return code or the string Illegal arg error
+       in case that a nonexisting return code has been passed.
+
+       The codes FLAGPARSED and NOTAFLAG share the same value, but FLAGPARSED
+       is not returned to external callers.
+
+
+EXAMPLES
+SEE ALSO
+       getargs(3), getallargs(3), getfiles(3).
+
+
+NOTES
+       none
+
+
+BUGS
+       none
+
+
+AUTHOR
+       Joerg Schilling
+       D-13353 Berlin
+       Germany
+
+       Mail bugs and suggestions to:
+
+       joerg@schily.net
+
+Joerg Schilling			  2020/09/04			GETARGERROR(3)

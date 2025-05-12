@@ -1,0 +1,43 @@
+PATMATCH(3)		  Schily's LIBRARY FUNCTIONS		   PATMATCH(3)
+
+NAME
+       patmatch() - checks string for matches
+
+SYNOPSIS
+       char *patmatch(pattern, aux, string, soff, slen, alt, state)
+       char *pattern;
+       int *aux;
+       char *string;
+       int soff;
+       int slen;
+       int alt;
+       int state[];
+
+DESCRIPTION
+       patmatch() uses the pattern matching information pattern and in
+       addition aux and alt (previously set up by a call to patcompile(3)) to
+       check string for a match. The length of the string is slen and the
+       starting index used for matching is soff.  The string can also be
+       terminated by a null byte.
+
+       The state array is set up and used internally by patmatch and should
+       have at least strlen(pattern) + 1 elements.
+
+RETURNS
+       Returns a NULL pointer if the string starting at the specified offset
+       did not match the pattern.
+
+       Any non-NULL return is a pointer to the first character of string after
+       the part that matches.
+
+SEE ALSO
+       patcompile(3) for information on aux and alt.
+
+       And match(1) for a description ot the regular expressions.
+
+NOTES
+       The pattern matching functions are based on ones presented by Martin
+       Richards in "A Compact Function for Regular Expression Pattern
+       Matching", Software-Practice and Experience vol 9, 527-534 (1979).
+
+Joerg Schilling			 12. Nov 2000			   PATMATCH(3)

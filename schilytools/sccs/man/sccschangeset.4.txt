@@ -1,0 +1,140 @@
+sccschangeset(4)		 File Formats		      sccschangeset(4)
+
+NAME
+       sccschangeset - format of an SCCS changeset file
+
+DESCRIPTION
+       An SCCS changeset file is an ASCII file consisting of a list of entries
+       that describe the state of a project set under control of SCCSv6 or
+       later.
+
+       The changeset file itself is under control of SCCS.  SCCS works
+       directly on the s.changeset file.  There is no need to check out the
+       related file content, as the deltas can be consructed without
+       explicitely running the diff(1) program; this results in a noticeable
+       performance win.
+
+       Parts of the information are recorded inside the changeset file content
+       and other information is recorded within the SCCS meta data of the
+       changeset file.
+
+
+   Conventions
+       The following terms are used in this documentation:
+
+       project set	   A set of one or more files under control of SCCS
+			   that form a project.
+
+       project set home	   A directory that is above all files from the
+			   related project set.	 This directory holds a
+			   directory .sccs with project set related meta data
+			   such as the changeset file and typically the SCCS
+			   history files related to the project.
+
+       commit set	   A single set of changes into the repository for a
+			   project set.
+
+       committer	   The person who formed a commit set.
+
+       email address	   The email address used to identify a committer.
+			   Since the email address is valid for a whole commit
+			   set, it is recorded in the meta data of the related
+			   delta to the changeset file.
+
+
+   File Format
+       Each commit set adds a number of entries to the beginning of the
+       changeset file, one entry for every file that was modified by this
+       commit set.
+
+       Each entry in the changeset file describes the new state of a single
+       file after it was modified, renamed, removed or restored in a related
+       commit set.
+
+       Each entry in the changeset file ends in a newline character. If the
+       file name from the related file contains a newline character,
+       additional newlines may be in the related entry.
+
+       Each entry in the changeset file consists of five fields that are
+       specific to a single file from the changeset.  The entries are
+       separated by a vertical bar character (ASCII 0x7C).  The vertical bar
+       character may appear in the path name.
+
+       The following fields appear in the order of the following list:
+
+	      urand	     A unified pseudo random number that is used to
+			     help to identify single files across renames
+			     during the lifetime of the sccs history.  The
+			     unified random number is unique to any file from
+			     the project set.  See sccsfile(4) for a detailed
+			     description of the unified pseudo random number.
+
+			     The minimal length for the pseudo random number
+			     is thirteen hexadecimal characters. If the number
+			     could be represented with less digits, it is left
+			     filled with zeroes. This allows to have a unique
+			     length for this number until
+			     Mar 31 10:55:07 2155 GMT.
+
+	      sid	     The file specific SID that was used for the file
+			     mentioned in that line of the changeset.
+
+	      sid-sum	     The SID specific checksum for the related file.
+			     See sccsfile(4) for a detailed description of the
+			     SID specific checksums for a file.
+
+	      path length    A decimal number representing the number of bytes
+			     in the path name not including the final newline
+			     character used to terminate the whole entry.
+
+	      path name	     The path name of the related file after the
+			     commit has been applied.  The path name holds a
+			     relative path as seen from the project set home
+			     directory.	 As the path name is the last member
+			     in the lines of a changeset file, it may contain
+			     the vertical bar character (ASCII 0x7C).
+
+       A typical entry in the changeset file may look like:
+
+	 0e31666e43286|1.3|45206|15|some/dir/file.c
+
+
+FILES
+       The sccs init command creates an initial framework of directories and
+       files that allow to maintain a set of files in project mode.  The
+       following directory structure is created:
+
+       projecthome/.sccs/
+		   The location of SCCS files in case that SCCS is in project
+		   mode.
+
+       projecthome/.sccs/data
+		   The location of the SCCS off-tree shadow directory tree
+		   that holds the history files for all files under control of
+		   SCCS when in project mode.
+
+       projecthome/.sccs/dels
+		   The location of the history files from deleted files that
+		   have been in the repository.
+
+       projecthome/.sccs/SCCS/s.changeset
+		   The project specific changeset file is in the directory
+		   .sccs in the project set home directory.  This is the
+		   central database that allows to retrieve the relation
+		   between project versions and file specific versions.	 Only
+		   the s.changeset file is present, a related g-file does not
+		   exist.
+
+
+SEE ALSO
+       sccs(1), sccs-admin(1), sccs-cdc(1), sccs-comb(1), sccs-cvt(1),
+       sccs-delta(1), sccs-get(1), sccs-help(1), sccs-log(1), sccs-prs(1),
+       sccs-prt(1), sccs-rmdel(1), sccs-sact(1), sccs-sccsdiff(1),
+       sccs-unget(1), sccs-val(1), bdiff(1), diff(1), what(1), sccsfile(4).
+
+
+NOTES
+BUGS
+AUTHOR
+
+Joerg Schilling			  2020/05/14		      sccschangeset(4)

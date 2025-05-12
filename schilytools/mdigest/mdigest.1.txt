@@ -1,0 +1,44 @@
+MDIGEST(1L)		    Schily's USER COMMANDS		   MDIGEST(1L)
+
+NAME
+       mdigest - calculate a message digest
+
+SYNOPSIS
+       mdigest -a algorithm [ options ] [ file1 ... filen ]
+
+DESCRIPTION
+       mdigest reads the files from the argument list and computes a message
+       digest hash for the file content.  If the argument list is empty
+       mdigest reads from standard in.
+
+
+OPTIONS
+       All options can be abbreviated by their first letter.
+
+       -a algorithm
+	      Specified the message digest hash algorithm to use.
+
+       -l     Lists the available message digest hash algorithms. This list
+	      may depend on the platform and the compiler that was used to
+	      create the binary.
+
+       -help  Prints a short summary of the mdigest(1) options and exists.
+
+       -verbose
+	      Verbose output. Includes the message digest hash algorithm name
+	      in the output.
+
+       -version
+	      Prints the mdigest(1) version number string and exists.
+
+
+ENVIRONMENT
+FILES
+NOTES
+       If you call mdigest with no file type arguments, it will compute the
+       digest for stdin.
+
+
+BUGS
+
+Joerg Schilling			12. August 2009			   MDIGEST(1L)

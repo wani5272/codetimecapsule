@@ -1,0 +1,87 @@
+CALC(1)			    Schily's USER COMMANDS		       CALC(1)
+
+NAME
+       calc - simple integer calculator that accepts decimal/hex/octal and
+       outputs decimal/hex/octal/binary
+
+SYNOPSIS
+       calc [ options ]
+
+DESCRIPTION
+       The calc command may be used to do simple integer calculations or to
+       convert numbers from one radix to another.
+
+       Calc reads commands from stdin and prints the result to stdout.	The
+       inpout radix for numbers may be decimal (default), octal (if starting
+       with a '0') or hexadecimal (if starting with "0x").  The output is
+       always printed in four radixes: decimal, octal, hexadecimal and binary.
+       The decimal variant is printed as signed and as unsigned
+       representation.
+
+       The result is printed in two variants using 32 bit and 64 bit
+       repesentations for the numbers.
+
+INPUT FORMAT
+       Calc accepts three types of input lines:
+
+       one number      The input line is onue number only.
+
+		       In this case the number is converted only to the
+		       different output formats.
+
+       unary oparator  The input line is a unary oparator followed by a number
+
+		       In this case the unary oparator is applied to the
+		       number and the result is printed in all output formats.
+
+       binary oparator The input line is a number followed by a binary
+		       oparator followed by a second number.
+
+		       In this case the binari oparator is applied to the
+		       numbers and the result is printed in all output
+		       formats.
+
+
+OPARATORS
+       +	       Binary arithmetic addition.
+
+       -	       Binary arithmetic subtraction.
+
+       *	       Binary arithmetic multiplication.
+
+       <<	       Binary logical left shift.
+
+       >>	       Binary logical right shift.
+
+       ^	       Binary logical exclusive or as in C language.
+
+       &	       Binary logical and masking as in C language.
+
+       |	       Binary logical or as in C language.
+
+       !	       Unary logical not as in C language.
+
+       ~	       Unary logical one's complement as in C language.
+
+       %	       Binary arithmetic remainder from division.
+
+       /	       Binary arithmetic division.
+
+OPTIONS
+       -help  Prints a short summary of the calc options and exists.
+
+       -version
+	      Prints the calc version number string and exists.
+
+
+EXAMPLES
+ENVIRONMENT
+FILES
+SEE ALSO
+       dc(1), bc(1).
+
+NOTES
+BUGS
+AUTHOR
+
+Joerg Schilling			   01/04/20			       CALC(1)

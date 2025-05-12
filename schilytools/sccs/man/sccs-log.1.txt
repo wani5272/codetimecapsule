@@ -1,0 +1,244 @@
+sccs-log(1)		    Schily's USER COMMANDS		   sccs-log(1)
+
+NAME
+       sccs-log, sccslog - create changelog from SCCS history files
+
+SYNOPSIS
+       sccslog [options] s.file1 .. s.filen
+
+DESCRIPTION
+       Sccslog creates a Changelog file from SCCS history files.
+
+       If a file argument refers to a directory, the directory is scanned for
+       file names that start with ``s.'' and examines all these files.
+
+       This program is a SCHILY extension that does not exist in historic sccs
+       implementations.
+
+OPTIONS
+       -a     sccslog normally collects all deltas with the same delta comment
+	      and prints them as one log table entry in case the related delta
+	      time for the files differs no more than one day. With -a,
+	      sccslog collects only those deltas that have been created within
+	      60 seconds.
+
+       -aa    With -aa, sccslog collects only deltas that have been created in
+	      the same second.
+
+       -Cdir  Use dir as base directory for printed file names in the output.
+	      This option is used by sccs -R to tell sccslog to print
+	      filenames that are suitable for complete project changelog
+	      files.
+
+       maxdelta=time-spec
+	      Set up a dedicated time delta while collecting deltas with the
+	      same delta comment to prints them as one log table entry.
+
+	      If n is a simple number, the delta is set to the number of
+	      seconds.
+
+	      If n is a number like 3h10m then it is representing a number of
+	      seconds that is evaluated as a human readable time spec.	The
+	      letters that are recognised in the time spec are taken from
+	      smhdwy with the following meaning for time units:
+
+	      s	     seconds
+
+	      m	     minutes (60 seconds)
+
+	      h	     hours (60 minutes)
+
+	      d	     days (24 hours)
+
+	      w	     weeks (7 days)
+
+	      y	     years (365 days - a non-leap year)
+
+	      If neither maxdelta=time-spec nor -a are specified, the default
+	      time delta is one day.
+
+       -multfile
+	      Allow multiple versions of the same file in a commit.  By
+	      default, when bundling SCCS deltas with the same delta comment,
+	      each file can only appear once. When -multfile has been
+	      specified, the same file can appear multiple times if the delta
+	      comment is the same.
+
+       -p subdir
+	      Tell sccslog to use subdir when dealing with file names.
+
+       -R     Inverts the order of the output. This prints older entries
+	      first.
+
+       usermap=file
+	      Use file instead of the default user map file.  This allowd to
+	      create dedicated user map files for projects, e.g. to convert
+	      the CSRG BSD source code history. See FILES section for the
+	      format of the file.
+
+       -x     Print all comment lines, even those lines that start with ^Ac_
+	      and thus are no real comment but represent SCCS v6 metadata that
+	      has been wrapped as comment to survive modifications by SCCS v4
+	      programs.	 Such wrapped data is file specific and will prevent
+	      to find more files with the same delta comment.
+
+       -help  Prints a short summary of the sccslog options and exists.
+
+
+
+       -Nbulk-spec
+	      Processes a bulk of SCCS history files.  This option allows to
+	      do an efficient mass processing of SCCS history files.
+
+	      The bulk-spec parameter is composed from an optional list of
+	      flag parameters followed by an optional path specifier.
+
+	      The following flag types are supported:
+
+	      none
+
+	      The following path specifier types are supported:
+
+	      -N	The file name parameters to the sccslog command are
+			not s.filename files but the names of the g-files.
+			The s.filename names are automatically derived from
+			the g-file names by prepending s.  to the last path
+			name component.	 Both, s.filename and the g-file are
+			in the same directory.
+
+	      -Ns.	The file name parameters to the sccslog command are
+			s.filename files.  The the g-files names are
+			automatically derived by removing s.  from the
+			beginning of last path name component of the
+			s.filename.  Both, s.filename and the g-file are in
+			the same directory.
+
+	      -Ndir	The file name parameters to the sccslog command are
+			not s.filename files but the names of the g-files.
+			The s.filename names are put into directory dir, the
+			names are automatically derived from the g-file names
+			by prepending dir/s.  to the last path name component.
+
+	      -Ndir/s.	The file name parameters to the sccslog command are
+			s.filename files in directory dir.  The the g-files
+			names are automatically derived by removing dir/s.
+			from the beginning of last path name component of the
+			s.filename.
+
+	      A typical value for dir is SCCS.
+
+	      In order to overcome the limited number of exec(2) arguments, it
+	      is recommended to use `-' as the file name parameter for
+	      sccslog(1) and to send a list of path names to stdin.
+
+
+       -Xextended-options
+	      Specify extended options. The argument extended-options may be a
+	      comma separated list of extended option names.
+
+	      The following extended options are supported, they may be
+	      abbreviated as long ad the abbreviation is still unique. Options
+	      with parameter may not be abbreviated.
+
+
+	      0	     When reading filenames from stdin, triggered by a file
+		     name argument `-', the filename separator is a null byte
+		     instead of a newline.  This allows to use long lists with
+		     arbitrary filenames.
+
+	      help   Print a short online help for available options.
+
+	      The -X option is a SCHILY extension that does not exist in
+	      historic sccs implementations.
+
+
+       -V
+       -version
+       --version
+	      Prints the sccslog version number string and exists.
+
+EXAMPLES
+       To creates a changelog for all SCCS history files in directory SCCS
+       call:
+
+	      sccslog SCCS/s.*
+
+ENVIRONMENT VARIABLES
+       See environ(5) for descriptions of the following environment variables
+       that affect the execution of val(1): LANG, LC_ALL, LC_CTYPE,
+       LC_MESSAGES, and NLSPATH.
+
+
+       SCCS_NO_HELP
+	      If set, admin(1) will not automatically call help(1) with the
+	      SCCS error code in order to print a more helpful error message.
+	      Scripts that depend on the exact error messages of SCCS commands
+	      should set the environment variable SCCS_NO_HELP and set
+	      LC_ALL=C.
+
+FILES
+       $HOME/.sccs/usermap
+	      This file contains a map list from user names to user
+	      descriptions.  It consists of a list of lines (each for one
+	      user) that start with a user name, followed by white space and a
+	      user description.	 It may e.g. look like:
+
+	      joerg   Joerg Schilling <schily@somewhere.com>
+	      ronnie  Ronnie Nowhere <ronnie@nowhere.com>
+
+
+ATTRIBUTES
+       See attributes(5) for descriptions of the following attributes:
+
+       +----------------------------+-----------------------------+
+       |      ATTRIBUTE TYPE	    |	    ATTRIBUTE VALUE	  |
+       +----------------------------+-----------------------------+
+       |Availability		    | SCHILYdeveloper-build-sccs  |
+       +----------------------------+-----------------------------+
+       |Interface Stability	    | Evolving			  |
+       +----------------------------+-----------------------------+
+
+SEE ALSO
+       sccs(1), sccs-add(1), sccs-admin(1), sccs-branch(1), sccs-cdc(1),
+       sccs-check(1), sccs-clean(1), sccs-comb(1), sccs-commit(1),
+       sccs-create(1), sccs-cvt(1), sccs-deledit(1), sccs-delget(1),
+       sccs-delta(1), sccs-diffs(1), sccs-edit(1), sccs-editor(1),
+       sccs-enter(1), sccs-fix(1), sccs-get(1), sccs-help(1),
+       sccs-histfile(1), sccs-info(1), sccs-init(1), sccs-istext(1),
+       sccs-ldiffs(1), sccs-print(1), sccs-prs(1), sccs-prt(1),
+       sccs-rcs2sccs(1), sccs-remove(1), sccs-rename(1), sccs-rmdel(1),
+       sccs-root(1), sccs-sact(1), sccs-sccsdiff(1), sccs-status(1),
+       sccs-tell(1), sccs-unedit(1), sccs-unget(1), sccs-val(1), what(1),
+       sccschangeset(4), sccsfile(4).
+
+DIAGNOSTICS
+NOTES
+BUGS
+AUTHOR
+       sccslog(1) was originally written by Joerg Schilling in 1997 and is
+       still maintained by Joerg Schilling.
+
+
+SOURCE DOWNLOAD
+       A frequently updated source code for the SCCS suite is included in the
+       schilytools project and may be retrieved from the schilytools project
+       at Sourceforge at:
+
+	   http://sourceforge.net/projects/schilytools/
+
+       The download directory is:
+
+	   http://sourceforge.net/projects/schilytools/files/
+
+       Check for the schily-*.tar.bz2 archives.
+
+       Less frequently updated source code for the SCCS suite is at:
+
+	   http://sourceforge.net/projects/sccs/files/
+
+       Separate project informations for the SCCS project may be retrieved
+       from:
+
+	   http://sccs.sf.net
+
+Joerg Schilling			  2020/08/05			   sccs-log(1)

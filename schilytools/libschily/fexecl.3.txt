@@ -1,0 +1,30 @@
+FEXECL(3)		  Schily's LIBRARY FUNCTIONS		     FEXECL(3)
+
+NAME
+       fexecl() - executes a program
+
+SYNOPSIS
+       fexecl(name, in, out, err, arg0, arg1, ... argn, NULL)
+       char *name;
+       FILE *in, *out, *err;
+       char *arg0...*argn;
+
+DESCRIPTION
+       fexecl() is a variation of fexecve(). The description of fexecve()
+       applies to fexecl(), with two exceptions.  First, fexecl() does not
+       permit the environment list to be specified; it causes the new program
+       to have the same environment as the current program, using the global
+       environment pointer environ.  Second, the argument list for the new
+       program is constructed as part of the call to fexecl(). This is a lot
+       easier to write than the code to construct a vector of strings, but is
+       limited to cases with a fixed number of arguments. The argument list
+       will consist of the strings a0, a1, and so on. By convention, a0 is the
+       name of the new program.
+
+RETURNS
+       Returns system error code; doesn't return if successful.
+
+NOTES
+       none
+
+Joerg Schilling			 15. Juli 1988			     FEXECL(3)

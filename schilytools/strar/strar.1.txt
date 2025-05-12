@@ -1,0 +1,114 @@
+STRAR(1)		    Schily's USER COMMANDS		      STRAR(1)
+
+NAME
+       strar - StreamArchive handler
+
+SYNOPSIS
+       strar  command [options] file1 ... filen
+
+DESCRIPTION
+       Strar is a simple archiver with tar like command like syntax that
+       handles StreamArchives.
+
+       Strar archives and extracts multiple files to and from a single file
+       called a StreamArchive.	A StreamArchive is usually used in network
+       communication, but it can be any file.
+
+       Strar's actions are controlled by the mandatory command flags from the
+       list below.  The way strar acts may be modified by additional options.
+
+       Note that unpacking StramArchives may be a security risk because strar
+       may overwrite existing files.  See SECURITY NOTES for more information.
+
+COMMAND
+       strar is compatible to the command line syntax of a typical POSIX
+       command and for this reason expects commands and options to start with
+       a single dash (-). In this case, commands and options may be specified
+       separately, all boolean or increment type options may be specified
+       either separately or combined.
+
+       -c     Create a new StreamArchive and write named files into it.
+	      Writing starts at the beginning of the Streamarchive.  See -v
+	      option for information on how to increase verbosity while the
+	      archive is written.
+
+       -t     Table of contents.  List the contents of the StreamArchive.  If
+	      the -v flag is used, the listing is similar to the format of ls
+	      -l output.
+
+       -x     Extract files from the StreamArchive.  If no filename argument
+	      or pattern is specified, the entire content of the StreamArchive
+	      is restored.
+
+       Exactly one of the commands above must be specified.
+
+
+OPTIONS
+       -help  Print a summary of the options for strar(1).
+
+       -basemeta
+	      Only add basic meta data: path, mode, size, filetype.
+
+       -nometa
+	      Only add minimal meta data: path, size.  In this mode, only
+	      plain files may occur in the archive.
+
+       -v     Increment verbose level by one.  This normally results in more
+	      output during operation.	See also in the description for the -t
+	      flag.  Normally, strar does its work silently.  If the verbose
+	      level is 2 or more and strar is in create or update mode, strar
+	      will produce a listing to the format of the ls -l output.
+
+       -version
+	      Print version information and exit.
+
+
+SIGNALS
+EXIT STATUS
+EXAMPLES
+ENVIRONMENT
+FILES
+SEE ALSO
+       star(1), spax(1), suntar(1), scpio(1), tar(1), cpio(1), pax(1), rcp(1),
+       mt(1), rmt(1), match(1), dd(1), sdd(1), rsh(1), ssh(1), star(4),
+       streamarchive(4), rcmd(3).
+
+DIAGNOSTICS
+NOTES
+SECURITY NOTES
+       If you unpack a StramArchive in a non empty directory, any file in that
+       directory may be overwritten.  If the archive contains symbolic links
+       or hard links, strar may even overwrite files outside the current
+       directory.
+
+LIMITATIONS
+       If strar is running on a large file aware platform, strar is able to
+       handle files of arbitrary size.
+
+BUGS
+HISTORY
+       Strar was created in 2017.
+
+AUTHOR
+       Joerg Schilling
+       D-13353 Berlin
+       Germany
+
+       Mail bugs and suggestions to:
+
+       joerg@schily.net
+
+
+SOURCE DOWNLOAD
+       The source code for strar is in the schilytools project and may be
+       retrieved from the schilytools project at Sourceforge at:
+
+	   http://sourceforge.net/projects/schilytools/
+
+       The download directory is:
+
+	   http://sourceforge.net/projects/schilytools/files/
+
+       Check for the schily-*.tar.bz2 archives.
+
+Joerg Schilling			  2020/09/04			      STRAR(1)
